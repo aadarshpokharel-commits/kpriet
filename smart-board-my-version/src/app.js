@@ -470,6 +470,7 @@ const App = (() => {
     });
     Drawing.syncPointerEvents();
     if (typeof UI !== 'undefined') {
+      if (UI.closeAllFlyouts) UI.closeAllFlyouts();
       if (UI.syncSubtoolButtons) UI.syncSubtoolButtons(tool);
       if (tool === 'pen' || tool === 'highlighter') {
         if (UI.closeEraserFlyout) UI.closeEraserFlyout();
@@ -502,6 +503,13 @@ const App = (() => {
     }
     if (window.GraphEngine && typeof GraphEngine.syncToolWithBoard === 'function') {
       GraphEngine.syncToolWithBoard();
+    }
+    if (changed) {
+      if (tool === 'smart-draw') {
+        showToast('✨ Smart Draw: Draw rough shapes or lines to convert cleanly');
+      } else if (tool === 'text') {
+        showToast('🔤 Text Tool: Click anywhere on the board to type');
+      }
     }
   }
 
@@ -1286,7 +1294,8 @@ const App = (() => {
     if (e.key === 'ArrowLeft')  { e.preventDefault(); Canvas.nudgeSelected(e.shiftKey ? -10 : -2, 0); return; }
     if (e.key === 'ArrowRight') { e.preventDefault(); Canvas.nudgeSelected(e.shiftKey ? 10 : 2, 0); return; }
     const map = { v:'select', p:'pen', h:'highlighter', t:'text', l:'line', d:'dashed', a:'arrow', e:'eraser', s:'smart-draw' };
-    if (map[e.key]) setTool(map[e.key]);
+    const k = (e.key || '').toLowerCase();
+    if (map[k]) setTool(map[k]);
     if (e.key === 'i' || e.key === 'I') { if (typeof ImageTool !== 'undefined') ImageTool.openPicker(); }
     if (e.key === 'Escape') {
       const clearModal = $('fs-clear-modal');
@@ -1476,4 +1485,8 @@ const App = (() => {
 
 window.App = App;
 
-document.addEventListener('DOMContentLoaded', App.init);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', App.init);
+} else {
+  App.init();
+}

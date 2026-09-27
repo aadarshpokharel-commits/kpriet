@@ -718,20 +718,35 @@ const Drawing = (() => {
     const vp = document.getElementById('canvas-viewport');
     if (!dc) return;
 
-    const useDraw = (tool === 'pen' || tool === 'highlighter' || tool === 'eraser' || tool === 'smart-draw' || tool === 'shape' || tool === 'text');
-    dc.style.pointerEvents = useDraw ? 'auto' : 'none';
-    if (sc) {
-      if (isSplit && tool === 'select') {
+    // Freehand continuous ink drawing tools handled directly by drawing.js on draw-canvas
+    const isFreehandInk = (tool === 'pen' || tool === 'highlighter' || tool === 'eraser');
+
+    if (isFreehandInk) {
+      dc.style.pointerEvents = 'auto';
+      dc.style.zIndex = '300';
+      if (sc) {
         sc.style.pointerEvents = 'none';
-      } else {
-        sc.style.pointerEvents = (tool === 'select' || tool === 'shape' || tool === 'text') ? 'auto' : 'none';
+        sc.style.zIndex = '2';
+      }
+      if (vp) {
+        vp.style.zIndex = '300';
+        vp.style.pointerEvents = 'auto';
+      }
+    } else {
+      // Shape, text, smart-draw, sticky, table, math, and selection tools
+      // are all handled by Canvas.js on shape-canvas
+      dc.style.pointerEvents = 'none';
+      dc.style.zIndex = '1';
+      if (sc) {
+        sc.style.pointerEvents = (isSplit && tool === 'select') ? 'none' : 'auto';
+        sc.style.zIndex = '10';
+        sc.style.cursor = (tool === 'select') ? 'default' : (tool === 'text' ? 'text' : 'crosshair');
+      }
+      if (vp) {
+        vp.style.zIndex = '20';
+        vp.style.pointerEvents = 'auto';
       }
     }
-    if (vp) {
-      vp.style.zIndex = useDraw ? '300' : '20';
-      vp.style.pointerEvents = useDraw ? 'auto' : 'none';
-    }
-    dc.style.zIndex = useDraw ? '300' : '3';
 
     // Synchronize Write Over button on chapter panel if open
     const btnAnnotate = document.getElementById('cp-btn-annotate');

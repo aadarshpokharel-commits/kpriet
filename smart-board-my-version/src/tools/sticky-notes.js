@@ -590,9 +590,27 @@ const StickyNotesTool = (() => {
   }
 
   function activateOrAdd() {
-    // If sticky note button is pressed, either switch tool or spawn note in center
     if (typeof App !== 'undefined') {
       App.setTool('sticky');
+    }
+    if (typeof Canvas !== 'undefined' && Canvas.getCanvasSize) {
+      const { W, H } = Canvas.getCanvasSize();
+      const centerPos = (typeof Canvas.screenToBoard === 'function')
+        ? Canvas.screenToBoard(W * 0.5, H * 0.5)
+        : { x: W * 0.5, y: H * 0.5 };
+      const note = createStickyNote(centerPos.x - 110, centerPos.y - 100);
+      Canvas.saveHistory();
+      Canvas.addShapeObject(note);
+      Canvas.selectShape(note);
+      showNoteContextToolbar(note);
+      editNote(note);
+      if (typeof App !== 'undefined' && App.setTool) {
+        App.setTool('select');
+      }
+      if (typeof App !== 'undefined') {
+        App.showToast('Sticky note added to board');
+      }
+    } else if (typeof App !== 'undefined') {
       App.showToast('Sticky Note Tool: Tap anywhere on board to place note');
     }
   }

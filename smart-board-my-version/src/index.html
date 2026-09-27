@@ -340,7 +340,7 @@
     <!-- Main Tool Palette White Capsule -->
     <div class="fp-main-card">
       <!-- 1. Pointer / Select -->
-      <button class="tool-btn active" data-tool="select" title="Select (V)">
+      <button class="tool-btn active" id="btn-fp-select" data-tool="select" onclick="App.setTool('select')" title="Select (V)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 3l14 7-7 2.5L8.5 20 4 3z"/>
         </svg>
@@ -354,7 +354,7 @@
       </button>
 
       <!-- 2b. Smart Draw (Magic Pen / Automatic Shape Recognition) -->
-      <button class="tool-btn" id="btn-fp-smart-draw" data-tool="smart-draw" title="Smart Draw — Rough to Clean Shapes (S)">
+      <button class="tool-btn" id="btn-fp-smart-draw" data-tool="smart-draw" onclick="App.setTool('smart-draw')" title="Smart Draw — Rough to Clean Shapes (S)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M15 4l5 5L8 21H3v-5L15 4z"/>
           <path d="M11.5 7.5l5 5"/>
@@ -373,7 +373,7 @@
       </button>
 
       <!-- 4. Text Tool (T) -->
-      <button class="tool-btn" data-tool="text" title="Text (T)">
+      <button class="tool-btn" id="btn-fp-text" data-tool="text" onclick="App.setTool('text')" title="Text (T)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M5 6h14M12 6v12M8 18h8"/>
         </svg>

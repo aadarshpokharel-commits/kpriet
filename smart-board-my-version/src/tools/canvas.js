@@ -2352,7 +2352,7 @@ const Canvas = (() => {
         selectShape(hit);
         StickyNotesTool.editNote(hit);
         return;
-      } else if (!hit) {
+      } else {
         deselectAll();
         Drawing.placeText(pos.x, pos.y);
         return;

@@ -59,7 +59,7 @@ const SmartDrawing = (() => {
     if (!sc) {
       sc = document.createElement('canvas');
       sc.id = 'smart-draw-preview';
-      sc.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:6;';
+      sc.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:25;';
       if (vp) vp.appendChild(sc);
       else if (zone) zone.appendChild(sc);
     }
