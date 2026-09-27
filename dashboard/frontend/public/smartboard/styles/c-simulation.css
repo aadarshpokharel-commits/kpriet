@@ -1,0 +1,935 @@
+:root {
+  color-scheme: dark;
+  --c-bg: #0a0f1d;
+  --c-surface: #10172a;
+  --c-surface-card: #0d1322;
+  --c-surface-hover: #172138;
+  --c-surface-inset: #070a14;
+  --c-line: #1e293b;
+  --c-line-light: #2d3b55;
+  --c-ink: #f8fafc;
+  --c-muted: #94a3b8;
+  --c-dim: #64748b;
+  --c-primary: #0284c7;
+  --c-primary-light: #38bdf8;
+  --c-primary-soft: rgba(2, 132, 199, 0.16);
+  --c-accent: #6366f1;
+  --c-accent-light: #818cf8;
+  --c-success: #10b981;
+  --c-success-soft: rgba(16, 185, 129, 0.16);
+  --c-warning: #f59e0b;
+  --c-warning-soft: rgba(245, 158, 11, 0.16);
+  --c-danger: #ef4444;
+  --c-danger-soft: rgba(239, 68, 68, 0.16);
+  --c-code-bg: #070b16;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden !important;
+  background: var(--c-bg);
+  color: var(--c-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, select, textarea { font: inherit; color: inherit; }
+button { touch-action: manipulation; }
+
+/* Scrollbars for internal scrollable panes */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--c-surface-inset); }
+::-webkit-scrollbar-thumb { background: var(--c-line-light); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--c-primary); }
+
+/* Master App Container: Exact 100vh height */
+.c-app {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  padding: 6px 10px 8px;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: var(--c-bg);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   1. MASTER CONTROL BAR (Single row, touch/stylus optimized)
+   ══════════════════════════════════════════════════════════════ */
+.c-master-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: nowrap;
+  min-height: 44px;
+  max-height: 48px;
+  padding: 4px 10px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  flex-shrink: 0;
+}
+
+.c-bar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.c-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #0284c7, #2563eb);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+  box-shadow: 0 3px 10px rgba(2, 132, 199, 0.4);
+}
+
+.c-brand-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.c-brand-title {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.c-brand-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 1px;
+}
+
+.c-badge-code {
+  font-size: 9.5px;
+  font-weight: 750;
+  color: var(--c-primary-light);
+  background: var(--c-primary-soft);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 1px 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.c-topic-tag {
+  font-size: 9.5px;
+  color: var(--c-muted);
+  font-weight: 600;
+  white-space: nowrap;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Simulation Selectors */
+.c-bar-selectors {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.c-pill-select {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--c-surface-inset);
+  border: 1px solid var(--c-line);
+  border-radius: 7px;
+  padding: 2px 6px;
+  font-size: 11px;
+}
+
+.c-pill-label {
+  font-size: 8.5px;
+  font-weight: 850;
+  color: var(--c-primary-light);
+  letter-spacing: 0.05em;
+}
+
+.c-pill-select select {
+  background: transparent;
+  border: none;
+  color: #f1f5f9;
+  font-size: 11.5px;
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+  padding-right: 4px;
+  max-width: 210px;
+}
+
+.c-pill-select select option {
+  background: #0f172a;
+  color: #f1f5f9;
+}
+
+/* Playback Control Cluster */
+.c-bar-playback {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.c-ctrl-btn {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--c-line-light);
+  border-radius: 7px;
+  background: var(--c-surface-card);
+  color: #f1f5f9;
+  font-size: 11.5px;
+  font-weight: 750;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.c-ctrl-btn:hover:not(:disabled) {
+  background: var(--c-surface-hover);
+  border-color: var(--c-primary-light);
+}
+
+.c-ctrl-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.c-ctrl-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.c-ctrl-run {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: rgba(16, 185, 129, 0.5);
+  color: #34d399;
+}
+
+.c-ctrl-run:hover:not(:disabled) {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.c-ctrl-next {
+  background: var(--c-primary);
+  border-color: var(--c-primary-light);
+  color: #ffffff;
+  font-weight: 850;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+}
+
+.c-ctrl-next:hover:not(:disabled) {
+  background: #0369a1;
+}
+
+.c-pill-speed select {
+  max-width: 60px;
+}
+
+/* Actions Cluster */
+.c-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.c-step-pill {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 75px;
+  font-size: 9.5px;
+  font-family: ui-monospace, monospace;
+  color: var(--c-muted);
+}
+
+.c-progress-track {
+  height: 4px;
+  background: var(--c-line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.c-progress-track div {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--c-primary), #6366f1);
+  transition: width 0.2s ease;
+}
+
+.c-icon-action {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  border: 1px solid var(--c-line);
+  background: var(--c-surface-card);
+  color: var(--c-muted);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.15s;
+}
+
+.c-icon-action:hover {
+  background: var(--c-surface-hover);
+  color: #ffffff;
+  border-color: var(--c-line-light);
+}
+
+.c-close-action:hover {
+  background: #dc2626;
+  border-color: #ef4444;
+  color: #ffffff;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   2. MAIN WORKSPACE (Flagship 3-Stage Layout)
+   Left: Code & Console | Center: Visual Memory Stage | Right: Inspector Dock
+   ══════════════════════════════════════════════════════════════ */
+.c-workspace {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(310px, 1fr) minmax(360px, 1.3fr) 330px;
+  gap: 8px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.c-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Left Column: Code Panel + Output Console */
+.c-code-column {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.c-code-card {
+  flex: 1;
+  min-height: 0;
+  padding: 8px 10px;
+}
+
+.c-card-header-compact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.c-card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.c-badge-pill {
+  font-size: 8.5px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(56, 189, 248, 0.2);
+  color: var(--c-primary-light);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.c-card-title-group h2 {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+
+/* Code Viewer / Editor Area */
+.c-code-viewport {
+  flex: 1;
+  min-height: 0;
+  background: var(--c-code-bg);
+  border: 1px solid var(--c-line);
+  border-radius: 8px;
+  overflow-y: auto;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+  line-height: 1.55;
+  padding: 6px 0;
+}
+
+.c-code-line {
+  display: flex;
+  align-items: center;
+  padding: 1px 8px;
+  transition: background 0.15s ease;
+  user-select: text;
+}
+
+.c-line-num {
+  width: 28px;
+  color: #475569;
+  font-size: 10px;
+  user-select: none;
+  text-align: right;
+  padding-right: 10px;
+  flex-shrink: 0;
+}
+
+.c-line-text {
+  color: #cbd5e1;
+  white-space: pre;
+  tab-size: 2;
+  flex: 1;
+}
+
+.c-code-line.active {
+  background: rgba(2, 132, 199, 0.28);
+  border-left: 3px solid #38bdf8;
+}
+
+.c-code-line.active .c-line-text {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.c-code-line.active .c-line-num {
+  color: #38bdf8;
+  font-weight: 800;
+}
+
+/* Console Output Card */
+.c-console-card {
+  flex: none;
+  min-height: 85px;
+  max-height: 110px;
+  padding: 6px 10px;
+}
+
+.c-console-terminal {
+  flex: 1;
+  min-height: 0;
+  background: #030712;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: #4ade80;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+/* Center Column: Visual Memory & Interactive Simulation Stage */
+.c-stage-column {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.c-stage-card {
+  flex: 1;
+  min-height: 0;
+  padding: 8px 10px;
+}
+
+.c-visualization-board {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--c-surface-inset);
+  border: 1px solid var(--c-line);
+  border-radius: 8px;
+  padding: 10px;
+  position: relative;
+}
+
+/* Step Explanation Strip */
+.c-explanation-card {
+  flex: none;
+  min-height: 98px;
+  max-height: 115px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 6px 10px;
+}
+
+.c-pedagogical-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.c-pedagogy-cell {
+  background: var(--c-surface-card);
+  border: 1px solid var(--c-line);
+  border-radius: 6px;
+  padding: 4px 7px;
+  min-height: 46px;
+  overflow: hidden;
+}
+
+.c-pedagogy-tag {
+  display: inline-block;
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-bottom: 2px;
+}
+
+.c-tag-op {
+  background: var(--c-primary-soft);
+  color: var(--c-primary-light);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.c-tag-why {
+  background: var(--c-warning-soft);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.c-tag-next {
+  background: var(--c-success-soft);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.c-pedagogy-cell p {
+  margin: 0;
+  font-size: 10.5px;
+  line-height: 1.35;
+  color: #e2e8f0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.c-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+  overflow-x: auto;
+  padding-top: 2px;
+}
+
+.c-metric {
+  padding: 2px 7px;
+  background: var(--c-surface-inset);
+  border: 1px solid var(--c-line);
+  border-radius: 5px;
+  font-size: 9.5px;
+  color: var(--c-muted);
+  white-space: nowrap;
+}
+
+.c-metric strong {
+  margin-left: 4px;
+  color: #38bdf8;
+  font-family: ui-monospace, monospace;
+  font-weight: 800;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   3. RIGHT COLUMN: INSPECTOR DOCK (Tabbed: Inputs, Logic, AI)
+   ══════════════════════════════════════════════════════════════ */
+.c-dock-column {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.c-dock-tabs {
+  display: flex;
+  background: var(--c-surface-inset);
+  border-bottom: 1px solid var(--c-line);
+  flex-shrink: 0;
+}
+
+.c-dock-tab {
+  flex: 1;
+  padding: 8px 4px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--c-muted);
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.c-dock-tab:hover {
+  color: #f1f5f9;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.c-dock-tab.active {
+  color: #38bdf8;
+  background: var(--c-surface);
+  border-bottom-color: #0284c7;
+}
+
+.c-dock-pane {
+  display: none;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  padding: 8px 10px;
+  overflow-y: auto;
+}
+
+.c-dock-pane.active {
+  display: flex;
+}
+
+.c-dock-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.c-dock-kicker {
+  font-size: 9px;
+  font-weight: 850;
+  color: var(--c-primary-light);
+  letter-spacing: 0.08em;
+}
+
+.c-btn-xs {
+  min-height: 24px;
+  padding: 0 7px;
+  font-size: 10px;
+  font-weight: 750;
+  border-radius: 5px;
+  border: 1px solid var(--c-line-light);
+  background: var(--c-surface-card);
+  color: #e2e8f0;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.c-btn-xs:hover {
+  background: var(--c-surface-hover);
+  border-color: var(--c-primary-light);
+}
+
+.c-btn-primary {
+  background: var(--c-primary);
+  border-color: var(--c-primary-light);
+  color: #ffffff;
+}
+
+.c-btn-primary:hover {
+  background: #0369a1;
+}
+
+.c-btn-block {
+  width: 100%;
+  margin-top: 8px;
+  min-height: 32px;
+  font-size: 11.5px;
+}
+
+/* Preset selector */
+.c-preset-select {
+  width: 100%;
+  background: var(--c-surface-inset);
+  border: 1px solid var(--c-line);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 11px;
+  color: #f1f5f9;
+  margin-bottom: 8px;
+}
+
+/* Custom code editor textarea inside Dock */
+.c-code-editor {
+  width: 100%;
+  height: 140px;
+  background: #030712;
+  border: 1px solid var(--c-line);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  color: #e2e8f0;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+/* Logic & Complexity lists */
+.c-pseudocode-dock {
+  list-style-type: decimal;
+  margin: 0;
+  padding-left: 20px;
+  font: 11px/1.6 ui-monospace, monospace;
+  color: #cbd5e1;
+  background: var(--c-surface-inset);
+  border: 1px solid var(--c-line);
+  border-radius: 6px;
+  padding: 6px 6px 6px 24px;
+}
+
+.c-pseudocode-dock li.active {
+  background: rgba(2, 132, 199, 0.3);
+  color: #38bdf8;
+  font-weight: 800;
+}
+
+.c-complexity-dock {
+  display: grid;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.c-complexity-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 8px;
+  background: var(--c-surface-card);
+  border: 1px solid var(--c-line);
+  border-radius: 5px;
+  font-size: 10.5px;
+}
+
+.c-complexity-row span:first-child { color: var(--c-muted); }
+.c-complexity-row span:last-child { color: #38bdf8; font-weight: 800; font-family: ui-monospace, monospace; }
+
+/* AI Doubts Card */
+.c-ai-header h4 { margin: 3px 0 2px; font-size: 12px; color: #ffffff; }
+.c-ai-header p { margin: 0; font-size: 10.5px; color: var(--c-muted); line-height: 1.35; }
+.c-field textarea {
+  width: 100%;
+  background: var(--c-surface-inset);
+  border: 1px solid var(--c-line);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 11.5px;
+  color: #f1f5f9;
+  resize: vertical;
+}
+
+.c-ai-answer {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  font-size: 11px;
+  line-height: 1.45;
+  color: #6ee7b7;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   4. SPECIALIZED SIMULATION VISUALIZERS
+   Memory Stack, Pointers, Arrays, Struct/Union, Flowcharts, Number Systems
+   ══════════════════════════════════════════════════════════════ */
+
+/* Memory Stack Visualizer */
+.c-memory-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+  max-width: 440px;
+}
+
+.c-mem-cell {
+  display: grid;
+  grid-template-columns: 80px 70px 1fr 90px;
+  align-items: center;
+  padding: 6px 10px;
+  background: var(--c-surface-card);
+  border: 1px solid var(--c-line);
+  border-radius: 6px;
+  font-size: 11px;
+  transition: all 0.2s;
+}
+
+.c-mem-cell.active-write {
+  border-color: #38bdf8;
+  background: rgba(2, 132, 199, 0.25);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+  transform: translateX(4px);
+}
+
+.c-mem-name {
+  font-weight: 800;
+  color: #f8fafc;
+  font-family: ui-monospace, monospace;
+}
+
+.c-mem-type {
+  font-size: 10px;
+  color: #a78bfa;
+  font-weight: 700;
+}
+
+.c-mem-val {
+  font-weight: 850;
+  color: #34d399;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+}
+
+.c-mem-addr {
+  font-size: 9.5px;
+  color: #64748b;
+  font-family: ui-monospace, monospace;
+  text-align: right;
+}
+
+/* Pointer Arrow & Node */
+.c-pointer-svg {
+  width: 100%;
+  height: 220px;
+}
+
+/* Array 1D & 2D Cells */
+.c-array-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.c-array-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 44px;
+}
+
+.c-array-box {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  background: var(--c-surface-card);
+  border: 2px solid var(--c-line-light);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #f8fafc;
+  font-family: ui-monospace, monospace;
+  transition: all 0.2s;
+}
+
+.c-array-box.active {
+  border-color: #38bdf8;
+  background: rgba(2, 132, 199, 0.3);
+  color: #38bdf8;
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+}
+
+.c-array-idx {
+  font-size: 9.5px;
+  color: #64748b;
+  margin-top: 3px;
+  font-family: ui-monospace, monospace;
+}
+
+/* Number System Conversion Table */
+.c-num-table {
+  border-collapse: collapse;
+  font-size: 11px;
+  margin: auto;
+  text-align: center;
+}
+
+.c-num-table th, .c-num-table td {
+  border: 1px solid var(--c-line);
+  padding: 5px 8px;
+}
+
+.c-num-table th { background: var(--c-surface-card); color: var(--c-muted); }
+.c-num-table td { font-family: ui-monospace, monospace; color: #f1f5f9; }
+.c-num-table td.highlight { background: rgba(2, 132, 199, 0.28); color: #38bdf8; font-weight: 850; }
+
+/* Flowchart SVG */
+.c-flow-svg {
+  width: 100%;
+  max-width: 540px;
+  height: 240px;
+}
+
+/* Notification Toast */
+.hidden { display: none !important; }
+.c-toast {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  padding: 8px 14px;
+  background: #0284c7;
+  color: #ffffff;
+  font-size: 11.5px;
+  font-weight: 750;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  z-index: 10000;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+.c-toast.show { opacity: 1; transform: translateY(0); }

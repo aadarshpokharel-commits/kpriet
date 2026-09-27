@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/v1/:match*",
+      "destination": "https://kpriet.onrender.com/api/v1/:match*"
+    },
+    {
+      "source": "/api/:match*",
+      "destination": "https://kpriet.onrender.com/api/v1/:match*"
+    },
+    {
+      "source": "/((?!smartboard|assets|brand|favicon|.*\\..*).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

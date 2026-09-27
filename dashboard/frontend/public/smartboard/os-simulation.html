@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#0b1329">
+  <title>Operating Systems Interactive Lab · Eduverse Smart Board</title>
+  <link rel="stylesheet" href="styles/os-simulation.css">
+</head>
+<body class="os-smartboard-body">
+  <main class="os-app" id="os-app">
+    <!-- Consolidated Smart Board Master Control Bar -->
+    <header class="os-master-bar">
+      <!-- Left: Subject & Topic Identity -->
+      <div class="os-bar-brand">
+        <div class="os-brand-mark" aria-hidden="true">OS</div>
+        <div class="os-brand-meta">
+          <div class="os-brand-title">Operating Systems Simulation Lab</div>
+          <div class="os-brand-sub">
+            <span class="os-badge-code">U21CS403 · Sem IV</span>
+            <span id="os-topic" class="os-topic-tag">CPU Scheduling</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Curriculum Unit & Topic Selectors -->
+      <div class="os-bar-selectors">
+        <label class="os-pill-select" title="Select Curriculum Unit">
+          <span class="os-pill-label">UNIT</span>
+          <select id="os-unit" aria-label="Select OS Unit">
+            <option value="unit1">Unit 1: Process Management</option>
+            <option value="unit2" selected>Unit 2: CPU Scheduling</option>
+            <option value="unit3">Unit 3: Deadlocks &amp; Memory</option>
+            <option value="unit4">Unit 4: Virtual Memory &amp; Paging</option>
+            <option value="unit5">Unit 5: File &amp; Disk Management</option>
+          </select>
+        </label>
+
+        <label class="os-pill-select" id="os-simulation-wrap" title="Select Simulation Topic">
+          <span class="os-pill-label">TOPIC</span>
+          <select id="os-simulation" aria-label="Select simulation topic"></select>
+        </label>
+      </div>
+
+      <!-- Playback Controls (Large Touch / Stylus Friendly) -->
+      <div class="os-bar-playback" role="group" aria-label="Simulation playback controls">
+        <button type="button" class="os-ctrl-btn" id="os-prev" title="Step backward" aria-label="Previous step">◀ Prev</button>
+        <button type="button" class="os-ctrl-btn os-ctrl-play" id="os-play" title="Play simulation">▶ Play</button>
+        <button type="button" class="os-ctrl-btn" id="os-pause" disabled title="Pause simulation">⏸ Pause</button>
+        <button type="button" class="os-ctrl-btn os-ctrl-next" id="os-next" title="Advance one step">Next Step ▶</button>
+        <button type="button" class="os-ctrl-btn" id="os-reset" title="Reset state">↻ Reset</button>
+
+        <label class="os-pill-select os-pill-speed" for="os-speed" title="Simulation Speed">
+          <span class="os-pill-label">SPEED</span>
+          <select id="os-speed" aria-label="Animation speed">
+            <option value="0.5">0.5×</option>
+            <option value="1" selected>1×</option>
+            <option value="1.5">1.5×</option>
+            <option value="2">2×</option>
+          </select>
+        </label>
+      </div>
+
+      <!-- Step Progress & Window Actions -->
+      <div class="os-bar-actions">
+        <div class="os-step-pill">
+          <span id="os-step-label">Step 1 of 1</span>
+          <div class="os-progress-track" aria-hidden="true"><div id="os-progress-fill"></div></div>
+        </div>
+        <button type="button" id="os-fullscreen" class="os-icon-action" title="Toggle Fullscreen">⛶</button>
+        <button type="button" id="os-launch-board" class="os-icon-action" style="display:none">Board</button>
+        <button type="button" id="os-close" class="os-icon-action os-close-action" aria-label="Close simulation">✕</button>
+      </div>
+    </header>
+
+    <!-- Main Workspace (100% Height, Zero Page Scroll) -->
+    <div class="os-workspace">
+      <!-- Left Column: Visual Stage (Canvas + Live Step Explanation Strip) -->
+      <section class="os-stage-column">
+        <!-- Interactive Visualization Canvas Card -->
+        <div class="os-card os-canvas-card">
+          <div class="os-card-header-compact">
+            <div class="os-card-title-group">
+              <span class="os-badge-live">LIVE SIMULATION</span>
+              <h2 id="os-visual-heading">Interactive Simulation Stage</h2>
+            </div>
+            <div id="os-legend" class="os-legend" aria-label="Simulation legend"></div>
+          </div>
+          <div id="os-visualization" class="os-visualization-board" aria-live="polite"></div>
+        </div>
+
+        <!-- Step-by-Step Educational Explanation & Live Metrics Strip -->
+        <div class="os-card os-explanation-card">
+          <div class="os-pedagogical-grid">
+            <div class="os-pedagogy-cell">
+              <span class="os-pedagogy-tag os-tag-op">CURRENT OPERATION</span>
+              <p id="os-operation">Ready to begin simulation.</p>
+            </div>
+            <div class="os-pedagogy-cell">
+              <span class="os-pedagogy-tag os-tag-why">WHY THIS HAPPENS</span>
+              <p id="os-why">Select an operation and click Play or Next Step.</p>
+            </div>
+            <div class="os-pedagogy-cell">
+              <span class="os-pedagogy-tag os-tag-next">WHAT HAPPENS NEXT</span>
+              <p id="os-next-explanation">The CPU scheduler or OS kernel advances to the next state.</p>
+            </div>
+          </div>
+          <div class="os-metrics" id="os-metrics" aria-label="Calculated metrics"></div>
+        </div>
+      </section>
+
+      <!-- Right Column: Inspector Dock (Parameters & Inputs | Algorithmic Logic | Subject AI) -->
+      <aside class="os-dock-column">
+        <!-- Tab Navigation Bar -->
+        <div class="os-dock-tabs" role="tablist">
+          <button type="button" class="os-dock-tab active" data-tab="tab-inputs" id="tab-btn-inputs">⚙️ Parameters</button>
+          <button type="button" class="os-dock-tab" data-tab="tab-logic" id="tab-btn-logic">📜 Logic &amp; Criteria</button>
+          <button type="button" class="os-dock-tab" data-tab="tab-ai" id="tab-btn-ai">🤖 Subject AI</button>
+        </div>
+
+        <!-- Tab 1: Parameters & Workload Inputs -->
+        <div class="os-dock-pane active" id="tab-inputs">
+          <div class="os-dock-toolbar">
+            <span class="os-dock-kicker">WORKLOAD DATA</span>
+            <div class="os-dock-actions">
+              <button type="button" class="os-btn os-btn-xs" id="os-randomize" title="Generate random workload">🎲 Random</button>
+              <button type="button" class="os-btn os-btn-xs" id="os-example" title="Load standard textbook example">📋 Example</button>
+              <button type="button" class="os-btn os-btn-xs os-btn-primary" id="os-apply" title="Apply inputs and recompute">✓ Apply</button>
+            </div>
+          </div>
+          <div id="os-dynamic-inputs" class="os-dynamic-inputs-dock"></div>
+        </div>
+
+        <!-- Tab 2: Kernel Pseudocode & Complexity Metrics -->
+        <div class="os-dock-pane" id="tab-logic">
+          <div class="os-logic-section">
+            <span class="os-dock-kicker">KERNEL PSEUDOCODE</span>
+            <ol id="os-pseudocode" class="os-pseudocode-dock"></ol>
+          </div>
+          <div class="os-complexity-section">
+            <span class="os-dock-kicker">COMPLEXITY &amp; CRITERIA</span>
+            <div id="os-complexity" class="os-complexity-dock"></div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Eduverse Subject AI Copilot -->
+        <div class="os-dock-pane" id="tab-ai">
+          <div class="os-ai-header">
+            <span class="os-dock-kicker">SUBJECT RAG COPILOT</span>
+            <h4>Ask About Current State</h4>
+            <p>Your question will be analyzed by Eduverse AI along with the active process, queue, and metrics state.</p>
+          </div>
+          <div class="os-ai-form">
+            <label class="os-field">
+              <span>Question for AI:</span>
+              <textarea id="os-ai-question" rows="3" placeholder="e.g. Why did this process get selected? Why did page fault occur?"></textarea>
+            </label>
+            <button type="button" id="os-ask-ai" class="os-btn os-btn-primary os-btn-block">
+              ✨ Ask Subject AI About This Step
+            </button>
+            <div id="os-ai-answer" class="os-ai-answer hidden" aria-live="polite"></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="os-toast" class="os-toast" role="status" aria-live="polite"></div>
+  </main>
+
+  <script src="tools/os-simulation.js"></script>
+  <script>
+    // Tab switching for Smart Board Inspector
+    document.querySelectorAll('.os-dock-tab').forEach(function(tabBtn) {
+      tabBtn.addEventListener('click', function() {
+        document.querySelectorAll('.os-dock-tab').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('.os-dock-pane').forEach(function(p) { p.classList.remove('active'); });
+        tabBtn.classList.add('active');
+        var targetPane = document.getElementById(tabBtn.getAttribute('data-tab'));
+        if (targetPane) targetPane.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
