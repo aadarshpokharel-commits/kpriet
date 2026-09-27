@@ -1808,20 +1808,24 @@ select, label[for], .ch-item, .shape-btn, .color-dot, .bswatch, .pen-sz,
 /* ─── FLOATING LEFT TOOLBAR (COMPACT & RESPONSIVE FOR LAPTOPS & SMARTBOARDS) ─── */
 #tool-palette.floating-left-palette {
   position: absolute;
-  left: 12px;
-  top: 12px;
+  left: 10px;
+  top: 8px;
   z-index: 500 !important;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 3px;
   width: auto;
+  max-height: calc(100vh - 75px);
   background: transparent;
   border: none;
   padding: 0;
-  overflow: visible;
   pointer-events: auto;
   user-select: none;
+}
+body.board-fullscreen #tool-palette.floating-left-palette {
+  top: 10px;
+  max-height: calc(100vh - 20px);
 }
 
 /* 1. Sparkle / AI / Chapter Tools Button (Compact & Touch-Friendly) */
@@ -1855,39 +1859,44 @@ select, label[for], .ch-item, .shape-btn, .color-dot, .bswatch, .pen-sz,
 
 /* 2. Main Tool Palette White Capsule (Compact Width & Touch Spacing) */
 .fp-main-card {
-  width: 38px;
+  width: 35px;
   background: #ffffff;
-  border-radius: 20px;
-  padding: 4px 2px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.05);
+  border-radius: 18px;
+  padding: 3px 2px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.06);
   border: 1px solid rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   flex-shrink: 0;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
 }
+.fp-main-card::-webkit-scrollbar { display: none; }
 
 /* 3. Undo / Redo White Capsule */
 .fp-undo-card {
-  width: 38px;
+  width: 35px;
   background: #ffffff;
-  border-radius: 18px;
-  padding: 4px 2px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-radius: 14px;
+  padding: 2px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 1px;
   flex-shrink: 0;
 }
 
 /* Tool Buttons inside Capsules */
 .floating-left-palette .tool-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
+  width: 29px;
+  height: 29px;
+  border-radius: 8px;
   border: 2px solid transparent;
   background: transparent;
   color: #18181b;
@@ -1901,8 +1910,8 @@ select, label[for], .ch-item, .shape-btn, .color-dot, .bswatch, .pen-sz,
   padding: 0;
 }
 .floating-left-palette .tool-btn svg {
-  width: 17px;
-  height: 17px;
+  width: 15px;
+  height: 15px;
   stroke-width: 2.1;
 }
 .floating-left-palette .tool-btn:hover {
@@ -1954,7 +1963,7 @@ select, label[for], .ch-item, .shape-btn, .color-dot, .bswatch, .pen-sz,
 }
 
 body.board-fullscreen #fs-page-control {
-  display: flex !important;
+  display: none !important;
   flex-direction: column;
   align-items: center;
   gap: 4px;
@@ -4235,10 +4244,10 @@ body.board-fullscreen #fs-page-control {
 /* Floating Circular AI Trigger Button (Right Side Bottom) */
 .ai-fab-circle {
   position: fixed;
-  right: 24px;
-  bottom: 42px;
-  width: 52px;
-  height: 52px;
+  right: 20px;
+  bottom: 34px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   background: linear-gradient(135deg, #7c3aed, #9333ea);
   border: 2.5px solid rgba(233, 213, 255, 0.75);
@@ -4261,7 +4270,7 @@ body.board-fullscreen #fs-page-control {
   transform: scale(0.94);
 }
 .ai-fab-circle .ai-fab-icon {
-  font-size: 26px;
+  font-size: 21px;
   line-height: 1;
   filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4));
 }
@@ -10346,23 +10355,30 @@ body.controls-dock-right .right-dock-close-btn:hover { background: #15803d; }
    panels from Full HD through 4K and ultra-wide displays.
    ────────────────────────────────────────────────────────────── */
 :root {
-  --topbar: clamp(36px, 3.2vh, 44px);
+  --topbar: clamp(28px, 3vh, 32px);
+  --status: clamp(20px, 2.4vh, 25px);
 }
 
 #topbar {
-  height: var(--topbar);
-  min-height: var(--topbar);
-  gap: clamp(2px, 0.28vw, 6px);
-  padding-inline: clamp(4px, 0.5vw, 12px);
+  height: var(--topbar) !important;
+  min-height: var(--topbar) !important;
+  gap: 3px !important;
+  padding-inline: 6px !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
 }
+#topbar::-webkit-scrollbar { display: none; }
 
 #topbar .tb-btn,
 #topbar .tb-dropdown-btn {
-  min-height: clamp(30px, 3vh, 36px);
-  padding: clamp(3px, 0.22vw, 5px) clamp(5px, 0.42vw, 10px);
-  gap: clamp(3px, 0.25vw, 6px);
-  font-size: clamp(10px, 0.55vw, 12px);
+  min-height: 22px !important;
+  height: 22px !important;
+  padding: 1px 5px !important;
+  gap: 3px !important;
+  font-size: 10px !important;
   line-height: 1.1;
+  border-radius: 5px !important;
 }
 
 #topbar .tb-btn span {
@@ -10371,37 +10387,48 @@ body.controls-dock-right .right-dock-close-btn:hover { background: #15803d; }
 
 #topbar .tb-btn svg,
 #topbar .tb-dropdown-btn svg {
-  width: clamp(13px, 0.78vw, 17px);
-  height: clamp(13px, 0.78vw, 17px);
+  width: 12px !important;
+  height: 12px !important;
   flex: 0 0 auto;
 }
 
 #topbar .brand-logo {
-  width: clamp(18px, 1vw, 23px);
-  height: clamp(18px, 1vw, 23px);
+  width: 16px !important;
+  height: 16px !important;
 }
 
 #topbar .brand-name {
-  font-size: clamp(11px, 0.64vw, 13px);
+  font-size: 11px !important;
+}
+
+#topbar .brand-sub {
+  font-size: 8px !important;
 }
 
 #topbar .subj-pill-btn,
 #topbar .subj-btn {
-  min-height: 30px;
-  padding: 3px clamp(5px, 0.38vw, 9px) !important;
-  font-size: clamp(10px, 0.54vw, 12px) !important;
+  min-height: 22px !important;
+  height: 22px !important;
+  padding: 1px 6px !important;
+  font-size: 10px !important;
+  border-radius: 5px !important;
 }
 
 #topbar .subj-name {
-  max-width: clamp(100px, 12vw, 230px);
+  max-width: clamp(80px, 10vw, 180px);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 #topbar .board-swatch-wrap .bswatch {
-  width: clamp(14px, 0.85vw, 19px);
-  height: clamp(14px, 0.85vw, 19px);
+  width: 13px !important;
+  height: 13px !important;
+}
+
+#topbar .tb-div {
+  height: 16px !important;
+  margin: 0 2px !important;
 }
 
 /* The partition picker uses wp-ip-* markup. Keep it inside its own
@@ -10583,4 +10610,55 @@ body.controls-dock-right .right-dock-close-btn:hover { background: #15803d; }
     min-height: 52px;
     padding-block: 6px;
   }
+}
+
+
+/* ── ANTI-COLLISION & DOCK-RIGHT OVERRIDES FOR SMART BOARDS & MOBILE ── */
+body.controls-dock-right #tool-palette.floating-left-palette {
+  left: auto !important;
+  right: 10px !important;
+}
+/* When controls are on the right, move AI bot to the left edge so they never overlap */
+body.controls-dock-right .ai-fab-circle {
+  right: auto !important;
+  left: 18px !important;
+}
+/* When controls are on the right, move fullscreen floating page capsule to the left */
+body.controls-dock-right .fs-floating-nav {
+  right: auto !important;
+  left: 10px !important;
+}
+/* When controls are on the right, move Exit Fullscreen button to the left */
+body.controls-dock-right #board-fullscreen-float-btn {
+  right: auto !important;
+  left: 14px !important;
+}
+
+/* Global compact page controls capsule at bottom center */
+.global-page-capsule {
+  z-index: 600;
+  height: 28px;
+  padding: 2px 8px;
+  gap: 4px;
+  font-size: 11px;
+}
+.global-page-capsule .gpc-btn {
+  width: 22px;
+  height: 22px;
+  font-size: 12px;
+}
+
+/* Fullscreen floating page capsule (.fs-floating-nav) */
+.fs-floating-nav {
+  z-index: 600;
+  width: 28px;
+  padding: 4px 2px;
+  gap: 2px;
+}
+.fs-floating-nav .fs-nav-btn {
+  width: 22px;
+  height: 22px;
+}
+.fs-floating-nav .fs-nav-counter {
+  font-size: 9.5px;
 }
