@@ -4,13 +4,33 @@ import { env } from '../config/env.js';
 const allowedOrigins = new Set(env.CORS_ORIGINS);
 
 /**
- * Allow-list CORS. Requests with no Origin header (curl, server-to-server,
- * health probes) are allowed; browsers from unlisted origins receive no
- * CORS headers and are blocked by the browser.
+ * Allow-list CORS with support for Vercel preview/production deployments,
+ * Render services, and configured custom domains.
  */
 export const corsOptions: CorsOptions = {
   origin(origin, callback) {
-    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+    if (!origin) return callback(null, true);
+
+    // If exact match or wildcard is in CORS_ORIGINS
+    if (allowedOrigins.has(origin) || allowedOrigins.has('*')) {
+      return callback(null, true);
+    }
+
+    // Automatically allow any Vercel deployment (*.vercel.app)
+    if (origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+
+    // Automatically allow any Render deployment (*.onrender.com)
+    if (origin.endsWith('.onrender.com')) {
+      return callback(null, true);
+    }
+
+    // Allow local development ports
+    if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+      return callback(null, true);
+    }
+
     return callback(null, false);
   },
   credentials: true,

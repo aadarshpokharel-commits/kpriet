@@ -20,9 +20,13 @@ const urlOrPath = z
   )
   .transform((v) => v.replace(/\/+$/, ''));
 
+const defaultApiUrl =
+  import.meta.env.VITE_API_BASE_URL ||
+  (import.meta.env.PROD ? 'https://kpriet.onrender.com/api/v1' : '/api/v1');
+
 const schema = z.object({
-  VITE_API_BASE_URL: urlOrPath,
-  VITE_API_TIMEOUT_MS: z.coerce.number().int().min(1000).default(15000),
+  VITE_API_BASE_URL: urlOrPath.default(defaultApiUrl),
+  VITE_API_TIMEOUT_MS: z.coerce.number().int().min(1000).default(45000),
   VITE_APP_NAME: z.string().min(1).default('Eduverse Dashboard'),
   VITE_PUBLIC_SITE_URL: z.string().url().optional().or(z.literal('')),
 });
