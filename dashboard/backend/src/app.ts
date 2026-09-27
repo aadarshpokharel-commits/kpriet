@@ -34,6 +34,19 @@ export function createApp(): Express {
   });
   app.use(express.urlencoded({ extended: false, limit: env.JSON_BODY_LIMIT }));
   app.use(cookieParser());
+  // Root and Health Endpoints
+  app.get(['/', '/health'], (_req, res) => {
+    res.status(200).json({
+      status: 'ok',
+      service: 'KPRIET Eduverse API',
+      apiPrefix: env.API_PREFIX,
+      documentation: `${env.API_PREFIX}/health`,
+      smartboard: '/smartboard/index.html',
+    });
+  });
+  app.head('/', (_req, res) => {
+    res.status(200).end();
+  });
 
   app.use(env.API_PREFIX, apiRouter);
 
