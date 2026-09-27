@@ -1,0 +1,15 @@
+{
+  "name": "eduverse-dashboard",
+  "private": true,
+  "description": "Eduverse academic management dashboard (frontend + backend). Lives beside the existing public website.",
+  "scripts": {
+    "install:all": "npm --prefix backend install && npm --prefix frontend install",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "typecheck": "npm --prefix backend run typecheck && npm --prefix frontend run typecheck",
+    "test": "npm --prefix backend test",
+    "db:check": "npm --prefix backend run db:check",
+    "verify": "npm run typecheck && npm test && npm run build"
+  }
+}

@@ -1,0 +1,1681 @@
+{
+  "README": [
+    [
+      "B.Tech. Information Technology – R2021 CBCS | Complete Curriculum Extraction"
+    ],
+    [
+      "What is included"
+    ],
+    [
+      "• Semester-wise course structure for Semesters I–VIII, with course code, subject, category and credits."
+    ],
+    [
+      "• Unit-wise topic summaries for the core theory courses visible in the syllabus pages."
+    ],
+    [
+      "• All 48 Professional Elective options across 6 verticals, with source pages and unit-topic summaries."
+    ],
+    [
+      "• All 8 Open Elective options, grouped by semester."
+    ],
+    [
+      "• Laboratory, studio, project and internship information extracted separately."
+    ],
+    [
+      "• Programme credit summary, NCC note and semester-credit chart."
+    ],
+    [
+      "Important"
+    ],
+    [
+      "The PDF's Open Elective section provides the option list but does not contain separate unit-wise syllabi for those OEC courses. This workbook therefore does not invent OEC unit topics."
+    ],
+    [
+      "The uploaded document is a scanned PDF; page numbers in the source-page columns refer to the PDF page sequence."
+    ]
+  ],
+  "Semester-wise Curriculum": [
+    [
+      "Semester",
+      "Course Code",
+      "Subject",
+      "Category",
+      "Credits"
+    ],
+    [
+      1,
+      "U21GEG01",
+      "Heritage of Tamils",
+      "HSMC",
+      1
+    ],
+    [
+      1,
+      "U21MA101",
+      "Calculus and Differential Equations",
+      "BSC",
+      4
+    ],
+    [
+      1,
+      "U21EEG01",
+      "Basics of Electrical and Electronics Engineering",
+      "ESC",
+      3
+    ],
+    [
+      1,
+      "U21EN101",
+      "English for Technologists",
+      "HSMC",
+      2
+    ],
+    [
+      1,
+      "U21PH101",
+      "Engineering Physics",
+      "BSC",
+      3
+    ],
+    [
+      1,
+      "U21CY101",
+      "Engineering Chemistry",
+      "BSC",
+      3
+    ],
+    [
+      1,
+      "U21CSG01",
+      "Problem Solving and C Programming",
+      "ESC",
+      3
+    ],
+    [
+      1,
+      "U21MEG01",
+      "Engineering Graphics",
+      "ESC",
+      2
+    ],
+    [
+      1,
+      "U21MYC01",
+      "Induction Program",
+      "MNC",
+      0
+    ],
+    [
+      2,
+      "U21GEG02",
+      "Tamils and Technology",
+      "HSMC",
+      1
+    ],
+    [
+      2,
+      "U21MA208",
+      "Linear Algebra",
+      "BSC",
+      4
+    ],
+    [
+      2,
+      "U21PH201",
+      "Materials Science",
+      "BSC",
+      3
+    ],
+    [
+      2,
+      "U21IT201",
+      "Principles of Data Communication",
+      "PCC",
+      3
+    ],
+    [
+      2,
+      "U21EN201",
+      "Personality Enhancement",
+      "HSMC",
+      2
+    ],
+    [
+      2,
+      "U21CSG02",
+      "Python Programming",
+      "ESC",
+      3
+    ],
+    [
+      2,
+      "U21ECG01",
+      "Digital Electronics",
+      "ESC",
+      3
+    ],
+    [
+      2,
+      "U21ECG03",
+      "Engineering Studio",
+      "ESC",
+      2
+    ],
+    [
+      2,
+      "U21MYC02",
+      "Environmental Science",
+      "MNC",
+      0
+    ],
+    [
+      3,
+      "U21AD301",
+      "Ethics and Human Life",
+      "HSMC",
+      3
+    ],
+    [
+      3,
+      "U21MAG02",
+      "Discrete Mathematics",
+      "BSC",
+      4
+    ],
+    [
+      3,
+      "U21IT301",
+      "Computer Graphics and Visualization",
+      "PCC",
+      4
+    ],
+    [
+      3,
+      "U21CS301",
+      "Computer Organization and Architecture",
+      "PCC",
+      3
+    ],
+    [
+      3,
+      "U21AD303",
+      "Programming Using Java",
+      "PCC",
+      3
+    ],
+    [
+      3,
+      "U21CSG03",
+      "Data Structures",
+      "PCC",
+      3
+    ],
+    [
+      3,
+      "U21AD307",
+      "Java Laboratory",
+      "PCC",
+      1
+    ],
+    [
+      3,
+      "U21IT302",
+      "Design Studio I",
+      "EEC",
+      1
+    ],
+    [
+      3,
+      "U21MYC03",
+      "Knowledge/mandatory non-credit course",
+      "MNC",
+      0
+    ],
+    [
+      4,
+      "U21MA403",
+      "Probability and Queuing Theory",
+      "BSC",
+      3
+    ],
+    [
+      4,
+      "U21CS401",
+      "Design and Analysis of Algorithms",
+      "PCC",
+      3
+    ],
+    [
+      4,
+      "U21AD402",
+      "Database Design and Management",
+      "PCC",
+      3
+    ],
+    [
+      4,
+      "U21CS403",
+      "Operating Systems",
+      "PCC",
+      3
+    ],
+    [
+      4,
+      "OEC-I",
+      "Open Elective - I",
+      "OEC",
+      3
+    ],
+    [
+      4,
+      "U21IT401",
+      "Internet Programming",
+      "PCC",
+      3
+    ],
+    [
+      4,
+      "U21SSG01",
+      "Soft Skills - I",
+      "HSMC",
+      1
+    ],
+    [
+      4,
+      "U21CS404",
+      "Operating Systems Laboratory",
+      "PCC",
+      1
+    ],
+    [
+      4,
+      "U21AD406",
+      "Database Laboratory",
+      "PCC",
+      2
+    ],
+    [
+      4,
+      "U21IT402",
+      "Design Studio - II",
+      "EEC",
+      1
+    ],
+    [
+      4,
+      "U21MYC04",
+      "Indian Constitution",
+      "MNC",
+      0
+    ],
+    [
+      5,
+      "U21ITG01",
+      "Software Engineering",
+      "PCC",
+      3
+    ],
+    [
+      5,
+      "U21ITG02",
+      "Information Security",
+      "PCC",
+      3
+    ],
+    [
+      5,
+      "PEC-I",
+      "Professional Elective - I",
+      "PEC",
+      3
+    ],
+    [
+      5,
+      "PEC-II",
+      "Professional Elective - II",
+      "PEC",
+      3
+    ],
+    [
+      5,
+      "OEC-II",
+      "Open Elective - II",
+      "OEC",
+      3
+    ],
+    [
+      5,
+      "U21CSG05",
+      "Computer Networks",
+      "PCC",
+      3
+    ],
+    [
+      5,
+      "U21SSG02",
+      "Soft Skills - II",
+      "HSMC",
+      1
+    ],
+    [
+      5,
+      "U21ITG03",
+      "Information Security Laboratory",
+      "PCC",
+      2
+    ],
+    [
+      5,
+      "U21IT501",
+      "Proto Studio - I",
+      "EEC",
+      1
+    ],
+    [
+      5,
+      "U21MYC05",
+      "Cyber Security Essentials",
+      "MNC",
+      0
+    ],
+    [
+      6,
+      "U21IT601",
+      "Machine Learning Techniques",
+      "PCC",
+      3
+    ],
+    [
+      6,
+      "U21ECG05",
+      "Embedded Systems and IoT",
+      "PCC",
+      3
+    ],
+    [
+      6,
+      "PEC-III",
+      "Professional Elective - III",
+      "PEC",
+      3
+    ],
+    [
+      6,
+      "PEC-IV",
+      "Professional Elective - IV",
+      "PEC",
+      3
+    ],
+    [
+      6,
+      "OEC-III",
+      "Open Elective - III",
+      "OEC",
+      3
+    ],
+    [
+      6,
+      "U21SSG03",
+      "Soft Skills - III",
+      "HSMC",
+      1
+    ],
+    [
+      6,
+      "U21IT602",
+      "Machine Learning Techniques Laboratory",
+      "PCC",
+      1
+    ],
+    [
+      6,
+      "U21ECG06",
+      "Embedded Systems and IoT Laboratory",
+      "PCC",
+      2
+    ],
+    [
+      6,
+      "U21IT603",
+      "Proto Studio - II",
+      "EEC",
+      1
+    ],
+    [
+      6,
+      "U21MYC06",
+      "Introduction to UN SDGs: An Integrative Approach",
+      "MNC",
+      0
+    ],
+    [
+      7,
+      "U21IT701",
+      "Software Project Management",
+      "PCC",
+      3
+    ],
+    [
+      7,
+      "U21IT702",
+      "Cloud Computing",
+      "PCC",
+      3
+    ],
+    [
+      7,
+      "U21IT703",
+      "Design Patterns",
+      "PCC",
+      4
+    ],
+    [
+      7,
+      "PEC-V",
+      "Professional Elective - V",
+      "PEC",
+      3
+    ],
+    [
+      7,
+      "PEC-VI",
+      "Professional Elective - VI",
+      "PEC",
+      3
+    ],
+    [
+      7,
+      "OEC-IV",
+      "Open Elective - IV",
+      "OEC",
+      3
+    ],
+    [
+      7,
+      "U21IT704",
+      "Cloud Computing Laboratory",
+      "PCC",
+      1
+    ],
+    [
+      7,
+      "U21IT705",
+      "Project Work Phase - I",
+      "EEC",
+      2
+    ],
+    [
+      8,
+      "U21IT801",
+      "Project Work Phase - II",
+      "EEC",
+      8
+    ],
+    [
+      8,
+      "U21ITI01",
+      "Industrial Training / Internship",
+      "EEC",
+      2
+    ]
+  ],
+  "Core Unit Details": [
+    [
+      "Semester",
+      "Course Code",
+      "Subject",
+      "Unit I",
+      "Unit II",
+      "Unit III",
+      "Unit IV",
+      "Unit V",
+      "Source page(s)"
+    ],
+    [
+      1,
+      "U21GEG01",
+      "Heritage of Tamils",
+      "Language and literature — Dravidian language family; Tamil classical language; Sangam literature; epics; medieval/Bhakti; modern literature.",
+      "Heritage from rock art to sculpture — bronze, terracotta, temple art, village deities and archaeological traditions.",
+      "Folk and fine arts — Therukoothu, Karagattam, Villu Pattu, Kaniyan Koothu, Oyilattam, leather puppetry, Silambattam, Valari.",
+      "Thinai concept — flora/fauna; Aham/Puram; Sangam literature; five landscapes; cultural meaning.",
+      "Contribution to national movement and Indian culture — freedom movement; Self-Respect Movement; inscriptions/manuscripts; traditional medicine; cultural contributions.",
+      "22–25"
+    ],
+    [
+      1,
+      "U21MA101",
+      "Calculus and Differential Equations",
+      "Matrices — eigenvalues/eigenvectors; Cayley-Hamilton; diagonalization; orthogonal transformation; applications.",
+      "Several variables — partial/total derivatives; Taylor series; extrema; Lagrange multipliers.",
+      "Multiple integrals — double/triple integrals; change of order; area/volume applications.",
+      "Line/surface integrals — Green, Gauss divergence and Stokes theorems.",
+      "ODEs — second/higher-order linear equations; variable coefficients; coupled systems; applications.",
+      "26–27"
+    ],
+    [
+      1,
+      "U21EEG01",
+      "Basics of Electrical and Electronics Engineering",
+      "Electric circuits — active/passive elements; series/parallel; star-delta; Ohm; KCL/KVL; DC networks.",
+      "DC motors — construction, operation, types, torque, characteristics and speed control.",
+      "Transformers/AC motors — single/three-phase transformer; induction motor construction, characteristics and speed control.",
+      "Semiconductors — PN junction, Zener, BJT, FET.",
+      "Semiconductor applications — rectifiers, filters, voltage regulators and CE/CB/CC configurations.",
+      "28–29"
+    ],
+    [
+      1,
+      "U21EN101",
+      "English for Technologists",
+      "Subjective introspection — vocabulary, word puzzles, word sleuthing, introduction, opinion paragraph.",
+      "Career enhancement — reading comprehension, email, career profile, resume/digital profile, rephrasing and pronunciation.",
+      "Technical writing — error spotting, sentence rewriting, data interpretation, reports/graphs/charts, expository writing, captions.",
+      "Language upskilling — listening, TED talks/announcements, presentation, extempore/persuasive speech, team communication.",
+      "Practical communication — listening, role play, presentation and group discussion.",
+      "30–32"
+    ],
+    [
+      1,
+      "U21PH101",
+      "Engineering Physics",
+      "Laser — emission, pumping, CO2/semiconductor lasers, material processing, holography and medical applications.",
+      "Fiber optics — TIR, numerical aperture, classification, dispersion, communication and endoscopy.",
+      "Ultrasonics — properties, piezoelectric generator, acoustic grating, SONAR/NDT/scanning and fetal heartbeat.",
+      "Thermal/fluid properties — heat transfer, thermal conductivity, solar thermal systems, hybrid vehicles, microwave, surface tension/viscosity.",
+      "Crystal physics — unit cells, Bravais lattices, SC/BCC/FCC, Miller indices, Bragg law, Czochralski and silicon wafers.",
+      "33–34"
+    ],
+    [
+      1,
+      "U21CY101",
+      "Engineering Chemistry",
+      "Water treatment — hardness, DO/TDS, desalination, softening, coagulation/flocculation, chlorination, UV/ozone/electrodialysis.",
+      "Electrochemistry/energy storage — electrodes, cells, fuel cells, polymer-membrane/solid-oxide cells and solar cells.",
+      "Corrosion — dry/wet, galvanic/differential aeration, pitting/crevice, protection methods and alloys.",
+      "Fuels/combustion — solid/liquid/gas fuels, proximate/ultimate analysis, calorific value, bomb calorimeter, Orsat, LPG/CNG, pollution.",
+      "Polymers — monomers, polymerization, thermoplastics/thermosets/elastomers, compounding, molding/extrusion, conducting polymers.",
+      "35–37"
+    ],
+    [
+      1,
+      "U21CSG01",
+      "Problem Solving and C Programming",
+      "Computational thinking — computers, problem solving, data types, number systems, C programming basics.",
+      "Algorithmic approach — Boolean/propositional logic, reasoning, sequence/selection/repetition and algorithm design.",
+      "Searching/sorting/modularization — arrays, pointers, strings, functions, searching and sorting.",
+      "Structures/pointers — pointer arithmetic, pass-by-value/reference, structures, nested structures and unions.",
+      "Files — sequential/random access, file operations and command-line arguments.",
+      "38–40"
+    ],
+    [
+      1,
+      "U21MEG01",
+      "Engineering Graphics",
+      "CAD/drawing basics — instruments, BIS, lines, lettering, dimensions, polygons, circles/ellipse and editing commands.",
+      "Conics/special curves — ellipse, parabola, hyperbola, involute, cycloid and point projection.",
+      "Straight-line/surface projection — HP/VP, inclined lines/planes, auxiliary planes and polygons.",
+      "Solids/sections/development — prisms, pyramids, cylinders, cones, sections and lateral development.",
+      "Orthographic/isometric projection — machine components, freehand sketching and isometric exercises.",
+      "41–42"
+    ],
+    [
+      2,
+      "U21GEG02",
+      "Tamils and Technology",
+      "Weaving/ceramic technology — Sangam ceramic technology; Black and Red Ware.",
+      "Design/construction — building materials, houses, Sangam architecture, temples and structural traditions.",
+      "Manufacturing — iron smelting, copper/gold metallurgy, steel/glass/beads and craft technology.",
+      "Agriculture/irrigation — dams, tanks, sluices, irrigation, animal husbandry, fisheries and ocean knowledge.",
+      "Scientific Tamil/computing — scientific Tamil, digitization, Tamil books/software, virtual academy, digital library/dictionaries.",
+      "43–47"
+    ],
+    [
+      2,
+      "U21MA208",
+      "Linear Algebra",
+      "Matrices — rank, linear systems, Gaussian elimination, Jordan/LU decomposition.",
+      "Vector spaces — linear combinations, dependence/independence, bases and dimensions.",
+      "Inner-product spaces — norm/angle, orthogonality, Gram-Schmidt and QR decomposition.",
+      "Eigenvalue problems — transformations, eigenvalues/eigenvectors, Hermitian/unitary matrices.",
+      "Principal component analysis — positive-definite matrices, Cayley-Hamilton, SVD and PCA applications.",
+      "48–49"
+    ],
+    [
+      2,
+      "U21PH201",
+      "Materials Science",
+      "Conducting materials — electron theory, conductivity, Wiedemann-Franz, Drude and Fermi models.",
+      "Semiconductors — intrinsic/extrinsic, carrier concentration, n/p type, solar/Hall applications.",
+      "Magnetic materials — dia/para/ferromagnetic; domains; soft/hard materials; magnetic bubble/GMR.",
+      "Dielectric/optical materials — polarization, breakdown, ferroelectrics, electro-optics, photonics and nonlinear optics.",
+      "Engineering/nano materials — smart/SMA/rheological materials; nanomaterials; synthesis; characterization; XRD.",
+      "50–51"
+    ],
+    [
+      2,
+      "U21IT201",
+      "Principles of Data Communication",
+      "Communication basics — elements, bandwidth, channels, guided/unguided media, modulation and multiplexing.",
+      "AM — multiplexing, frequency/time division, spectrum, modulation index, power, transmitter/receiver.",
+      "FM/PM — angle modulation, relationship, types, modulation index, pre/de-emphasis.",
+      "Digital modulation — bit rate/baud, ASK/FSK/PSK, QPSK/QAM and error probability.",
+      "Data communication — ASCII, CRC, error detection/correction, RS-232, circuits and modems.",
+      "52–53"
+    ],
+    [
+      2,
+      "U21EN201",
+      "Personality Enhancement",
+      "Lexical reasoning — verbal analogy, logical reasoning, assertions and sentence completion.",
+      "Social correspondence — etiquette, brainstorming, SWOT, co-verbal and non-verbal cues.",
+      "Art of networking — attitude, verbalization, public speaking, career communication, interview.",
+      "Critical thinking — organizing ideas, problem solving, book/movie review, comparative analysis.",
+      "Content writing — reports, digital platforms, posts, product descriptions and proposals.",
+      "54–56"
+    ],
+    [
+      2,
+      "U21CSG02",
+      "Python Programming",
+      "Python basics — interpreter, tokens, types, numbers/math, I/O, comments, indentation, operators and expressions.",
+      "Control/functions/modules — conditions, loops, break/continue/pass, functions, scope, lambda, recursion, modules/packages.",
+      "Data structures — strings, lists, tuples, sets, dictionaries, slicing and common operations.",
+      "Exceptions/files — built-in/user exceptions; open/read/write/close and file operations.",
+      "NumPy/Pandas — arrays, indexing/sorting, Series/DataFrames, operations and data handling.",
+      "57–59"
+    ],
+    [
+      2,
+      "U21ECG01",
+      "Digital Electronics",
+      "Boolean logic — number systems, complements, Boolean theorems, K-maps, NAND/NOR.",
+      "Combinational circuits — adders/subtractors, comparators, multiplexers, decoders, converters, parity/error control.",
+      "Latches/flip-flops — clocked, master-slave and asynchronous inputs.",
+      "Sequential circuits — Mealy/Moore, excitation/state tables, counters.",
+      "Registers/hazards — shift/ring/Johnson registers/counters and hazard-free design.",
+      "60–61"
+    ],
+    [
+      3,
+      "U21AD301",
+      "Ethics and Human Life",
+      "Human values and meaningful life; ethical decisions; dilemmas; self-management.",
+      "Creative/leadership development — intellectual, emotional, creative, spiritual, aesthetic and positive attitude.",
+      "Harmony — rights/duties, welfare, interpersonal skills, value-based work culture and mutual respect.",
+      "Character/virtues — humility, righteousness, truthfulness, integrity, responsibility, empathy, love, compassion.",
+      "Material development vs human welfare — science/technology, consumerism, nature, global harmony, democracy, equality, social justice.",
+      "65"
+    ],
+    [
+      3,
+      "U21MAG02",
+      "Discrete Mathematics",
+      "Boolean algebra and logic gates; truth tables; canonical forms; Karnaugh maps.",
+      "Sets, relations, functions; groups, subgroups, rings and fields.",
+      "Counting; pigeonhole; permutations/combinations; recurrence; generating functions; induction.",
+      "Graphs; representations; isomorphism; connectivity; Euler/Hamilton; shortest path; coloring.",
+      "Propositional logic; predicates; quantifiers; inference and proofs.",
+      "66–67"
+    ],
+    [
+      3,
+      "U21IT301",
+      "Computer Graphics and Visualization",
+      "Raster graphics; pixels/frame buffer; scan conversion; DDA/Bresenham; circles; polygon filling.",
+      "2-D transformations; homogeneous/composite transforms; windowing/clipping algorithms.",
+      "3-D transformations; parallel/perspective projection; viewing; hidden-surface methods.",
+      "Raster rendering; visibility; depth buffering; Painter/ray tracing; shading.",
+      "2D/3D visualization; color mapping; isosurfaces; volume/time data; dimensionality reduction; visualization techniques.",
+      "68–70"
+    ],
+    [
+      3,
+      "U21CS301",
+      "Computer Organization and Architecture",
+      "Computer structure; buses; instruction execution; performance; memory organization.",
+      "Data path/control; instruction cycle; hardwired/microprogrammed control.",
+      "Pipelining; hazards; RISC/CISC; pipeline performance.",
+      "Memory hierarchy; cache; main/virtual memory; secondary storage.",
+      "I/O organization; interrupts; DMA; controllers; PCI/SCSI and bus arbitration.",
+      "71–72"
+    ],
+    [
+      3,
+      "U21AD303",
+      "Programming Using Java",
+      "Java OOP basics; classes/objects; constructors; methods; static members; packages/control flow.",
+      "Inheritance/interfaces; overriding/overloading; abstract/inner classes; access modifiers.",
+      "Exceptions and multithreading; synchronization and inter-thread communication.",
+      "Packages; streams; files; serialization; collections/generics.",
+      "Collections and JDBC; database connectivity and applications.",
+      "73–79"
+    ],
+    [
+      3,
+      "U21CSG03",
+      "Data Structures",
+      "ADTs and linked lists; singly/doubly/circular lists.",
+      "Stacks/queues; expression conversion/evaluation; circular queue/deque.",
+      "Searching, sorting and hashing; collision handling.",
+      "Trees/BST/AVL/B-tree/B+; graph representations; BFS/DFS.",
+      "Topological sorting; minimum spanning trees; shortest path; Dijkstra.",
+      "75–77"
+    ],
+    [
+      4,
+      "U21MA403",
+      "Probability and Queuing Theory",
+      "Probability axioms; conditional probability; Bayes; random variables; moments.",
+      "Binomial, Poisson, exponential, uniform and normal distributions.",
+      "Two-dimensional distributions; covariance/correlation; regression.",
+      "Random processes; Markov, Bernoulli and Poisson processes.",
+      "Queueing models; birth/death; single/multiple server; Little's formula.",
+      "81–82"
+    ],
+    [
+      4,
+      "U21CS401",
+      "Design and Analysis of Algorithms",
+      "Problem solving; sorting/searching; combinatorial problems; data structures; trees/graphs.",
+      "Asymptotic notation; efficiency analysis; recursive/non-recursive and empirical analysis.",
+      "Sorting/searching analysis; divide-and-conquer and randomized methods.",
+      "Graph algorithms; BFS/DFS; topological; Warshall/Floyd; MST; Dijkstra.",
+      "P/NP; backtracking; N-Queens; Hamiltonian circuit; branch-and-bound; knapsack.",
+      "83–84"
+    ],
+    [
+      4,
+      "U21AD402",
+      "Database Design and Management",
+      "DBMS purpose/architecture; data models; relational model; keys; ER/EER.",
+      "ER/EER design; anomalies; functional dependencies; normalization/decomposition.",
+      "SQL/PLSQL; DDL/DML/DCL; joins; subqueries; procedures/functions/triggers.",
+      "Transactions; serializability; locks; concurrency; timestamp/recovery.",
+      "NoSQL; graph/key-value/document stores; MongoDB model and CRUD.",
+      "85–86"
+    ],
+    [
+      4,
+      "U21CS403",
+      "Operating Systems",
+      "OS overview; memory/cache; interrupts; services/system calls.",
+      "Processes/threads; scheduling; IPC; critical section; synchronization; semaphores/monitors.",
+      "Deadlock conditions; detection; Banker; prevention/recovery.",
+      "Memory allocation; paging; segmentation; virtual memory; swapping/demand paging.",
+      "File systems; directories; disk scheduling; swap; Linux case study.",
+      "87–88"
+    ],
+    [
+      4,
+      "U21IT401",
+      "Internet Programming",
+      "HTML structure/elements; links; lists; images; tables; forms; URLs.",
+      "CSS selectors; backgrounds/colors; fonts/text; positioning; boxes/columns.",
+      "JavaScript; events; DOM; forms/validation; dynamic HTML.",
+      "PHP syntax/types/control; forms; sessions/cookies; MySQL integration.",
+      "MySQL databases/tables/queries; mappings; sample web application.",
+      "89–91"
+    ],
+    [
+      4,
+      "U21SSG01",
+      "Soft Skills - I",
+      "Verbal competence — analogy, error spotting, sentence ordering, listening.",
+      "Effective communication — barriers, body language, etiquette, 7 Cs.",
+      "Interpersonal skills — group decisions, negotiation, planning, problem solving.",
+      "Communication practice — role play, listening, presentation and speaking.",
+      "Career/workplace communication.",
+      "92–93"
+    ],
+    [
+      5,
+      "U21ITG01",
+      "Software Engineering",
+      "Software process models — waterfall, prototyping, RAD, agile.",
+      "Requirements — functional/non-functional; feasibility; elicitation; management.",
+      "Design — principles; behavioral modeling; modularity; architecture; coupling/cohesion; documentation.",
+      "Testing — strategies; system testing; debugging; white/black-box; model-based; OO/web/configuration.",
+      "CASE tools — scope, life-cycle support, software-process improvement and CASE environment.",
+      "99–100"
+    ],
+    [
+      5,
+      "U21ITG02",
+      "Information Security",
+      "Classical cryptography; attacks/services; symmetric ciphers; DES.",
+      "Block ciphers; DES modes; RSA; Diffie-Hellman; ElGamal.",
+      "Number theory; modular arithmetic; primes; Fermat/Euler; asymmetric algorithms.",
+      "SHA/hash; message authentication; random numbers; digital signatures.",
+      "X.509; PKI; user authentication; Kerberos.",
+      "101–102"
+    ],
+    [
+      "",
+      "U21CB502",
+      "",
+      "DFA/NFA/epsilon-NFA; alphabets, strings and languages; closure.",
+      "Regular expressions/languages; pumping lemma; regular sets; minimization.",
+      "CFG; parse trees; derivations; ambiguity; normal forms.",
+      "PDA; deterministic/nondeterministic; acceptance; CFL properties.",
+      "Turing machines; recursive/RE languages; undecidability; PCP.",
+      "103–104"
+    ],
+    [
+      5,
+      "U21CSG05",
+      "Computer Networks",
+      "Network basics; OSI/TCP-IP; switching and physical layer.",
+      "Framing; error/flow control; HDLC/PPP; Ethernet; LAN/WLAN; bridges.",
+      "IP/subnetting; routing; OSPF/BGP; ARP/RARP/DHCP/ICMP.",
+      "UDP/TCP; congestion and reliable transport.",
+      "DNS; SMTP/IMAP; Telnet; FTP; REST; HTTP/HTTPS; multimedia.",
+      "105–108"
+    ],
+    [
+      5,
+      "U21SSG02",
+      "Soft Skills - II",
+      "Presentation techniques; time management; body language; managerial skills.",
+      "Group discussion/public speaking; dynamics; strategies; active listening.",
+      "Interview preparation; techniques/etiquette; stress handling; online interviews.",
+      "Practical presentation/GD/interview activities.",
+      "Employability communication.",
+      "109–110"
+    ],
+    [
+      6,
+      "U21IT601",
+      "Machine Learning Techniques",
+      "ML types/challenges/applications; descriptive statistics; feature engineering; dimensionality reduction.",
+      "KNN/similarity learning; linear regression.",
+      "Decision trees; ID3/C4.5; regression trees; validation/pruning.",
+      "Bayes/Naive Bayes; support-vector machines.",
+      "Ensemble learning; clustering; reinforcement-learning concepts.",
+      "115–116"
+    ],
+    [
+      6,
+      "U21ECG05",
+      "Embedded Systems and IoT",
+      "Embedded systems architecture/types; hardware/software; SoC; microcontrollers.",
+      "ARM-style microcontroller architecture; registers; timers; interrupts; ADC/DAC; serial communication; GPIO.",
+      "IoT architecture; M2M; MQTT/CoAP/AMQP; BLE/Zigbee.",
+      "Sensor/device programming; NodeMCU/Arduino-style development; cloud connectivity.",
+      "IoT/cloud integration; home automation and monitoring case studies.",
+      "117–118"
+    ],
+    [
+      6,
+      "U21SSG03",
+      "Soft Skills - III",
+      "Sentence completion; error spotting; logical reasoning; cause/effect; assertion/reasoning; para-jumbles.",
+      "Stress factors; positive/negative stress; effects; coping techniques.",
+      "Emotional intelligence; self-awareness/self-management; motivation; empathy/social skills.",
+      "Professional application of language/stress/EI.",
+      "Workplace readiness and integrated communication.",
+      "119–120"
+    ],
+    [
+      7,
+      "U21IT701",
+      "Software Project Management",
+      "Project evaluation/planning; feasibility; methodology; monitoring; risk; strategic management.",
+      "Life cycle/effort estimation; process choice; agile/RAD; function points; COCOMO; risk.",
+      "Activity planning; schedules; sequencing; resource allocation; PERT/CPM; critical path.",
+      "Project control; progress/cost monitoring; earned value; contracts/procurement.",
+      "Staffing; selection; motivation; training; appraisal; reward; team/virtual team.",
+      "127–128"
+    ],
+    [
+      7,
+      "U21IT702",
+      "Cloud Computing",
+      "Cloud architecture; NIST; deployment/service models; cloud economics.",
+      "Virtualization; hypervisor; full/para; CPU/memory/I/O.",
+      "VMs/containers; Docker engine; images/repositories.",
+      "Cloud deployment; AWS/Azure/Google App Engine/OpenStack-style platforms.",
+      "Cloud security; data/storage; IAM; identity/access; architecture/practice.",
+      "129–130"
+    ],
+    [
+      7,
+      "U21IT703",
+      "Design Patterns",
+      "Design patterns; catalog; organization; selection and use.",
+      "Design problems/case studies; decorator/command and UI design issues.",
+      "Structural patterns — Adapter, Bridge, Composite, Decorator, Facade, Flyweight, Proxy.",
+      "Behavioral patterns — Chain of Responsibility, Interpreter, Iterator, Mediator, Memento, Observer, State, Strategy, Template Method, Visitor.",
+      "Pattern conclusion; design process/community and reuse.",
+      "131–132"
+    ]
+  ],
+  "Professional Electives": [
+    [
+      "Vertical",
+      "Course Code",
+      "Professional Elective",
+      "Source page",
+      "Credits",
+      "Unit-topic summary"
+    ],
+    [
+      "I – Computational Analytics",
+      "U21ADP01",
+      "Mathematical Foundation for Data Science",
+      139,
+      3,
+      "Basics of data science; Linear algebra; Probability; Non-parametric techniques; Clustering"
+    ],
+    [
+      "I – Computational Analytics",
+      "U21ADP02",
+      "Pattern Recognition",
+      141,
+      3,
+      "Pattern-recognition foundations; Bayesian decision theory; Statistical models; Non-parametric techniques; Clustering"
+    ],
+    [
+      "I – Computational Analytics",
+      "U21ADP03",
+      "Speech Processing and Analytics",
+      143,
+      3,
+      "Speech processing/phonetics; Speech analysis/features; Speech recognition; Speech coding; Speech synthesis"
+    ],
+    [
+      "I – Computational Analytics",
+      "U21ADP04",
+      "Web Mining",
+      145,
+      3,
+      "Web data mining; Supervised learning; Unsupervised learning; Web crawling; Web-based applications"
+    ],
+    [
+      "I – Computational Analytics",
+      "U21ADP05",
+      "Exploratory Data Analysis and Visualization",
+      147,
+      3,
+      "EDA foundations; Two-variable analysis; Visualization basics; Visualization methods; Applications"
+    ],
+    [
+      "I – Computational Analytics",
+      "U21ADP06",
+      "Predictive Analytics",
+      149,
+      3,
+      "Predictive analytics; Data preparation/association; Modeling; Predictive modeling; Text mining"
+    ],
+    [
+      "I – Computational Analytics",
+      "U21ADP07",
+      "Time Series Analysis and Forecasting",
+      151,
+      3,
+      "Forecasting; Multiple linear regression; Time-series regression; Non-seasonal Box-Jenkins; Box-Jenkins methods"
+    ],
+    [
+      "I – Computational Analytics",
+      "U21ADP08",
+      "Healthcare Analytics",
+      153,
+      3,
+      "Healthcare analytics; Machine learning; Healthcare management; Deep learning; Genomics/medical analytics"
+    ],
+    [
+      "II – Artificial Intelligence and Machine Learning",
+      "U21AMP01",
+      "Knowledge Engineering",
+      155,
+      3,
+      "Reasoning under uncertainty; Methodology/modeling; Ontology design; Ontology reasoning/rules; Learning/rule learning"
+    ],
+    [
+      "II – Artificial Intelligence and Machine Learning",
+      "U21AMP02",
+      "Soft Computing",
+      157,
+      3,
+      "ANN; Advanced neural networks; Fuzzy sets/relations; Genetic algorithms; Hybrid systems"
+    ],
+    [
+      "II – Artificial Intelligence and Machine Learning",
+      "U21AMP03",
+      "Deep Neural Networks",
+      159,
+      3,
+      "Neural networks; CNN architectures; Training/fine-tuning; Deep-learning applications; Advanced CNNs"
+    ],
+    [
+      "II – Artificial Intelligence and Machine Learning",
+      "U21AMP04",
+      "Reinforcement Learning",
+      161,
+      3,
+      "RL foundations; MDP models; Function approximation; Deep reinforcement learning; Hierarchical RL"
+    ],
+    [
+      "II – Artificial Intelligence and Machine Learning",
+      "U21AMP05",
+      "Computer Vision",
+      163,
+      3,
+      "CV foundations; Image enhancement/filtering; Segmentation/detection; Feature extraction; Deep learning for CV"
+    ],
+    [
+      "II – Artificial Intelligence and Machine Learning",
+      "U21AMP06",
+      "Feature Engineering",
+      165,
+      3,
+      "Feature foundations; Preprocessing/missing data; Feature creation/transformation; Anomaly detection; Feature selection/dimensionality reduction"
+    ],
+    [
+      "II – Artificial Intelligence and Machine Learning",
+      "U21AMP07",
+      "Object Detection & Face Recognition",
+      167,
+      3,
+      "Object detection; One/two-stage detectors; Face recognition; Biometric recognition; Advanced recognition applications"
+    ],
+    [
+      "II – Artificial Intelligence and Machine Learning",
+      "U21AMP08",
+      "Text and Visual Analytics",
+      169,
+      3,
+      "NLP basics; Text classification; Text clustering/topic modeling; QA/dialogue; Visual analytics/sentiment"
+    ],
+    [
+      "III – Cloud Computing and Data Storage Technologies",
+      "U21CSP01",
+      "Foundations of Cloud Computing",
+      171,
+      3,
+      "Cloud basics; Virtualization/platforms; Storage/containers; Cloud security; Federation/interoperability"
+    ],
+    [
+      "III – Cloud Computing and Data Storage Technologies",
+      "U21CSP02",
+      "Data Storage and Management in Cloud",
+      173,
+      3,
+      "Storage systems; Storage services/network connectivity; Storage security; Data management; Storage infrastructure security"
+    ],
+    [
+      "III – Cloud Computing and Data Storage Technologies",
+      "U21CSP03",
+      "Virtualization Techniques",
+      175,
+      3,
+      "Virtualization concepts; Server virtualization; Network virtualization; Storage virtualization; Applying virtualization"
+    ],
+    [
+      "III – Cloud Computing and Data Storage Technologies",
+      "U21CSP04",
+      "Security and Privacy in Cloud",
+      177,
+      3,
+      "Cloud security/privacy; Threat models; Infrastructure security; Vulnerability/network security; Strategies/practices"
+    ],
+    [
+      "III – Cloud Computing and Data Storage Technologies",
+      "U21CSP05",
+      "Data Analysis in Cloud Computing",
+      179,
+      3,
+      "Data mining; Cloud data analysis; Scalable analytics; Sensitive-data security; Research trends"
+    ],
+    [
+      "III – Cloud Computing and Data Storage Technologies",
+      "U21CSP06",
+      "Edge Computing",
+      181,
+      3,
+      "Edge paradigms; Resource management; Network management; Edge middleware; Applications"
+    ],
+    [
+      "III – Cloud Computing and Data Storage Technologies",
+      "U21CSP07",
+      "Cloud Service Management",
+      183,
+      3,
+      "Cloud enabling technology/architecture; IaaS; PaaS; SaaS; Cloud security management"
+    ],
+    [
+      "III – Cloud Computing and Data Storage Technologies",
+      "U21CSP08",
+      "Big Data Integration and Processing",
+      185,
+      3,
+      "Big-data storage; Retrieval; Integration; Processing pipelines; Analytics"
+    ],
+    [
+      "IV – Networking and Cyber Security",
+      "U21ITP01",
+      "Parallel and Distributed Computing",
+      187,
+      3,
+      "Message passing; Parallel algorithm design; Communication/synchronizers; Distributed systems; Communication/consistency"
+    ],
+    [
+      "IV – Networking and Cyber Security",
+      "U21ITP02",
+      "Mobile Computing",
+      189,
+      3,
+      "Mobile communication; MAC/Mobile IP; Mobile transport; Mobile data networks; Applications/e-commerce"
+    ],
+    [
+      "IV – Networking and Cyber Security",
+      "U21ITP03",
+      "Wireless Sensor Networks",
+      191,
+      3,
+      "WSN architecture; MAC; Routing/data gathering; Network management; Applications"
+    ],
+    [
+      "IV – Networking and Cyber Security",
+      "U21ITP04",
+      "Software Defined Networks",
+      193,
+      3,
+      "SDN introduction; OpenFlow/controllers; Data centers; SDN framework; Applications/open source"
+    ],
+    [
+      "IV – Networking and Cyber Security",
+      "U21ITP05",
+      "Cyber Security",
+      195,
+      3,
+      "Cyber-security foundations; Objectives/guidance; Cyber-security issues; Attacks/exploitation; Malicious code/defense"
+    ],
+    [
+      "IV – Networking and Cyber Security",
+      "U21ITP06",
+      "Internet Security",
+      197,
+      3,
+      "Intrusion detection/prevention; IP/web security; Email security; Wireless security; Cloud security"
+    ],
+    [
+      "IV – Networking and Cyber Security",
+      "U21ITP07",
+      "Ethical Hacking",
+      199,
+      3,
+      "Penetration testing; Port scanning; Vulnerability assessment/sniffing; Remote exploitation; Web/wireless hacking"
+    ],
+    [
+      "IV – Networking and Cyber Security",
+      "U21ITP08",
+      "Digital Forensics",
+      201,
+      3,
+      "Computer forensics; Evidence acquisition/documentation; Online investigations; Network/mobile forensics; MAC/mobile forensics"
+    ],
+    [
+      "V – Full Stack Development",
+      "U21CSP09",
+      "UI/UX Design",
+      203,
+      3,
+      "UI/UX foundations; Information organization; Heuristics/interaction; Prototyping/testing; Product design"
+    ],
+    [
+      "V – Full Stack Development",
+      "U21CSP10",
+      "Python Web Development",
+      205,
+      3,
+      "Python OOP; Python UI; Flask; Real-time web apps; Deployment/version control"
+    ],
+    [
+      "V – Full Stack Development",
+      "U21CSP11",
+      "App Development",
+      207,
+      3,
+      "Mobile/web app foundations; Native Android/Java; Hybrid apps; React Native; Cross-platform characteristics"
+    ],
+    [
+      "V – Full Stack Development",
+      "U21CSP12",
+      "JavaScript Frameworks",
+      209,
+      3,
+      "Full-stack basics; Node.js; MongoDB; Express/Angular; React/MERN"
+    ],
+    [
+      "V – Full Stack Development",
+      "U21CSP13",
+      "Web Services and API Design",
+      211,
+      3,
+      "Web-service foundations; Resource/design patterns; REST APIs; Development/deployment; Performance/security"
+    ],
+    [
+      "V – Full Stack Development",
+      "U21CSP14",
+      "SOA & Microservices",
+      213,
+      3,
+      "SOA/microservices; Microservice development; Service-oriented architecture; Cloud/DevOps; APIs"
+    ],
+    [
+      "V – Full Stack Development",
+      "U21CSP15",
+      "Cloud Native Applications Development",
+      215,
+      3,
+      "Cloud environments; Cloud-native function/CNCF; Jenkins CI; Docker; Orchestration"
+    ],
+    [
+      "V – Full Stack Development",
+      "U21CSP16",
+      "DevOps",
+      217,
+      3,
+      "DevOps foundations; Build/compile; Jenkins CI; Ansible configuration management; Continuous deployment/automation"
+    ],
+    [
+      "VI – IT and IT Enabled Services (ITES)",
+      "U21ITP09",
+      "Next Generation Networks",
+      219,
+      3,
+      "5G/connected world; Small cells; Cooperative wireless; Cognitive radio; Security/self-organizing networks"
+    ],
+    [
+      "VI – IT and IT Enabled Services (ITES)",
+      "U21ITP10",
+      "Game Development",
+      221,
+      3,
+      "Game foundations; Perfect-information games; Imperfect-information games; Non-cooperative game theory; Mechanism design"
+    ],
+    [
+      "VI – IT and IT Enabled Services (ITES)",
+      "U21ITP11",
+      "Blockchain Technologies",
+      223,
+      3,
+      "Blockchain foundations; Cryptocurrency/smart contracts; Ethereum; Web3/Hyperledger; Alternatives/challenges"
+    ],
+    [
+      "VI – IT and IT Enabled Services (ITES)",
+      "U21ITP12",
+      "Augmented Reality / Virtual Reality",
+      225,
+      3,
+      "XR overview; VR modeling; VR applications; AR principles; AR application development"
+    ],
+    [
+      "VI – IT and IT Enabled Services (ITES)",
+      "U21ITP13",
+      "Quantum Computing",
+      227,
+      3,
+      "Qubits; Measurement/state transformations; Quantum algorithms; Shor; Error correction/tools"
+    ],
+    [
+      "VI – IT and IT Enabled Services (ITES)",
+      "U21ITP14",
+      "Graphics Processing Unit",
+      229,
+      3,
+      "GPU architecture; Memory; Synchronization/functions; Streams; Parallel/heterogeneous processing"
+    ],
+    [
+      "VI – IT and IT Enabled Services (ITES)",
+      "U21ITP15",
+      "Agile Methodologies",
+      231,
+      3,
+      "Agile foundations; Agile processes; Agility/knowledge management; Quality assurance; PDF shows four main units"
+    ],
+    [
+      "VI – IT and IT Enabled Services (ITES)",
+      "U21ITP16",
+      "Software Testing Tools and Techniques",
+      233,
+      3,
+      "Testing foundations; Unit testing; Integration strategies; Automation testing; Web-testing enhancements"
+    ]
+  ],
+  "Open Electives": [
+    [
+      "Open Elective Group",
+      "Semester",
+      "Course Code",
+      "Option",
+      "Category",
+      "Credits",
+      "Unit-wise syllabus in PDF"
+    ],
+    [
+      "Open Elective – I",
+      "Semester IV",
+      "U21ITX01",
+      "Information Technology Essentials",
+      "OEC",
+      3,
+      "No separate unit-wise syllabus is provided for these OEC options in the PDF; only the option list is given."
+    ],
+    [
+      "Open Elective – I",
+      "Semester IV",
+      "U21ITX02",
+      "Introduction to Cyber Security",
+      "OEC",
+      3,
+      "No separate unit-wise syllabus is provided for these OEC options in the PDF; only the option list is given."
+    ],
+    [
+      "Open Elective – II",
+      "Semester V",
+      "U21ITX03",
+      "Digital Transformation",
+      "OEC",
+      3,
+      "No separate unit-wise syllabus is provided for these OEC options in the PDF; only the option list is given."
+    ],
+    [
+      "Open Elective – II",
+      "Semester V",
+      "U21ITX04",
+      "Human Resource Management",
+      "OEC",
+      3,
+      "No separate unit-wise syllabus is provided for these OEC options in the PDF; only the option list is given."
+    ],
+    [
+      "Open Elective – III",
+      "Semester VI",
+      "U21ITX05",
+      "Social Media Security",
+      "OEC",
+      3,
+      "No separate unit-wise syllabus is provided for these OEC options in the PDF; only the option list is given."
+    ],
+    [
+      "Open Elective – III",
+      "Semester VI",
+      "U21ITX06",
+      "Enterprise Resource Planning",
+      "OEC",
+      3,
+      "No separate unit-wise syllabus is provided for these OEC options in the PDF; only the option list is given."
+    ],
+    [
+      "Open Elective – IV",
+      "Semester VII",
+      "U21ITX07",
+      "Introduction to Computer Forensics",
+      "OEC",
+      3,
+      "No separate unit-wise syllabus is provided for these OEC options in the PDF; only the option list is given."
+    ],
+    [
+      "Open Elective – IV",
+      "Semester VII",
+      "U21ITX08",
+      "User Interface Design",
+      "OEC",
+      3,
+      "No separate unit-wise syllabus is provided for these OEC options in the PDF; only the option list is given."
+    ]
+  ],
+  "Labs Projects Internship": [
+    [
+      "Semester",
+      "Course Code",
+      "Course",
+      "Type",
+      "Practical / Project information",
+      "Source"
+    ],
+    [
+      1,
+      "U21MEG01",
+      "Engineering Graphics",
+      "Practical",
+      "Engineering drawing/CAD exercises and orthographic/isometric work",
+      "41–42"
+    ],
+    [
+      2,
+      "U21ECG03",
+      "Engineering Studio",
+      "Lab/Studio",
+      "Basic electronics and Arduino/IoT experiments including LED, sensors, LDR, ultrasonic, PIR, servo and Bluetooth",
+      "62–63"
+    ],
+    [
+      3,
+      "U21AD307",
+      "Java Laboratory",
+      "Laboratory",
+      "Java classes/objects, inheritance/interfaces, exceptions, collections, file handling, JDBC and applications",
+      "78–79"
+    ],
+    [
+      3,
+      "U21IT302",
+      "Design Studio I",
+      "Studio",
+      "Team design-thinking project: problem definition, prototyping, testing, documentation and presentation",
+      "80"
+    ],
+    [
+      4,
+      "U21CS404",
+      "Operating Systems Laboratory",
+      "Laboratory",
+      "Unix/shell, process management, CPU scheduling, IPC, synchronization, deadlock, memory and disk scheduling",
+      "94–95"
+    ],
+    [
+      4,
+      "U21AD406",
+      "Database Laboratory",
+      "Laboratory",
+      "ER/normalization, SQL, joins, PL/SQL, procedures/functions/triggers and MongoDB",
+      "96–97"
+    ],
+    [
+      4,
+      "U21IT402",
+      "Design Studio II",
+      "Studio",
+      "Team design project with prototype, testing, project management and presentation",
+      "98"
+    ],
+    [
+      5,
+      "U21CSG05",
+      "Computer Networks",
+      "Lab component",
+      "Network commands/configuration, packet analysis, routing and client/server experiments",
+      "105–108"
+    ],
+    [
+      5,
+      "U21ITG03",
+      "Information Security Laboratory",
+      "Laboratory",
+      "Classical ciphers, DES/AES, RSA/Diffie-Hellman, hash/MAC, digital signatures and authentication",
+      "111–112"
+    ],
+    [
+      5,
+      "U21IT501",
+      "Proto Studio I",
+      "Studio",
+      "Prototype/product development, validation, market/product thinking and presentation",
+      "113–114"
+    ],
+    [
+      6,
+      "U21IT602",
+      "Machine Learning Techniques Laboratory",
+      "Laboratory",
+      "Python ML: datasets, KNN, regression, logistic regression, trees, Naive Bayes, random forest, boosting, K-means and mini-project",
+      "121–122"
+    ],
+    [
+      6,
+      "U21ECG06",
+      "Embedded Systems and IoT Laboratory",
+      "Laboratory",
+      "Arduino/embedded experiments: LED, switches, LCD, motor, PIR, gas monitoring, smart lock and IoT prototypes",
+      "123–124"
+    ],
+    [
+      6,
+      "U21IT603",
+      "Proto Studio II",
+      "Studio",
+      "Second prototype/product-development studio with validation and presentation",
+      "125–126"
+    ],
+    [
+      7,
+      "U21IT704",
+      "Cloud Computing Laboratory",
+      "Laboratory",
+      "Virtual machines, AWS console, web applications, CloudSim, file transfer, Docker/containers and security/data storage exercises",
+      "133–134"
+    ],
+    [
+      7,
+      "U21IT705",
+      "Project Work Phase I",
+      "Project",
+      "Problem identification, literature/market review, methodology, prototype/design, initial implementation and presentation",
+      "135–136"
+    ],
+    [
+      8,
+      "U21IT801",
+      "Project Work Phase II",
+      "Project",
+      "Complete implementation, testing/validation, final report, demonstration, presentation and viva",
+      "137–138"
+    ],
+    [
+      3,
+      "U21ITI01",
+      "Industrial Training / Internship",
+      "Internship",
+      "Four-week industrial training/internship during semester vacation from III to VI semester",
+      "14"
+    ]
+  ],
+  "Programme Notes": [
+    [
+      "Item",
+      "Extracted information",
+      "Source"
+    ],
+    [
+      "Programme",
+      "B.Tech. Information Technology",
+      "PDF page 11"
+    ],
+    [
+      "Regulation",
+      "R2021 – CBCS (Revised)",
+      "PDF page 11"
+    ],
+    [
+      "Students admitted",
+      "2022 onwards",
+      "PDF page 11"
+    ],
+    [
+      "Total programme credits",
+      165,
+      "PDF pages 17 and 20"
+    ],
+    [
+      "Semester credits",
+      "I=21, II=20, III=22, IV=23, V=25, VI=21, VII=23, VIII=10",
+      "PDF page 20"
+    ],
+    [
+      "Professional elective verticals",
+      6,
+      "PDF pages 15–16"
+    ],
+    [
+      "Professional elective options",
+      48,
+      "PDF pages 15–16 and detailed elective syllabus pages"
+    ],
+    [
+      "Open elective groups",
+      4,
+      "PDF page 19"
+    ],
+    [
+      "Open elective options",
+      8,
+      "PDF page 19"
+    ],
+    [
+      "NCC",
+      "Levels I–VI offered only for NCC students; grades recorded but not considered for CGPA",
+      "PDF page 17"
+    ],
+    [
+      "Industrial Training / Internship",
+      "Four weeks during any semester vacation from III to VI semester",
+      "PDF page 14"
+    ],
+    [
+      "Important extraction note",
+      "The OEC section lists options only; separate OEC unit-wise syllabi are not included in this PDF section.",
+      "PDF page 19"
+    ]
+  ],
+  "Semester Credits": [
+    [
+      "Semester",
+      "Credits"
+    ],
+    [
+      1,
+      21
+    ],
+    [
+      2,
+      20
+    ],
+    [
+      3,
+      22
+    ],
+    [
+      4,
+      23
+    ],
+    [
+      5,
+      25
+    ],
+    [
+      6,
+      21
+    ],
+    [
+      7,
+      23
+    ],
+    [
+      8,
+      10
+    ]
+  ]
+}

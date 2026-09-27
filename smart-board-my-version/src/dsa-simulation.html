@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7f4">
+  <title>Data Structures &amp; Algorithms Lab · Eduverse</title>
+  <link rel="stylesheet" href="styles/dsa-simulation.css">
+</head>
+<body>
+  <main class="dsa-app" id="dsa-app">
+    <header class="dsa-header">
+      <div class="dsa-brand-mark" aria-hidden="true">DS</div>
+        <div class="dsa-heading">
+          <div class="dsa-eyebrow" id="dsa-subject">EDUVERSE · INTERACTIVE LAB</div>
+          <h1 id="dsa-title">Data Structures &amp; Algorithms</h1>
+          <p id="dsa-subtitle">Explore a structure, run an algorithm, and follow every step.</p>
+          <span id="dsa-topic" class="dsa-topic-tag"></span>
+      </div>
+      <div class="dsa-header-actions">
+        <span class="dsa-context-badge" id="dsa-context-badge">Practice lab</span>
+        <button type="button" id="dsa-fullscreen" class="dsa-button dsa-button-outline">⛶ Full screen</button>
+        <button type="button" id="dsa-launch-board" class="dsa-button dsa-button-outline">Open in Smart Board</button>
+        <button type="button" id="dsa-close" class="dsa-icon-button" aria-label="Close simulation">×</button>
+      </div>
+    </header>
+
+    <section class="dsa-toolbar" aria-label="Simulation selection and playback controls">
+      <label class="dsa-select-label">Simulation
+        <select id="dsa-category" aria-label="Select simulation category">
+          <option value="array">Array</option>
+          <option value="stack">Stack</option>
+          <option value="queue">Queue</option>
+          <option value="circular-queue">Circular Queue</option>
+          <option value="linked-list">Linked List</option>
+          <option value="binary-tree">Binary Tree</option>
+          <option value="bst">Binary Search Tree</option>
+          <option value="graph">Graph</option>
+          <option value="searching">Searching</option>
+          <option value="sorting">Sorting</option>
+        </select>
+      </label>
+      <label class="dsa-select-label" id="dsa-algorithm-wrap">Algorithm
+        <select id="dsa-algorithm" aria-label="Select algorithm"></select>
+      </label>
+      <div class="dsa-playback" role="group" aria-label="Playback controls">
+        <button type="button" class="dsa-button" id="dsa-play">▶ Play</button>
+        <button type="button" class="dsa-button" id="dsa-pause" disabled>⏸ Pause</button>
+        <button type="button" class="dsa-button" id="dsa-prev" aria-label="Previous step">◀ Previous</button>
+        <button type="button" class="dsa-button dsa-button-primary" id="dsa-next">Next step ▶</button>
+        <button type="button" class="dsa-button" id="dsa-reset">↻ Reset</button>
+      </div>
+      <label class="dsa-speed-label" for="dsa-speed">Speed
+        <select id="dsa-speed" aria-label="Animation speed">
+          <option value="0.5">0.5×</option><option value="1" selected>1×</option>
+          <option value="1.5">1.5×</option><option value="2">2×</option>
+        </select>
+      </label>
+    </section>
+
+    <div class="dsa-layout">
+      <section class="dsa-main-column">
+        <section class="dsa-card dsa-visual-card" aria-labelledby="dsa-visual-heading">
+          <div class="dsa-card-heading">
+            <div><span class="dsa-section-kicker">LIVE SIMULATION</span><h2 id="dsa-visual-heading">Visualization</h2></div>
+            <div class="dsa-legend" id="dsa-legend" aria-label="Visualization legend"></div>
+          </div>
+          <div id="dsa-visualization" class="dsa-visualization" aria-live="polite"></div>
+          <div class="dsa-step-progress">
+            <span id="dsa-step-label">Step 1 of 1</span>
+            <div class="dsa-progress-track" aria-hidden="true"><div id="dsa-progress-fill"></div></div>
+          </div>
+        </section>
+
+        <section class="dsa-card dsa-operation-card" aria-labelledby="dsa-operation-heading">
+          <div class="dsa-card-heading"><div><span class="dsa-section-kicker">FOLLOW THE LOGIC</span><h2 id="dsa-operation-heading">Current operation</h2></div></div>
+          <div class="dsa-explanation-grid">
+            <div><span class="dsa-info-label">What happens</span><p id="dsa-operation">Ready to begin.</p></div>
+            <div><span class="dsa-info-label">Why this step</span><p id="dsa-why">Choose an operation to see how it works.</p></div>
+            <div><span class="dsa-info-label">What happens next</span><p id="dsa-next-explanation">Advance one step or play the simulation.</p></div>
+          </div>
+          <div class="dsa-metrics" id="dsa-metrics" aria-label="Simulation state"></div>
+        </section>
+
+        <section class="dsa-card dsa-input-card" id="dsa-input-card" aria-label="Simulation inputs">
+          <div class="dsa-card-heading"><div><span class="dsa-section-kicker">YOUR DATA</span><h2>Input &amp; operations</h2></div><span class="dsa-hint">Maximum 30 values</span></div>
+          <div class="dsa-input-row" id="dsa-data-row">
+            <label class="dsa-field dsa-grow">Values <input id="dsa-values" type="text" inputmode="numeric" autocomplete="off" aria-describedby="dsa-input-help"></label>
+            <button type="button" class="dsa-button dsa-button-primary" id="dsa-generate">Generate</button>
+            <button type="button" class="dsa-button" id="dsa-randomize">Randomize</button>
+            <button type="button" class="dsa-button" id="dsa-clear">Clear</button>
+          </div>
+          <p class="dsa-hint" id="dsa-input-help">Enter comma-separated whole numbers.</p>
+          <div id="dsa-binary-warning" class="dsa-warning hidden" role="alert">
+            <span>Binary Search requires sorted data.</span>
+            <button type="button" class="dsa-button dsa-button-small" id="dsa-sort-input">Sort automatically</button>
+            <button type="button" class="dsa-button dsa-button-small" id="dsa-continue-unsorted">Continue with warning</button>
+          </div>
+          <div class="dsa-operation-controls" id="dsa-operation-controls"></div>
+        </section>
+      </section>
+
+      <aside class="dsa-side-column">
+        <section class="dsa-card dsa-pseudocode-card" id="dsa-pseudocode-card" aria-labelledby="dsa-pseudocode-heading">
+          <div class="dsa-card-heading"><div><span class="dsa-section-kicker">CODE CONNECTION</span><h2 id="dsa-pseudocode-heading">Pseudocode</h2></div></div>
+          <ol id="dsa-pseudocode" class="dsa-pseudocode"></ol>
+        </section>
+        <section class="dsa-card dsa-complexity-card" id="dsa-complexity-card" aria-labelledby="dsa-complexity-heading">
+          <div class="dsa-card-heading"><div><span class="dsa-section-kicker">EFFICIENCY</span><h2 id="dsa-complexity-heading">Complexity</h2></div></div>
+          <div id="dsa-complexity" class="dsa-complexity"></div>
+        </section>
+        <section class="dsa-card dsa-ai-card" aria-labelledby="dsa-ai-heading">
+          <div class="dsa-ai-copy"><span class="dsa-section-kicker">ASK ABOUT THIS STATE</span><h2 id="dsa-ai-heading">AI / Doubt panel</h2><p>The current algorithm, step, and internal state are included with your question.</p></div>
+          <label class="dsa-field">Your question
+            <textarea id="dsa-ai-question" rows="2" placeholder="Why did we move the low pointer?" aria-label="Ask about this algorithm step"></textarea>
+          </label>
+          <button type="button" id="dsa-ask-ai" class="dsa-button dsa-button-primary">Ask AI about this step</button>
+          <div id="dsa-ai-answer" class="dsa-ai-answer hidden" aria-live="polite"></div>
+        </section>
+      </aside>
+    </div>
+    <div id="dsa-toast" class="dsa-toast" role="status" aria-live="polite"></div>
+  </main>
+  <script src="tools/dsa-simulation.js"></script>
+</body>
+</html>

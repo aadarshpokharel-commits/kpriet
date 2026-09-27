@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f7f3">
+  <title>Computer Networks Simulations · Eduverse</title>
+  <link rel="stylesheet" href="styles/cn-simulation.css">
+</head>
+<body>
+  <main class="cn-app" id="cn-app">
+    <header class="cn-header">
+      <div class="cn-brand" aria-hidden="true">CN</div>
+      <div class="cn-heading">
+        <nav class="cn-crumbs" id="cn-crumbs" aria-label="Location">Semester V › Computer Networks</nav>
+        <h1 id="cn-title">Computer Networks Simulations</h1>
+        <p id="cn-subtitle">U21CSG05 · Interactive simulation library</p>
+      </div>
+      <div class="cn-header-actions">
+        <button type="button" class="cn-btn cn-btn-outline hidden" id="cn-library-btn">☰ All simulations</button>
+        <button type="button" class="cn-btn cn-btn-primary hidden" id="cn-launch-board">🖥 Launch Smart Board</button>
+        <button type="button" class="cn-btn cn-btn-outline" id="cn-fullscreen">⛶ Full screen</button>
+      </div>
+    </header>
+
+    <!-- Library: Unit → Topic → Simulation -->
+    <section id="cn-library" class="cn-library hidden" aria-label="Computer Networks simulation library"></section>
+
+    <!-- Player -->
+    <section id="cn-player" class="cn-player hidden">
+      <div class="cn-toolbar" role="toolbar" aria-label="Simulation controls">
+        <div class="cn-seg" role="group" aria-label="View">
+          <button type="button" class="cn-seg-btn active" id="cn-view-basic" aria-pressed="true">Basic</button>
+          <button type="button" class="cn-seg-btn" id="cn-view-adv" aria-pressed="false">Advanced</button>
+        </div>
+        <div class="cn-playback">
+          <button type="button" class="cn-btn" id="cn-play">▶ Play</button>
+          <button type="button" class="cn-btn" id="cn-pause" disabled>⏸ Pause</button>
+          <button type="button" class="cn-btn" id="cn-prev">◀ Previous</button>
+          <button type="button" class="cn-btn cn-btn-primary" id="cn-next">Next step ▶</button>
+          <button type="button" class="cn-btn" id="cn-reset">↺ Reset</button>
+        </div>
+        <label class="cn-speed">Speed
+          <select id="cn-speed" aria-label="Animation speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>
+        </label>
+        <div class="cn-step">
+          <span id="cn-step-label">Step 1 of 1</span>
+          <div class="cn-progress" aria-hidden="true"><div id="cn-progress-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="cn-layout">
+        <aside class="cn-card cn-setup" aria-labelledby="cn-setup-h">
+          <div class="cn-card-head"><span class="cn-kicker">INPUT CONTROLS</span><h2 id="cn-setup-h">Set up the simulation</h2></div>
+          <form id="cn-inputs" class="cn-inputs" autocomplete="off"></form>
+          <button type="button" class="cn-btn cn-btn-primary cn-apply" id="cn-apply">Apply &amp; restart</button>
+          <p class="cn-hint" id="cn-topic-note"></p>
+        </aside>
+
+        <section class="cn-center">
+          <div class="cn-card cn-stage">
+            <div class="cn-card-head cn-stage-head">
+              <div><span class="cn-kicker">LIVE SIMULATION</span><h2 id="cn-sim-name">Simulation</h2></div>
+              <span class="cn-hint">Tap any device, layer, field or message to inspect it.</span>
+            </div>
+            <div id="cn-scene" class="cn-scene" aria-live="polite"></div>
+          </div>
+          <div class="cn-card cn-explain" aria-live="polite">
+            <div><span class="cn-label">What is happening</span><p id="cn-what">—</p></div>
+            <div><span class="cn-label">Why it happens</span><p id="cn-why">—</p></div>
+            <div><span class="cn-label">Next</span><p id="cn-next-text">—</p></div>
+          </div>
+        </section>
+
+        <aside class="cn-right">
+          <section class="cn-card" aria-labelledby="cn-state-h">
+            <div class="cn-card-head"><span class="cn-kicker">REAL-TIME STATE</span><h2 id="cn-state-h">Current state</h2></div>
+            <dl id="cn-state" class="cn-state"></dl>
+          </section>
+          <section class="cn-card" aria-labelledby="cn-insp-h">
+            <div class="cn-card-head"><span class="cn-kicker">INSPECTOR</span><h2 id="cn-insp-h">Selected object</h2></div>
+            <div id="cn-inspector" class="cn-inspector"><p class="cn-hint">Tap something in the simulation.</p></div>
+          </section>
+          <section class="cn-card cn-ai" aria-labelledby="cn-ai-h">
+            <div class="cn-card-head"><span class="cn-kicker">ASK ABOUT THIS STEP</span><h2 id="cn-ai-h">Subject AI</h2></div>
+            <textarea id="cn-ai-q" rows="2" placeholder="Ask about this step…" aria-label="Ask about this step"></textarea>
+            <button type="button" class="cn-btn cn-btn-primary" id="cn-ask-ai">Ask AI about this step</button>
+            <div id="cn-ai-answer" class="cn-ai-answer hidden" aria-live="polite"></div>
+          </section>
+        </aside>
+      </div>
+    </section>
+    <div id="cn-toast" class="cn-toast" role="status" aria-live="polite"></div>
+  </main>
+  <script src="tools/cn-catalog.js"></script>
+  <script src="tools/cn-render.js"></script>
+  <script src="tools/cn-scenarios-u1.js"></script>
+  <script src="tools/cn-scenarios-u2.js"></script>
+  <script src="tools/cn-scenarios-u3.js"></script>
+  <script src="tools/cn-scenarios-u4.js"></script>
+  <script src="tools/cn-scenarios-u5.js"></script>
+  <script src="tools/cn-simulation.js"></script>
+</body>
+</html>

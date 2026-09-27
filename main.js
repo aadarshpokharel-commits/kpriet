@@ -25,7 +25,7 @@ function createWindow() {
     height: 900,
     minWidth: 900,
     minHeight: 600,
-    title: 'PiyushDhara EduVerse Board',
+    title: 'KPR Institute of Engineering and Technology — KPRIET Smart Board',
     icon: path.join(__dirname, 'assets', 'logo.png'),
     webPreferences: {
       nodeIntegration: false,
@@ -40,14 +40,16 @@ function createWindow() {
   mainWindow.setMenuBarVisibility(false);
   mainWindow.removeMenu();
 
-  // Load index.html — works in both dev mode and packaged asar
+  // Load Smart Board (or Dashboard if --portal/--login/--rbac/--dashboard passed)
+  const isPortal = process.argv.some(arg => ['--portal', '--login', '--rbac', '--dashboard'].includes(arg.toLowerCase()));
+  const targetFile = isPortal ? path.join('dashboard', 'frontend', 'index.html') : path.join('smart-board-my-version', 'src', 'index.html');
   const indexPath = app.isPackaged
-    ? path.join(process.resourcesPath, 'app', 'src', 'index.html')
-    : path.join(__dirname, 'src', 'index.html');
+    ? path.join(process.resourcesPath, 'app', targetFile)
+    : path.join(__dirname, targetFile);
 
   mainWindow.loadFile(indexPath).catch(err => {
     // Fallback — try relative path
-    mainWindow.loadFile(path.join(__dirname, 'src', 'index.html')).catch(err2 => {
+    mainWindow.loadFile(path.join(__dirname, targetFile)).catch(err2 => {
       dialog.showErrorBox('Load Error',
         'Could not load app.\n\nTried:\n' + indexPath + '\n\n' + err2.message);
     });

@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#0a0f1d">
+  <title>Problem Solving and C Programming Interactive Lab · Eduverse Smart Board</title>
+  <link rel="stylesheet" href="styles/c-simulation.css">
+</head>
+<body class="c-smartboard-body">
+  <main class="c-app" id="c-app">
+    <!-- Consolidated Smart Board Master Control Bar -->
+    <header class="c-master-bar">
+      <!-- Left: Subject & Topic Identity -->
+      <div class="c-bar-brand">
+        <div class="c-brand-mark" aria-hidden="true">C</div>
+        <div class="c-brand-meta">
+          <div class="c-brand-title">C Programming Simulation Engine</div>
+          <div class="c-brand-sub">
+            <span class="c-badge-code">U21CS101 · Sem I</span>
+            <span id="c-topic" class="c-topic-tag">Program Execution &amp; Memory</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Curriculum Unit & Simulation Selectors -->
+      <div class="c-bar-selectors">
+        <label class="c-pill-select" title="Select Curriculum Unit">
+          <span class="c-pill-label">UNIT</span>
+          <select id="c-unit" aria-label="Select C Unit">
+            <option value="unit1" selected>Unit 1: Problem Solving &amp; C Basics</option>
+            <option value="unit2">Unit 2: Control Structures &amp; Arrays</option>
+            <option value="unit3">Unit 3: Pointers &amp; Strings</option>
+            <option value="unit4">Unit 4: Functions &amp; Recursion</option>
+            <option value="unit5">Unit 5: Structures, Unions &amp; Files</option>
+          </select>
+        </label>
+
+        <label class="c-pill-select" id="c-simulation-wrap" title="Select Simulation Topic">
+          <span class="c-pill-label">TOPIC</span>
+          <select id="c-simulation" aria-label="Select simulation topic"></select>
+        </label>
+      </div>
+
+      <!-- Playback Controls (Large Touch / Stylus Friendly) -->
+      <div class="c-bar-playback" role="group" aria-label="Simulation playback controls">
+        <button type="button" class="c-ctrl-btn" id="c-prev" title="Step backward" aria-label="Previous step">◀ Prev</button>
+        <button type="button" class="c-ctrl-btn c-ctrl-run" id="c-run" title="Run / Play simulation">▶ Run</button>
+        <button type="button" class="c-ctrl-btn" id="c-pause" disabled title="Pause simulation">⏸ Pause</button>
+        <button type="button" class="c-ctrl-btn c-ctrl-next" id="c-next" title="Advance one logical statement">Next Step ▶</button>
+        <button type="button" class="c-ctrl-btn" id="c-reset" title="Reset execution state">↻ Reset</button>
+
+        <label class="c-pill-select c-pill-speed" for="c-speed" title="Execution Speed">
+          <span class="c-pill-label">SPEED</span>
+          <select id="c-speed" aria-label="Animation speed">
+            <option value="0.5">0.5×</option>
+            <option value="1" selected>1×</option>
+            <option value="1.5">1.5×</option>
+            <option value="2">2×</option>
+          </select>
+        </label>
+      </div>
+
+      <!-- Step Progress & Window Actions -->
+      <div class="c-bar-actions">
+        <div class="c-step-pill">
+          <span id="c-step-label">Line 1 of 4</span>
+          <div class="c-progress-track" aria-hidden="true"><div id="c-progress-fill"></div></div>
+        </div>
+        <button type="button" id="c-fullscreen" class="c-icon-action" title="Toggle Fullscreen">⛶</button>
+        <button type="button" id="c-launch-board" class="c-icon-action" style="display:none">Board</button>
+        <button type="button" id="c-close" class="c-icon-action c-close-action" aria-label="Close simulation">✕</button>
+      </div>
+    </header>
+
+    <!-- Main Workspace (Flagship 3-Stage Layout, 100% Height, Zero Page Scroll) -->
+    <div class="c-workspace">
+      <!-- Left Column: Source Code Panel & Output Terminal -->
+      <section class="c-code-column">
+        <!-- Code Panel -->
+        <div class="c-card c-code-card">
+          <div class="c-card-header-compact">
+            <div class="c-card-title-group">
+              <span class="c-badge-pill">SOURCE CODE</span>
+              <h2>Program Editor</h2>
+            </div>
+            <span id="c-code-status" style="font-size:10px; color:#38bdf8; font-family:ui-monospace,monospace;">Ready</span>
+          </div>
+          <div id="c-code-viewport" class="c-code-viewport"></div>
+        </div>
+
+        <!-- Output Terminal -->
+        <div class="c-card c-console-card">
+          <div class="c-card-header-compact">
+            <div class="c-card-title-group">
+              <span class="c-badge-pill" style="color:#4ade80; border-color:rgba(74,222,128,0.3); background:rgba(74,222,128,0.1);">STDOUT</span>
+              <h2>Program Output</h2>
+            </div>
+            <button type="button" id="c-clear-output" class="c-btn-xs" style="padding:1px 6px;">Clear</button>
+          </div>
+          <div id="c-output-terminal" class="c-console-terminal">Program ready. Click "Next Step" or "Run" to execute.</div>
+        </div>
+      </section>
+
+      <!-- Center Column: Visual Memory & Interactive Simulation Stage -->
+      <section class="c-stage-column">
+        <!-- Memory & Visual State Card -->
+        <div class="c-card c-stage-card">
+          <div class="c-card-header-compact">
+            <div class="c-card-title-group">
+              <span class="c-badge-pill" style="color:#a78bfa; border-color:rgba(167,139,250,0.3); background:rgba(167,139,250,0.1);">MEMORY &amp; STACK</span>
+              <h2 id="c-visual-heading">Visual Memory Layout</h2>
+            </div>
+            <div id="c-legend" class="os-legend" style="display:flex; gap:6px; font-size:9.5px; color:#94a3b8;"></div>
+          </div>
+          <div id="c-visualization" class="c-visualization-board" aria-live="polite"></div>
+        </div>
+
+        <!-- Step-by-Step Educational Explanation & Live Metrics Strip -->
+        <div class="c-card c-explanation-card">
+          <div class="c-pedagogical-grid">
+            <div class="c-pedagogy-cell">
+              <span class="c-pedagogy-tag c-tag-op">CURRENT STATEMENT</span>
+              <p id="c-operation">int a = 10;</p>
+            </div>
+            <div class="c-pedagogy-cell">
+              <span class="c-pedagogy-tag c-tag-why">WHY / COMPILER EFFECT</span>
+              <p id="c-why">Allocates 4 bytes on stack memory for variable 'a' and writes value 10.</p>
+            </div>
+            <div class="c-pedagogy-cell">
+              <span class="c-pedagogy-tag c-tag-next">WHAT HAPPENS NEXT</span>
+              <p id="c-next-explanation">The CPU moves to the next declaration: int b = 20;</p>
+            </div>
+          </div>
+          <div class="c-metrics" id="c-metrics" aria-label="Calculated runtime metrics"></div>
+        </div>
+      </section>
+
+      <!-- Right Column: Inspector Dock (Parameters & Inputs | Algorithmic Logic | Subject AI) -->
+      <aside class="c-dock-column">
+        <!-- Dock Tab Navigation -->
+        <div class="c-dock-tabs" role="tablist">
+          <button type="button" class="c-dock-tab active" data-tab="tab-inputs" id="tab-btn-inputs">📝 Code &amp; Inputs</button>
+          <button type="button" class="c-dock-tab" data-tab="tab-logic" id="tab-btn-logic">📜 Logic &amp; Rules</button>
+          <button type="button" class="c-dock-tab" data-tab="tab-ai" id="tab-btn-ai">🤖 Subject AI</button>
+        </div>
+
+        <!-- Tab 1: Code Presets & Workload Inputs -->
+        <div class="c-dock-pane active" id="tab-inputs">
+          <div class="c-dock-toolbar">
+            <span class="c-dock-kicker">CODE PRESETS &amp; DATA</span>
+            <div class="os-dock-actions" style="display:flex; gap:4px;">
+              <button type="button" class="c-btn-xs" id="c-randomize" title="Generate random inputs">🎲 Random</button>
+              <button type="button" class="c-btn-xs" id="c-example" title="Standard textbook example">📋 Example</button>
+              <button type="button" class="c-btn-xs c-btn-primary" id="c-compile-run" title="Compile and reset to line 1">✓ Load Code</button>
+            </div>
+          </div>
+
+          <label class="c-field" style="margin-bottom:6px;">
+            <span>Select Program Preset:</span>
+            <select id="c-preset-select" class="c-preset-select"></select>
+          </label>
+
+          <label class="c-field" style="flex:1; min-height:0; display:flex; flex-direction:column;">
+            <span>C Source Code:</span>
+            <textarea id="c-code-editor" class="c-code-editor" spellcheck="false"></textarea>
+          </label>
+
+          <div id="c-dynamic-inputs" style="margin-top:6px; display:flex; flex-direction:column; gap:6px;"></div>
+        </div>
+
+        <!-- Tab 2: C Programming Rules, Pseudocode & Complexity -->
+        <div class="c-dock-pane" id="tab-logic">
+          <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:8px;">
+            <span class="c-dock-kicker">EXECUTION LOGIC</span>
+            <ol id="c-pseudocode" class="c-pseudocode-dock"></ol>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <span class="c-dock-kicker">RUNTIME COMPLEXITY &amp; MEMORY</span>
+            <div id="c-complexity" class="c-complexity-dock"></div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Eduverse Subject AI Copilot -->
+        <div class="c-dock-pane" id="tab-ai">
+          <div class="c-ai-header">
+            <span class="c-dock-kicker">SUBJECT RAG COPILOT</span>
+            <h4>Ask About C Program State</h4>
+            <p>Your question will be analyzed by Eduverse Subject AI using the active code, variable values, memory addresses, and stdout.</p>
+          </div>
+          <div class="c-ai-form" style="display:flex; flex-direction:column; gap:6px;">
+            <label class="c-field">
+              <span>Question for Subject AI:</span>
+              <textarea id="c-ai-question" rows="3" placeholder="e.g. Why does variable 'c' hold 30? Why did the pointer change?"></textarea>
+            </label>
+            <button type="button" id="c-ask-ai" class="c-ctrl-btn c-btn-primary c-btn-block">
+              ✨ Ask Subject AI About This Step
+            </button>
+            <div id="c-ai-answer" class="c-ai-answer hidden" aria-live="polite"></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="c-toast" class="c-toast" role="status" aria-live="polite"></div>
+  </main>
+
+  <script src="tools/c-simulation.js"></script>
+  <script>
+    // Tab switching for Smart Board Inspector
+    document.querySelectorAll('.c-dock-tab').forEach(function(tabBtn) {
+      tabBtn.addEventListener('click', function() {
+        document.querySelectorAll('.c-dock-tab').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('.c-dock-pane').forEach(function(p) { p.classList.remove('active'); });
+        tabBtn.classList.add('active');
+        var targetPane = document.getElementById(tabBtn.getAttribute('data-tab'));
+        if (targetPane) targetPane.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
