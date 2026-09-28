@@ -1,7 +1,7 @@
 export type SimulationDomain = 'MATHEMATICS' | 'PHYSICS' | 'COMPUTER_SCIENCE' | 'CIVIL';
 
 export type MathCategory = 'graphs' | 'calculus visualization' | 'geometry' | 'matrices';
-export type PhysicsCategory = 'projectile motion' | 'circular motion' | 'mechanics' | 'waves';
+export type PhysicsCategory = 'projectile motion' | 'circular motion' | 'mechanics' | 'waves' | 'engineering physics';
 export type CSCategory = 'sorting' | 'data structures' | 'algorithms' | 'networking' | 'data structures & algorithms' | 'operating systems' | 'c programming' | 'problem solving';
 export type CivilCategory = 'structural analysis' | 'surveying' | 'construction simulations';
 
@@ -67,7 +67,9 @@ export interface ISimulationDefinition {
    */
   subjectKeywords?: string[];
   /** Engine that runs this simulation inside the Smart Board ('dsa' or 'cn'). */
-  boardEngine?: 'dsa' | 'cn';
+  boardEngine?: 'dsa' | 'cn' | 'ep';
+  /** Engineering Physics: syllabus area of the simulation (laser, fiber-optics, ultrasonics, thermal-fluids, crystal-physics). */
+  simulationSubtype?: string;
   /** Syllabus unit / topic (used to organise the subject's simulation library). */
   unit?: number;
   unitTitle?: string;
@@ -256,4 +258,18 @@ export function resolveSubjectDomain(subject: {
 
   // 4. Computer Science
   return 'COMPUTER_SCIENCE';
+}
+
+/** True when the simulation is one of the Engineering Physics simulations that open on the Smart Board. */
+export function isSmartBoardEpSimulation(def?: { boardEngine?: string } | null): boolean {
+  return Boolean(def && def.boardEngine === 'ep');
+}
+
+/** Teacher's published configuration of an Engineering Physics simulation (stored in Content.simulationConfig.initialParams). */
+export interface IEpPublishedConfig {
+  simulationType?: 'engineering-physics';
+  simulationSubtype?: string;
+  defaultParameters?: Record<string, unknown>;
+  visualizationMode?: string;
+  steps?: string[];
 }

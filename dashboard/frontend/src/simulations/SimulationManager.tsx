@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { ISimulationDefinition, IAssignedSimulation, ISimulationLaunchContext, SimulationDomain } from './types';
-import { getDomainColor, resolveSubjectDomain, isSmartBoardDsaSimulation, isSmartBoardOsSimulation, isSmartBoardCSimulation } from './types';
+import { getDomainColor, resolveSubjectDomain, isSmartBoardDsaSimulation, isSmartBoardOsSimulation, isSmartBoardCSimulation, isSmartBoardEpSimulation } from './types';
+import type { IEpPublishedConfig } from './types';
 import { getSimulationsForSubject } from './registry';
 import { SimulationModal } from './SimulationModal';
 
@@ -49,7 +50,9 @@ function categoryLabel(category: string): string {
 
 export const SimulationManager: React.FC<SimulationManagerProps> = ({
   subject,
+  assignedSimulations = [],
   isTeacher = false,
+  onAssignSimulation,
   onLaunchSmartBoard,
 }) => {
   const domain: SimulationDomain = useMemo(() => resolveSubjectDomain(subject), [subject]);
@@ -67,6 +70,19 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
     }
     return Array.from(new Set(simulations.map((s) => s.category))).map((c) => ({ key: c, label: categoryLabel(c), title: '' }));
   }, [simulations, byUnit]);
+
+  /** Teacher-published configuration per simulation (latest published Content of that template). */
+  const publishedConfig = useMemo(() => {
+    const map = new Map<string, IEpPublishedConfig>();
+    (assignedSimulations || [])
+      .filter((a) => a && a.simulationConfig && (a.status || 'PUBLISHED') === 'PUBLISHED')
+      .forEach((a) => {
+        const key = a.simulationConfig?.type || '';
+        const init = (a.simulationConfig?.initialParams || {}) as IEpPublishedConfig;
+        if (key && !map.has(key) && init && typeof init === 'object' && init.defaultParameters) map.set(key, init);
+      });
+    return map;
+  }, [assignedSimulations]);
 
   const [selected, setSelected] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -102,6 +118,7 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
   const contextFor = (sim: ISimulationDefinition, extra: Partial<ISimulationLaunchContext> = {}): ISimulationLaunchContext => {
     if (isSmartBoardDsaSimulation(sim)) return { topic: sim.title, category: sim.dsaCategory, config: { category: sim.dsaCategory, topic: sim.title }, ...extra };
     if (sim.boardEngine === 'cn') return { topic: sim.topic, category: sim.id, config: {}, ...extra };
+    if (isSmartBoardEpSimulation(sim)) return { topic: sim.topic, category: sim.id, config: (publishedConfig.get(sim.id) as Record<string, unknown>) || {}, ...extra };
     if (isSmartBoardOsSimulation(sim)) return { topic: sim.title, category: sim.osCategory, config: { simulationId: sim.id, osCategory: sim.osCategory, topic: sim.title }, ...extra };
     if (isSmartBoardCSimulation(sim)) return { topic: sim.title, category: sim.cCategory, config: { simulationId: sim.id, cCategory: sim.cCategory, topic: sim.title }, ...extra };
     return { topic: sim.title, category: sim.category, config: {}, ...extra };
@@ -141,14 +158,33 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
         launchOnSmartBoard(sim, { config: msg.context?.config || {}, state: msg.context?.state || undefined });
       }
       if (msg.type === 'EDUVERSE_SIM_CLOSE' || msg.type === 'EDUVERSE_DSA_CLOSE') setPreview(null);
+      if (msg.type === 'EDUVERSE_SIM_PUBLISH') {
+        // Teacher: save the current parameters as the class default (reuses the existing Simulation/Content model)
+        const reply = (ok: boolean, message?: string) => { try { (event.source as Window | null)?.postMessage({ type: 'EDUVERSE_SIM_PUBLISH_RESULT', ok, message }, window.location.origin); } catch { /* preview closed */ } };
+        const sim = (msg.simKey && simulations.find((s) => s.id === msg.simKey)) || preview;
+        if (!isTeacher || !onAssignSimulation || !sim) { reply(false, 'Publishing is available to the subject teacher only.'); return; }
+        const cfg = ((msg as any).config || {}) as Record<string, unknown>;
+        onAssignSimulation({
+          simulationId: sim.id,
+          chapterOrUnit: sim.unit || 1,
+          title: sim.title,
+          description: sim.shortDescription,
+          customParams: cfg,
+          status: 'PUBLISHED',
+        }).then(() => reply(true), (err: any) => reply(false, err?.message || 'Could not publish.'));
+      }
     };
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [preview]);
+  }, [preview, publishedConfig]);
 
   const previewUrl = (sim: ISimulationDefinition): string | null => {
     if (sim.boardEngine === 'cn') return `/smartboard/cn-simulation.html?${subjectQuery({ sim: sim.id, preview: '1' })}`;
+    if (isSmartBoardEpSimulation(sim)) {
+      const cfg = publishedConfig.get(sim.id);
+      return `/smartboard/ep-simulation.html?${subjectQuery({ sim: sim.id, preview: '1', ...(cfg ? { config: JSON.stringify(cfg) } : {}) })}`;
+    }
     if (isSmartBoardOsSimulation(sim)) return `/smartboard/os-simulation.html?${subjectQuery({ simulationId: sim.id, category: String(sim.osCategory || ''), title: sim.title, topic: sim.title })}`;
     if (isSmartBoardDsaSimulation(sim)) return `/smartboard/dsa-simulation.html?${subjectQuery({ category: String(sim.dsaCategory || 'searching'), title: sim.title, topic: sim.title })}`;
     return null; // other simulations preview in the built-in runner
@@ -181,6 +217,9 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
           </div>
         </div>
         <p className="text-xs text-muted line-clamp-3 leading-relaxed">{sim.shortDescription}</p>
+        {publishedConfig.has(sim.id) && (
+          <span className="inline-block rounded-md bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">📌 {isTeacher ? 'Published class settings' : 'Teacher’s settings'}</span>
+        )}
       </div>
       <div className="grid grid-cols-2 gap-2">
         <button

@@ -667,7 +667,7 @@ const UI = (() => {
     pickerBtn.className = 'bswatch bswatch-picker-trigger';
     pickerBtn.id = 'board-bg-picker-btn';
     pickerBtn.title = 'Browse 20+ Board Backgrounds (Math, Ruled, Lab, Isometric, Dots)';
-    pickerBtn.innerHTML = '<span style="font-size:12px;line-height:1;">🎨</span>';
+    pickerBtn.innerHTML = '<span style="font-size:10px;line-height:1;display:flex;align-items:center;justify-content:center;">🎨</span>';
     pickerBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       toggleBoardPicker();

@@ -47,7 +47,7 @@ import { ApiError } from '../utils/ApiError.js';
 import { ProgrammeService } from './programme.service.js';
 import { AiRagService } from './ai-rag.service.js';
 import { NotificationService } from './notification.service.js';
-import { SIMULATION_CATALOG, resolveSubjectDomain } from '../constants/simulations.catalog.js';
+import { SIMULATION_CATALOG, resolveSubjectDomain, isTemplateForSubject } from '../constants/simulations.catalog.js';
 import type {
   assignTeacherSchema,
   chapterSchema,
@@ -3328,6 +3328,72 @@ export class AcademicService {
         { title: 'AC/DC Circuit Oscillations & Resonance', key: 'circuits', type: 'PHYSICS_LAB', category: 'Electronics' },
         { title: 'Pendulum & Simple Harmonic Motion', key: 'pendulum', type: 'PHYSICS_LAB', category: 'Mechanics' },
       ];
+
+      // Engineering Physics (U21PH101): its own syllabus formulas and the 46 Smart Board simulations
+      if (subNameLower.includes('engineering physics') || subCodeUpper === 'U21PH101') {
+        formulas = [
+          { title: 'Photon energy', latex: 'E = h\\nu = \\frac{hc}{\\lambda}', category: 'Unit 1 · LASER', description: 'Energy of a photon; absorption and emission need E = E_2 - E_1.' },
+          { title: 'Boltzmann population ratio', latex: '\\frac{N_2}{N_1} = e^{-(E_2 - E_1)/k_B T}', category: 'Unit 1 · LASER', description: 'Thermal equilibrium populations; population inversion needs N_2 > N_1 (pumping).' },
+          { title: 'Critical angle', latex: '\\theta_c = \\sin^{-1}\\left(\\frac{n_2}{n_1}\\right)', category: 'Unit 2 · Fiber Optics', description: 'Total internal reflection when the angle of incidence exceeds theta_c (n_1 > n_2).' },
+          { title: 'Numerical aperture and acceptance angle', latex: 'NA = \\sqrt{n_1^2 - n_2^2} = n_0 \\sin\\theta_a', category: 'Unit 2 · Fiber Optics', description: 'Light-gathering ability of an optical fibre.' },
+          { title: 'V-number', latex: 'V = \\frac{2\\pi a}{\\lambda} NA', category: 'Unit 2 · Fiber Optics', description: 'Single-mode when V < 2.405; number of modes about V^2/2 (step index).' },
+          { title: 'Piezoelectric oscillator frequency', latex: 'f = \\frac{1}{2t}\\sqrt{\\frac{Y}{\\rho}}', category: 'Unit 3 · Ultrasonics', description: 'Natural frequency of a crystal of thickness t.' },
+          { title: 'SONAR / pulse-echo distance', latex: 'd = \\frac{v\\,t}{2}', category: 'Unit 3 · Ultrasonics', description: 'Distance from the echo time of flight.' },
+          { title: "Fourier's law of heat conduction", latex: '\\frac{Q}{t} = kA\\frac{\\Delta T}{L}', category: 'Unit 4 · Thermal Physics', description: 'Rate of heat flow through a rod.' },
+          { title: 'Stefan–Boltzmann law', latex: 'P = \\varepsilon\\sigma A T^4', category: 'Unit 4 · Thermal Physics', description: 'Power radiated by a surface.' },
+          { title: "Stokes' law (terminal velocity)", latex: 'v_t = \\frac{2r^2(\\rho_s - \\rho_f)g}{9\\eta}', category: 'Unit 4 · Fluids', description: 'Viscosity from a falling sphere (low Reynolds number).' },
+          { title: "Bragg's law", latex: '2d\\sin\\theta = n\\lambda', category: 'Unit 5 · Crystal Physics', description: 'Condition for constructive interference of X-rays from crystal planes.' },
+          { title: 'Interplanar spacing (cubic)', latex: 'd_{hkl} = \\frac{a}{\\sqrt{h^2 + k^2 + l^2}}', category: 'Unit 5 · Crystal Physics', description: 'Spacing of (hkl) planes in a cubic crystal.' },
+        ];
+        defaultSimulations = [
+          { title: "Absorption and Energy Level Simulator", key: "ep-absorption", type: 'EP_BOARD_SIM', category: "Unit 1 · Absorption" },
+          { title: "Spontaneous Emission Simulator", key: "ep-spontaneous-emission", type: 'EP_BOARD_SIM', category: "Unit 1 · Spontaneous Emission" },
+          { title: "Stimulated Emission Simulator", key: "ep-stimulated-emission", type: 'EP_BOARD_SIM', category: "Unit 1 · Stimulated Emission" },
+          { title: "Population Inversion Visualizer", key: "ep-population-inversion", type: 'EP_BOARD_SIM', category: "Unit 1 · Population Inversion" },
+          { title: "Laser Pumping Simulator", key: "ep-pumping", type: 'EP_BOARD_SIM', category: "Unit 1 · Pumping" },
+          { title: "Laser Cavity Simulator", key: "ep-laser-cavity", type: 'EP_BOARD_SIM', category: "Unit 1 · Laser Cavity" },
+          { title: "CO₂ Laser Conceptual Simulator", key: "ep-co2-laser", type: 'EP_BOARD_SIM', category: "Unit 1 · CO₂ Laser" },
+          { title: "Semiconductor Laser Simulator", key: "ep-semiconductor-laser", type: 'EP_BOARD_SIM', category: "Unit 1 · Semiconductor Laser" },
+          { title: "Laser Material Processing Simulator", key: "ep-material-processing", type: 'EP_BOARD_SIM', category: "Unit 1 · Laser Material Processing" },
+          { title: "Selective Laser Sintering Simulator", key: "ep-sls", type: 'EP_BOARD_SIM', category: "Unit 1 · Selective Laser Sintering" },
+          { title: "Holography Simulator", key: "ep-holography", type: 'EP_BOARD_SIM', category: "Unit 1 · Holography" },
+          { title: "Laser Medical Applications Visualizer", key: "ep-laser-medical", type: 'EP_BOARD_SIM', category: "Unit 1 · Medical Applications of Laser" },
+          { title: "Total Internal Reflection Simulator", key: "ep-tir", type: 'EP_BOARD_SIM', category: "Unit 2 · Total Internal Reflection" },
+          { title: "Acceptance Angle Simulator", key: "ep-acceptance-angle", type: 'EP_BOARD_SIM', category: "Unit 2 · Acceptance Angle" },
+          { title: "Numerical Aperture Simulator", key: "ep-numerical-aperture", type: 'EP_BOARD_SIM', category: "Unit 2 · Numerical Aperture" },
+          { title: "Single Mode vs Multimode Fiber", key: "ep-single-multi-mode", type: 'EP_BOARD_SIM', category: "Unit 2 · Single Mode and Multimode Fiber" },
+          { title: "Step Index vs Graded Index Fiber", key: "ep-step-graded-index", type: 'EP_BOARD_SIM', category: "Unit 2 · Step Index and Graded Index Fiber" },
+          { title: "Optical Fiber Communication Simulator", key: "ep-fiber-communication", type: 'EP_BOARD_SIM', category: "Unit 2 · Optical Fiber Communication" },
+          { title: "Fiber Bending Loss Simulator", key: "ep-bending-loss", type: 'EP_BOARD_SIM', category: "Unit 2 · Fiber Bending Loss" },
+          { title: "Fiber Optic Endoscopy Visualizer", key: "ep-endoscopy", type: 'EP_BOARD_SIM', category: "Unit 2 · Fiber Optic Endoscopy" },
+          { title: "Piezoelectric Effect Simulator", key: "ep-piezo-effect", type: 'EP_BOARD_SIM', category: "Unit 3 · Piezoelectric Effect" },
+          { title: "Piezoelectric Generator Simulator", key: "ep-piezo-generator", type: 'EP_BOARD_SIM', category: "Unit 3 · Piezoelectric Generator" },
+          { title: "Acoustic Grating Visualizer", key: "ep-acoustic-grating", type: 'EP_BOARD_SIM', category: "Unit 3 · Acoustic Grating" },
+          { title: "SONAR Simulator", key: "ep-sonar", type: 'EP_BOARD_SIM', category: "Unit 3 · SONAR" },
+          { title: "Ultrasonic NDT Simulator", key: "ep-ndt", type: 'EP_BOARD_SIM', category: "Unit 3 · Ultrasonic NDT" },
+          { title: "Ultrasonic Scanning Simulator", key: "ep-ultrasonic-scanning", type: 'EP_BOARD_SIM', category: "Unit 3 · Ultrasonic Scanning" },
+          { title: "Doppler/Fetal Heartbeat Concept Visualizer", key: "ep-fetal-doppler", type: 'EP_BOARD_SIM', category: "Unit 3 · Fetal Heartbeat Detection" },
+          { title: "Heat Conduction Simulator", key: "ep-heat-conduction", type: 'EP_BOARD_SIM', category: "Unit 4 · Heat Conduction" },
+          { title: "Heat Convection Simulator", key: "ep-heat-convection", type: 'EP_BOARD_SIM', category: "Unit 4 · Heat Convection" },
+          { title: "Thermal Radiation Visualizer", key: "ep-thermal-radiation", type: 'EP_BOARD_SIM', category: "Unit 4 · Thermal Radiation" },
+          { title: "Thermal Conductivity Comparison", key: "ep-thermal-conductivity", type: 'EP_BOARD_SIM', category: "Unit 4 · Thermal Conductivity" },
+          { title: "Solar Thermal Power Simulator", key: "ep-solar-thermal", type: 'EP_BOARD_SIM', category: "Unit 4 · Solar Thermal Power" },
+          { title: "Microwave Heating Simulator", key: "ep-microwave", type: 'EP_BOARD_SIM', category: "Unit 4 · Microwave Heating" },
+          { title: "Surface Tension Simulator", key: "ep-surface-tension", type: 'EP_BOARD_SIM', category: "Unit 4 · Surface Tension" },
+          { title: "Viscosity Simulator", key: "ep-viscosity", type: 'EP_BOARD_SIM', category: "Unit 4 · Viscosity" },
+          { title: "Fluid Flow Visualizer", key: "ep-fluid-flow", type: 'EP_BOARD_SIM', category: "Unit 4 · Fluid Flow" },
+          { title: "Unit Cell 3D Visualizer", key: "ep-unit-cell", type: 'EP_BOARD_SIM', category: "Unit 5 · Unit Cell" },
+          { title: "Simple Cubic Structure", key: "ep-simple-cubic", type: 'EP_BOARD_SIM', category: "Unit 5 · Simple Cubic" },
+          { title: "BCC Structure", key: "ep-bcc", type: 'EP_BOARD_SIM', category: "Unit 5 · Body-Centered Cubic" },
+          { title: "FCC Structure", key: "ep-fcc", type: 'EP_BOARD_SIM', category: "Unit 5 · Face-Centered Cubic" },
+          { title: "Bravais Lattice Visualizer", key: "ep-bravais", type: 'EP_BOARD_SIM', category: "Unit 5 · Bravais Lattices" },
+          { title: "Miller Indices 3D Visualizer", key: "ep-miller", type: 'EP_BOARD_SIM', category: "Unit 5 · Miller Indices" },
+          { title: "Bragg's Law Simulator", key: "ep-bragg", type: 'EP_BOARD_SIM', category: "Unit 5 · Bragg's Law" },
+          { title: "X-Ray Diffraction Simulator", key: "ep-xrd", type: 'EP_BOARD_SIM', category: "Unit 5 · X-Ray Diffraction" },
+          { title: "Czochralski Crystal Growth Simulator", key: "ep-czochralski", type: 'EP_BOARD_SIM', category: "Unit 5 · Czochralski Process" },
+          { title: "Silicon Wafer Formation Simulator", key: "ep-wafer", type: 'EP_BOARD_SIM', category: "Unit 5 · Silicon Wafer Formation" },
+        ];
+      }
     } else {
       formulas = [
         {
@@ -3644,7 +3710,8 @@ export class AcademicService {
     if (!subject) throw ApiError.notFound('Subject not found.');
 
     const domain = resolveSubjectDomain(subject);
-    const available = SIMULATION_CATALOG.filter((sim) => sim.domain === domain);
+    // Templates tagged to particular subjects (e.g. Engineering Physics) are offered only there
+    const available = SIMULATION_CATALOG.filter((sim) => sim.domain === domain && isTemplateForSubject(sim, subject));
 
     return {
       subject: {
@@ -3764,9 +3831,46 @@ export class AcademicService {
       );
     }
 
+    if (!isTemplateForSubject(template, subject)) {
+      throw ApiError.badRequest(`Simulation "${template.title}" is not part of ${subject.subjectCode}.`);
+    }
+
     const title = data.title?.trim() || template.title;
     const description = data.description?.trim() || template.description;
     const status = data.status || ContentStatus.PUBLISHED;
+
+    // Subject-specific templates (Engineering Physics): one published configuration per simulation
+    // per subject — publishing again updates it instead of creating a duplicate. Students only ever
+    // read it; their own parameter changes stay in their browser.
+    if (template.subjectKeywords && template.subjectKeywords.length) {
+      const initialParams = { ...template.defaultParams, ...(data.customParams || {}) };
+      const existing = await Content.findOne({ subject: subject._id, contentType: ContentType.SIMULATIONS, 'simulationConfig.type': template.id });
+      if (existing) {
+        existing.title = title;
+        existing.description = description;
+        existing.chapterOrUnit = data.chapterOrUnit;
+        existing.teacher = teacherId as any;
+        existing.simulationConfig = {
+          type: template.id,
+          initialParams,
+          smartboardPresetId: template.smartboardPresetKey,
+          controls: Object.keys((initialParams as any).defaultParameters || {}),
+        };
+        existing.markModified('simulationConfig');
+        existing.status = status;
+        if (status === ContentStatus.PUBLISHED) existing.publishedAt = new Date();
+        await existing.save();
+        await AuditLog.create({
+          user: teacherId,
+          action: AuditAction.CONTENT_UPDATE,
+          entityType: 'Content',
+          entityId: existing._id,
+          description: `Teacher updated the published configuration of simulation "${title}" in ${subject.subjectCode} Unit ${data.chapterOrUnit}`,
+        });
+        return existing;
+      }
+      data = { ...data, customParams: initialParams };
+    }
 
     const simulationContent = await Content.create({
       title,
