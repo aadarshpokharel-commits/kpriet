@@ -13,6 +13,8 @@ import { apiRouter } from './routes/index.js';
 import { corsOptions } from './security/cors.js';
 import { helmetMiddleware } from './security/helmet.js';
 
+import { smartboardRouter } from './routes/smartboard.routes.js';
+
 /** Builds the Express app without starting a server or DB (used by tests). */
 export function createApp(): Express {
   const app = express();
@@ -48,6 +50,8 @@ export function createApp(): Express {
     res.status(200).end();
   });
 
+  app.use('/api/smartboard', smartboardRouter);
+  app.use('/api/smart-board', smartboardRouter);
   app.use(env.API_PREFIX, apiRouter);
 
   // Serve PiyushDhara Smart Board (smart-board-my-version) static assets

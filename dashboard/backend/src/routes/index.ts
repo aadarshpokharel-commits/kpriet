@@ -10,6 +10,7 @@ import { fileRouter } from './file.routes.js';
 import { notificationRouter } from './notification.routes.js';
 import { adminRouter } from './admin.routes.js';
 import { programmeRouter } from './programme.routes.js';
+import { smartboardRouter } from './smartboard.routes.js';
 
 /**
  * API root router, mounted at env.API_PREFIX (default /api/v1).
@@ -18,6 +19,8 @@ export const apiRouter = Router();
 
 apiRouter.use('/health', healthRoutes);
 apiRouter.use('/auth', authRouter);
+apiRouter.use('/smartboard', smartboardRouter);
+apiRouter.use('/smart-board', smartboardRouter);
 // Central programme master (14 official B.E. programmes). Mounted before the
 // root-level academic router so /programmes resolves here; the legacy
 // degree-programme endpoints remain available at /academic/programmes.

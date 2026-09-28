@@ -212,6 +212,31 @@ const PptPresenter = (() => {
       return await WorkspaceSplit.parsePresentationFile(file);
     }
     const ext = (file.name || '').split('.').pop().toLowerCase();
+
+    // 0. Primary High-Resolution PowerPoint Backend Engine (100% exact desktop slide export)
+    if (ext === 'pptx' || ext === 'ppt' || ext === 'pps' || ext === 'ppsx' || ext === 'odp') {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const resp = await fetch('/api/smartboard/convert-pptx', {
+          method: 'POST',
+          body: formData
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data && data.success && Array.isArray(data.slides) && data.slides.length > 0) {
+            return {
+              fileName: data.fileName || file.name,
+              slideCount: data.slides.length,
+              slides: data.slides
+            };
+          }
+        }
+      } catch (e) {
+        console.warn('Backend PPT convert error, falling back:', e);
+      }
+    }
+
     if (ext === 'pdf' || file.type === 'application/pdf') {
       if (typeof window.pdfjsLib === 'undefined') {
         await new Promise((resolve, reject) => {
