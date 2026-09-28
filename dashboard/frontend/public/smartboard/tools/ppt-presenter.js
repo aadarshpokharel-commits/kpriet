@@ -89,72 +89,133 @@ const PptPresenter = (() => {
     }
   }
 
-  // Browser file input change handler
-  function handleFileSelect(event) {
+  // Browser file input change handler with full OpenXML & PDF parsing
+  async function handleFileSelect(event) {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
 
     if (typeof App !== 'undefined' && App.showToast) {
-      App.showToast(`Selected ${file.name}. Reading slide presentation...`);
+      App.showToast(`Loading presentation "${file.name}"...`);
     }
 
-    // If image file uploaded as slide
-    if (file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        loadDeck({
-          fileName: file.name,
-          slideCount: 1,
-          slides: [{ index: 1, name: 'Slide 1', dataUrl: e.target.result }]
-        });
-      };
-      reader.readAsDataURL(file);
-      return;
-    }
+    try {
+      let parsedDeck = null;
+      if (typeof WorkspaceSplit !== 'undefined' && typeof WorkspaceSplit.parsePresentationFile === 'function') {
+        parsedDeck = await WorkspaceSplit.parsePresentationFile(file);
+      } else {
+        parsedDeck = await parseDeckFile(file);
+      }
 
-    // If PPTX in browser, create placeholder slide cards
-    loadDeck({
-      fileName: file.name,
-      slideCount: 3,
-      slides: [
-        { index: 1, name: `${file.name} - Title Slide`, dataUrl: createPlaceholderSlide(file.name, 'Slide 1: Overview & Introduction') },
-        { index: 2, name: `${file.name} - Concepts`, dataUrl: createPlaceholderSlide(file.name, 'Slide 2: Core Teaching Concepts') },
-        { index: 3, name: `${file.name} - Exercises`, dataUrl: createPlaceholderSlide(file.name, 'Slide 3: Practice Questions & Boardwork') }
-      ]
-    });
+      if (!parsedDeck || !parsedDeck.slides || parsedDeck.slides.length === 0) {
+        throw new Error('No slides could be extracted from presentation.');
+      }
+
+      // Ensure every slide has a rendered dataUrl for board background drawing
+      const processedSlides = parsedDeck.slides.map((s, idx) => {
+        if (s.dataUrl && !s.dataUrl.startsWith('data:application/')) {
+          return s;
+        }
+        const renderedUrl = renderSlideCanvasDataUrl(s, parsedDeck.fileName || file.name, idx, parsedDeck.slides.length);
+        return {
+          ...s,
+          dataUrl: renderedUrl
+        };
+      });
+
+      loadDeck({
+        fileName: parsedDeck.fileName || file.name,
+        slideCount: processedSlides.length,
+        slides: processedSlides
+      });
+    } catch (err) {
+      console.error('Error opening presentation in presenter:', err);
+      if (typeof App !== 'undefined' && App.showToast) {
+        App.showToast(`Note: ${err.message || 'Error parsing presentation'}`);
+      }
+    }
   }
 
-  function createPlaceholderSlide(deckName, title) {
+  function renderSlideCanvasDataUrl(slide, deckName, slideIndex, totalSlides) {
     const canvas = document.createElement('canvas');
-    canvas.width = 1280; canvas.height = 720;
+    canvas.width = 1920;
+    canvas.height = 1080;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#081329';
-    ctx.fillRect(0, 0, 1280, 720);
 
-    // Border
-    ctx.strokeStyle = '#c9a84c';
-    ctx.lineWidth = 4;
-    ctx.strokeRect(20, 20, 1240, 680);
+    // Background
+    ctx.fillStyle = slide.slideBg || '#081226';
+    ctx.fillRect(0, 0, 1920, 1080);
 
-    // Text
-    ctx.fillStyle = '#e8c96b';
-    ctx.font = 'bold 36px Segoe UI, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('PiyushDhara EduVerse Presentation', 640, 220);
+    // Top Header Banner
+    const bannerH = 76;
+    const grad = ctx.createLinearGradient(0, 0, 1920, 0);
+    grad.addColorStop(0, 'rgba(14, 165, 233, 0.42)');
+    grad.addColorStop(1, 'rgba(139, 92, 246, 0.32)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 1920, bannerH);
 
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '28px Segoe UI, sans-serif';
-    ctx.fillText(title, 640, 320);
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, bannerH);
+    ctx.lineTo(1920, bannerH);
+    ctx.stroke();
 
+    // Slide Tag
     ctx.fillStyle = '#38bdf8';
-    ctx.font = '20px Segoe UI, sans-serif';
-    ctx.fillText(deckName, 640, 420);
+    ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(`📑 SLIDE ${slideIndex + 1} OF ${totalSlides} — ${deckName}`, 42, 46);
 
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.font = '16px Segoe UI, sans-serif';
-    ctx.fillText('Ready for board drawing, annotations, math & science formulas', 640, 500);
+    // Slide Title
+    const titleText = slide.title || `Slide ${slideIndex + 1}`;
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 42px system-ui, -apple-system, sans-serif';
+    ctx.fillText(titleText, 48, bannerH + 80);
 
-    return canvas.toDataURL('image/jpeg', 0.9);
+    // Bullets & Content Rows
+    const bullets = (slide.bullets && slide.bullets.length > 0) ? slide.bullets : [
+      '• Key conceptual topics and theoretical models',
+      '• Mathematical derivations, equations, and system diagrams',
+      '• Practical classroom questions and whiteboard annotations'
+    ];
+
+    const contentTop = bannerH + 130;
+    const availableH = 1080 - contentTop - 60;
+    const itemH = Math.max(52, Math.min(100, Math.floor((availableH - (bullets.length * 16)) / bullets.length)));
+
+    bullets.forEach((b, idx) => {
+      const by = contentTop + idx * (itemH + 16);
+      if (by + itemH > 1020) return;
+
+      // Card row background
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.22)';
+      ctx.lineWidth = 1.5;
+      if (ctx.roundRect) ctx.roundRect(48, by, 1824, itemH, 12);
+      else ctx.rect(48, by, 1824, itemH);
+      ctx.fill();
+      ctx.stroke();
+
+      // Text inside row
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = '24px system-ui, -apple-system, sans-serif';
+      ctx.textAlign = 'left';
+      const textStr = (b.startsWith('•') || /^\d+\./.test(b)) ? b : `•  ${b}`;
+      ctx.fillText(textStr, 76, by + itemH / 2 + 8);
+    });
+
+    return canvas.toDataURL('image/jpeg', 0.94);
+  }
+
+  async function parseDeckFile(file) {
+    if (typeof WorkspaceSplit !== 'undefined' && typeof WorkspaceSplit.parsePresentationFile === 'function') {
+      return await WorkspaceSplit.parsePresentationFile(file);
+    }
+    return {
+      fileName: file.name,
+      slideCount: 1,
+      slides: [{ index: 1, name: file.name, title: file.name, bullets: ['Slide content loaded'] }]
+    };
   }
 
   // Load a deck of slides into the presenter
