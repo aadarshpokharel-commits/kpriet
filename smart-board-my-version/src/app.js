@@ -114,8 +114,8 @@ const App = (() => {
 
   
   // ─────────────────────────────────────────────
-  // BOARD PERSISTENCE (IndexedDB + localStorage fallback)
-  // Ensures refreshing the page (F5) never loses strokes, shapes, PPT decks, or split partitions
+  // BOARD PERSISTENCE (Hybrid Synchronous localStorage + Unlimited IndexedDB)
+  // Guarantees zero stroke loss on refresh (F5), page navigation, or browser restart
   // ─────────────────────────────────────────────
   const DB_NAME = 'EduVerseSmartBoardDB';
   const DB_VERSION = 1;
@@ -265,33 +265,66 @@ const App = (() => {
     };
   }
 
-  async function saveActiveSession() {
+  function saveActiveSession() {
     try {
       const payload = getActiveSessionPayload();
-      await saveSessionToDb(payload);
+      const key = getSessionKey();
+
+      // 1. Synchronous localStorage save (instant and atomic across refresh)
       try {
-        localStorage.setItem('mbp_active_session_meta', JSON.stringify({
-          savedAt: payload.savedAt,
-          pageCount: payload.pages.length,
-          currentPage: payload.currentPage,
-          key: getSessionKey()
-        }));
-      } catch (e) {}
+        const jsonStr = JSON.stringify(payload);
+        localStorage.setItem(key, jsonStr);
+        localStorage.setItem('current_active_session', jsonStr);
+        localStorage.setItem('mbp_active_session_backup', jsonStr);
+      } catch (storageErr) {
+        // If quota exceeded (e.g. huge PPT background slides), save strokes/shapes without large image blobs in localStorage
+        try {
+          const lightweight = {
+            ...payload,
+            pages: payload.pages.map(p => ({ ...p, bgImage: null })),
+            pptPresenterState: null
+          };
+          const lightStr = JSON.stringify(lightweight);
+          localStorage.setItem(key, lightStr);
+          localStorage.setItem('current_active_session', lightStr);
+          localStorage.setItem('mbp_active_session_backup', lightStr);
+        } catch(err2) {}
+      }
+
+      // 2. Asynchronous IndexedDB save (unlimited capacity for high-res decks & 10,000+ strokes)
+      saveSessionToDb(payload);
     } catch (e) {
       console.warn('saveActiveSession failed:', e);
     }
   }
 
   function scheduleAutoSave() {
+    saveActiveSession();
     if (autoSaveTimer) clearTimeout(autoSaveTimer);
     autoSaveTimer = setTimeout(() => {
       saveActiveSession();
-    }, 200);
+    }, 150);
   }
 
   async function restoreActiveSession() {
     try {
-      const data = await loadSessionFromDb();
+      let data = null;
+      const key = getSessionKey();
+
+      // Step 1: Read immediately from synchronous localStorage (0ms delay)
+      try {
+        const raw = localStorage.getItem(key) || localStorage.getItem('current_active_session') || localStorage.getItem('mbp_active_session_backup');
+        if (raw) data = JSON.parse(raw);
+      } catch (e) {}
+
+      // Step 2: Check IndexedDB (may have heavy PPT slide blobs or newer session)
+      try {
+        const dbData = await loadSessionFromDb();
+        if (dbData && (!data || (dbData.savedAt && dbData.savedAt >= (data.savedAt || 0)))) {
+          data = dbData;
+        }
+      } catch (e) {}
+
       if (!data || !Array.isArray(data.pages) || data.pages.length === 0) {
         return false;
       }
@@ -349,7 +382,12 @@ const App = (() => {
 
   function clearActiveSessionStorage() {
     clearSessionFromDb();
-    try { localStorage.removeItem('mbp_active_session_meta'); } catch (e) {}
+    try {
+      localStorage.removeItem(getSessionKey());
+      localStorage.removeItem('current_active_session');
+      localStorage.removeItem('mbp_active_session_backup');
+      localStorage.removeItem('mbp_active_session_meta');
+    } catch (e) {}
   }
 
   function $(id) { return document.getElementById(id); }

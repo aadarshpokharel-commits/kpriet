@@ -166,7 +166,6 @@ const Drawing = (() => {
   }
 
   function endStroke() {
-    if (typeof App !== 'undefined' && App.scheduleAutoSave) App.scheduleAutoSave();
     if (!isDrawing) return;
     isDrawing = false;
     activePointerId = null;
@@ -197,6 +196,10 @@ const Drawing = (() => {
     points = [];
     const ctx = getDrawCtx();
     if (ctx) ctx.globalCompositeOperation = 'source-over';
+
+    if (typeof App !== 'undefined' && App.scheduleAutoSave) {
+      App.scheduleAutoSave();
+    }
   }
 
   // ─────────────────────────────────────────────
