@@ -462,6 +462,17 @@ const App = (() => {
       WorkspaceSplit.setActivePartitionTool(tool);
     }
 
+    // Sync with 2D Graphable Workspace modal if open
+    const graphModal = document.getElementById('graph-object-editor-modal');
+    if (graphModal && graphModal.classList.contains('open')) {
+      if (typeof GraphObject !== 'undefined' && GraphObject.setAnnoTool) {
+        if (tool === 'pen') GraphObject.setAnnoTool('pen');
+        else if (tool === 'highlighter') GraphObject.setAnnoTool('highlighter');
+        else if (tool === 'eraser') GraphObject.setAnnoTool('eraser');
+        else if (tool === 'select') GraphObject.setAnnoTool('inspect');
+      }
+    }
+
     if (tool !== 'select' && typeof BoardClipboard !== 'undefined' && BoardClipboard.clearSelection) {
       BoardClipboard.clearSelection();
     }
@@ -522,6 +533,14 @@ const App = (() => {
     // Route color changes to active split screen partition if active
     if (typeof WorkspaceSplit !== 'undefined' && WorkspaceSplit.getMode() !== 'normal') {
       WorkspaceSplit.setActivePartitionColor(hex);
+    }
+
+    // Sync with 2D Graphable Workspace modal if open
+    const graphModalCol = document.getElementById('graph-object-editor-modal');
+    if (graphModalCol && graphModalCol.classList.contains('open')) {
+      if (typeof GraphObject !== 'undefined' && GraphObject.setAnnoColor) {
+        GraphObject.setAnnoColor(hex);
+      }
     }
 
     document.querySelectorAll('.color-dot, .fp-color-dot').forEach(d => {

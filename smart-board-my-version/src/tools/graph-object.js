@@ -3067,6 +3067,7 @@ const GraphObject = (() => {
   }
 
   function closeEditor() {
+    document.body.classList.remove('gos-show-sidebar');
     const modal = document.getElementById('graph-object-editor-modal');
     if (modal) modal.classList.remove('open');
     editingGraph = null;
@@ -3099,6 +3100,273 @@ const GraphObject = (() => {
     if (!editingGraph) return;
     resetView(editingGraph);
     scheduleEditorPreview();
+  }
+
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 2D GRAPHABLE WORKSPACE — ANNOTATION & PEN DRAWING ENGINE
+  // ─────────────────────────────────────────────────────────────────────────────
+  let annoTool = 'inspect'; // 'inspect' | 'pen' | 'highlighter' | 'eraser'
+  let annoColor = '#38bdf8';
+  let annoWidth = 3;
+  let isAnnoDrawing = false;
+  let isAnnoErasing = false;
+  let currentAnnoStroke = null;
+  let annoStrokes = [];
+  let annoUndoneStrokes = [];
+
+  function setAnnoTool(tool) {
+    annoTool = tool;
+    const modal = document.getElementById('graph-object-editor-modal');
+    const drawCv = modal && modal.querySelector('#gos-draw-canvas');
+    const prevCv = modal && modal.querySelector('#gos-preview-canvas');
+
+    if (modal) {
+      modal.querySelectorAll('.gos-anno-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-tool') === tool);
+      });
+    }
+
+    if (drawCv && prevCv) {
+      if (tool === 'inspect') {
+        drawCv.style.pointerEvents = 'none';
+        prevCv.style.pointerEvents = 'auto';
+        prevCv.style.cursor = 'grab';
+      } else {
+        drawCv.style.pointerEvents = 'auto';
+        prevCv.style.pointerEvents = 'none';
+        drawCv.style.cursor = (tool === 'eraser') ? 'cell' : 'crosshair';
+      }
+    }
+
+    if (typeof App !== 'undefined') {
+      if (tool === 'inspect' && App.currentTool !== 'select') App.setTool('select');
+      else if (tool === 'pen' && App.currentTool !== 'pen') App.setTool('pen');
+      else if (tool === 'highlighter' && App.currentTool !== 'highlighter') App.setTool('highlighter');
+      else if (tool === 'eraser' && App.currentTool !== 'eraser') App.setTool('eraser');
+    }
+  }
+
+  function setAnnoColor(color) {
+    annoColor = color;
+    const modal = document.getElementById('graph-object-editor-modal');
+    if (modal) {
+      modal.querySelectorAll('.gos-color-dot').forEach(dot => {
+        const dotColor = (dot.getAttribute('data-color') || '').toLowerCase();
+        dot.classList.toggle('active', dotColor === color.toLowerCase());
+      });
+    }
+    if (typeof App !== 'undefined' && App.setColor) {
+      App.setColor(color);
+    }
+  }
+
+  function toggleSidebar() {
+    const isShown = document.body.classList.toggle('gos-show-sidebar');
+    const btn = document.getElementById('gos-btn-sidebar');
+    if (btn) btn.classList.toggle('active', isShown);
+    if (typeof App !== 'undefined' && App.showToast) {
+      App.showToast(isShown ? '🛠️ Sidebar Tools Activated' : '🛠️ Sidebar Tools Hidden');
+    }
+  }
+
+  function initAnnoEvents(canvas) {
+    if (!canvas) return;
+    canvas.addEventListener('pointerdown', onAnnoPointerDown);
+    canvas.addEventListener('pointermove', onAnnoPointerMove);
+    canvas.addEventListener('pointerup', onAnnoPointerUp);
+    canvas.addEventListener('pointercancel', onAnnoPointerUp);
+  }
+
+  function onAnnoPointerDown(e) {
+    if (e.button !== undefined && e.button !== 0) return;
+    if (annoTool === 'inspect') return;
+
+    const canvas = document.getElementById('gos-draw-canvas');
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const pressure = (e.pressure && e.pressure > 0) ? e.pressure : 0.5;
+
+    if (annoTool === 'eraser') {
+      isAnnoErasing = true;
+      eraseAnnoNear(x, y, 22);
+      try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+      return;
+    }
+
+    isAnnoDrawing = true;
+    currentAnnoStroke = {
+      tool: annoTool,
+      color: annoColor,
+      width: (annoTool === 'highlighter') ? 18 : (annoWidth || 3),
+      points: [{ x, y, pressure }]
+    };
+
+    try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+
+    // Draw initial dot
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    ctx.save();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    if (annoTool === 'highlighter') {
+      ctx.globalAlpha = 0.35;
+    } else {
+      ctx.globalAlpha = 1.0;
+    }
+    ctx.fillStyle = annoColor;
+    ctx.beginPath();
+    ctx.arc(x, y, (currentAnnoStroke.width || 3) / 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function onAnnoPointerMove(e) {
+    const canvas = document.getElementById('gos-draw-canvas');
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const pressure = (e.pressure && e.pressure > 0) ? e.pressure : 0.5;
+
+    if (isAnnoErasing) {
+      eraseAnnoNear(x, y, 22);
+      return;
+    }
+
+    if (!isAnnoDrawing || !currentAnnoStroke) return;
+
+    currentAnnoStroke.points.push({ x, y, pressure });
+    const pts = currentAnnoStroke.points;
+    if (pts.length < 2) return;
+
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    ctx.save();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    if (currentAnnoStroke.tool === 'highlighter') {
+      ctx.globalAlpha = 0.35;
+      ctx.strokeStyle = currentAnnoStroke.color;
+      ctx.lineWidth = currentAnnoStroke.width || 18;
+    } else {
+      ctx.globalAlpha = 1.0;
+      ctx.strokeStyle = currentAnnoStroke.color;
+      ctx.lineWidth = currentAnnoStroke.width || 3;
+    }
+
+    ctx.beginPath();
+    const p1 = pts[pts.length - 2];
+    const p2 = pts[pts.length - 1];
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function onAnnoPointerUp(e) {
+    if (isAnnoDrawing && currentAnnoStroke) {
+      if (currentAnnoStroke.points.length > 0) {
+        annoStrokes.push(currentAnnoStroke);
+        annoUndoneStrokes = [];
+        redrawAnnoCanvas();
+      }
+    }
+    isAnnoDrawing = false;
+    isAnnoErasing = false;
+    currentAnnoStroke = null;
+  }
+
+  function eraseAnnoNear(x, y, radius = 22) {
+    const initialLen = annoStrokes.length;
+    annoStrokes = annoStrokes.filter(s => {
+      if (!s.points) return false;
+      return !s.points.some(pt => {
+        const dx = pt.x - x;
+        const dy = pt.y - y;
+        return (dx * dx + dy * dy) <= (radius * radius);
+      });
+    });
+    if (annoStrokes.length !== initialLen) {
+      redrawAnnoCanvas();
+    }
+  }
+
+  function redrawAnnoCanvas() {
+    const canvas = document.getElementById('gos-draw-canvas');
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const dpr = window.devicePixelRatio || 1;
+    const targetW = Math.round(rect.width * dpr);
+    const targetH = Math.round(rect.height * dpr);
+
+    if (canvas.width !== targetW || canvas.height !== targetH) {
+      canvas.width = targetW;
+      canvas.height = targetH;
+    }
+
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, rect.width, rect.height);
+
+    for (const s of annoStrokes) {
+      if (!s || !s.points || s.points.length === 0) continue;
+      ctx.save();
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      if (s.tool === 'highlighter') {
+        ctx.globalAlpha = 0.35;
+        ctx.strokeStyle = s.color;
+        ctx.lineWidth = s.width || 18;
+      } else {
+        ctx.globalAlpha = 1.0;
+        ctx.strokeStyle = s.color;
+        ctx.lineWidth = s.width || 3;
+      }
+
+      const pts = s.points;
+      if (pts.length === 1) {
+        ctx.fillStyle = s.color;
+        ctx.beginPath();
+        ctx.arc(pts[0].x, pts[0].y, (s.width || 3) / 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length - 1; i++) {
+          const xc = (pts[i].x + pts[i + 1].x) / 2;
+          const yc = (pts[i].y + pts[i + 1].y) / 2;
+          ctx.quadraticCurveTo(pts[i].x, pts[i].y, xc, yc);
+        }
+        ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+
+  function undoAnno() {
+    if (annoStrokes.length === 0) return;
+    annoUndoneStrokes.push(annoStrokes.pop());
+    redrawAnnoCanvas();
+  }
+
+  function redoAnno() {
+    if (annoUndoneStrokes.length === 0) return;
+    annoStrokes.push(annoUndoneStrokes.pop());
+    redrawAnnoCanvas();
+  }
+
+  function clearAnno() {
+    annoStrokes = [];
+    annoUndoneStrokes = [];
+    redrawAnnoCanvas();
   }
 
   function createEditorModal() {
@@ -3140,6 +3408,41 @@ const GraphObject = (() => {
               <span>Drag to pan · Scroll to zoom · Hover a curve to inspect</span>
             </div>
             <div class="gos-graph-actions">
+              <!-- Drawing & Stylus Controls -->
+              <div class="gos-anno-pill-group" role="group" aria-label="Stylus & Pen Tools">
+                <button type="button" class="gos-anno-btn active" id="gos-btn-inspect" data-tool="inspect" onclick="GraphObject.setAnnoTool('inspect')" title="Pan & Inspect Curve (👆)">
+                  <span>👆 Inspect</span>
+                </button>
+                <button type="button" class="gos-anno-btn" id="gos-btn-pen" data-tool="pen" onclick="GraphObject.setAnnoTool('pen')" title="Draw with Pen (✏️)">
+                  <span>✏️ Pen</span>
+                </button>
+                <button type="button" class="gos-anno-btn" id="gos-btn-highlighter" data-tool="highlighter" onclick="GraphObject.setAnnoTool('highlighter')" title="Highlighter (🖍️)">
+                  <span>🖍️ Highlight</span>
+                </button>
+                <button type="button" class="gos-anno-btn" id="gos-btn-eraser" data-tool="eraser" onclick="GraphObject.setAnnoTool('eraser')" title="Eraser (🧹)">
+                  <span>🧹 Eraser</span>
+                </button>
+                <button type="button" class="gos-anno-btn" onclick="GraphObject.undoAnno()" title="Undo (↩️)">↩️</button>
+                <button type="button" class="gos-anno-btn" onclick="GraphObject.redoAnno()" title="Redo (↪️)">↪️</button>
+                <button type="button" class="gos-anno-btn" onclick="GraphObject.clearAnno()" title="Clear Drawings (🗑️)">🗑️</button>
+              </div>
+
+              <!-- Pen Color Dots -->
+              <div class="gos-anno-colors" id="gos-anno-colors" title="Pen Color">
+                <button type="button" class="gos-color-dot active" data-color="#38bdf8" style="background:#38bdf8;" onclick="GraphObject.setAnnoColor('#38bdf8')" title="Cyan Pen"></button>
+                <button type="button" class="gos-color-dot" data-color="#facc15" style="background:#facc15;" onclick="GraphObject.setAnnoColor('#facc15')" title="Yellow Pen"></button>
+                <button type="button" class="gos-color-dot" data-color="#22c55e" style="background:#22c55e;" onclick="GraphObject.setAnnoColor('#22c55e')" title="Green Pen"></button>
+                <button type="button" class="gos-color-dot" data-color="#f43f5e" style="background:#f43f5e;" onclick="GraphObject.setAnnoColor('#f43f5e')" title="Red Pen"></button>
+                <button type="button" class="gos-color-dot" data-color="#a855f7" style="background:#a855f7;" onclick="GraphObject.setAnnoColor('#a855f7')" title="Purple Pen"></button>
+                <button type="button" class="gos-color-dot" data-color="#ffffff" style="background:#ffffff;" onclick="GraphObject.setAnnoColor('#ffffff')" title="White Pen"></button>
+                <button type="button" class="gos-color-dot" data-color="#0f172a" style="background:#0f172a;border:1px solid #475569;" onclick="GraphObject.setAnnoColor('#0f172a')" title="Dark Pen"></button>
+              </div>
+
+              <!-- Main Sidebar Toggle -->
+              <button type="button" class="gos-sidebar-toggle" id="gos-btn-sidebar" onclick="GraphObject.toggleSidebar()" title="Toggle Main Smart Board Sidebar (🛠️)">
+                <span>🛠️ Sidebar</span>
+              </button>
+
               <button type="button" class="gos-fullscreen-toggle" onclick="GraphObject.toggleWorkspaceFullscreen()" aria-label="Make graph full screen" aria-pressed="false">⛶ Full screen</button>
               <div class="gos-zoom-pill" role="group" aria-label="Graph zoom controls">
                 <button type="button" onclick="GraphObject.zoomEditor(1.25)" aria-label="Zoom out" title="Zoom out">−</button>
@@ -3148,7 +3451,11 @@ const GraphObject = (() => {
               </div>
             </div>
           </div>
-          <canvas id="gos-preview-canvas" aria-label="Interactive equation graph"></canvas>
+          <!-- Graph Canvas Container with Overlay Ink Canvas -->
+          <div class="gos-canvas-wrapper">
+            <canvas id="gos-preview-canvas" aria-label="Interactive equation graph"></canvas>
+            <canvas id="gos-draw-canvas" class="gos-draw-canvas" aria-label="Stylus annotation overlay"></canvas>
+          </div>
         </section>
       </div>
     `;
@@ -3172,9 +3479,16 @@ const GraphObject = (() => {
     previewCanvas.addEventListener('pointerup', onEditorPreviewPointerUp);
     previewCanvas.addEventListener('pointercancel', onEditorPreviewPointerUp);
     previewCanvas.addEventListener('wheel', onEditorPreviewWheel, { passive: false });
+    const drawCanvas = modal.querySelector('#gos-draw-canvas');
+    initAnnoEvents(drawCanvas);
+
     if (typeof ResizeObserver !== 'undefined') {
-      const observer = new ResizeObserver(scheduleEditorPreview);
+      const observer = new ResizeObserver(() => {
+        scheduleEditorPreview();
+        redrawAnnoCanvas();
+      });
       observer.observe(previewCanvas);
+      if (drawCanvas) observer.observe(drawCanvas);
       modal._gosResizeObserver = observer;
     }
     return modal;
@@ -4157,6 +4471,12 @@ const GraphObject = (() => {
     BOARD_THEMES,
     LINE_COLORS,
     FUNCTION_FAMILIES,
+    setAnnoTool,
+    setAnnoColor,
+    toggleSidebar,
+    undoAnno,
+    redoAnno,
+    clearAnno,
     getEditingGraph: () => editingGraph,
     getModalTargetGraph: () => modalTargetGraph || editingGraph
   };
