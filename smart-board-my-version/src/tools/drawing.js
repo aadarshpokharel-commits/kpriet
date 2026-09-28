@@ -200,7 +200,6 @@ const Drawing = (() => {
       App.saveActiveSession();
     }
   }
-  }
 
   // ─────────────────────────────────────────────
   // HIGH-FREQUENCY POINTER EVENTS
@@ -806,7 +805,7 @@ const Drawing = (() => {
     // Synchronize Write Over button on chapter panel if open
     const btnAnnotate = document.getElementById('cp-btn-annotate');
     if (btnAnnotate) {
-      if (useDraw) {
+      if (isFreehandInk) {
         btnAnnotate.classList.add('active');
         btnAnnotate.textContent = '👆 Interact';
         btnAnnotate.title = 'Switch to interacting with buttons & inputs';
