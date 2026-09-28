@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '@/context/AuthContext';
 import { AcademicService } from '@/services/academic.service';
@@ -87,6 +87,60 @@ export function TeacherDashboardPage() {
     setActiveTab(tabId);
     setSearchParams({ tab: tabId });
   };
+
+  // ─── Workspace tabs ribbon horizontal scroll controls ───
+  const tabsNavRef = useRef<HTMLDivElement | null>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkTabsScroll = useCallback(() => {
+    const el = tabsNavRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 6);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 6);
+  }, []);
+
+  const scrollTabs = (direction: 'left' | 'right') => {
+    if (!tabsNavRef.current) return;
+    const distance = Math.max(260, Math.floor(tabsNavRef.current.clientWidth * 0.6));
+    tabsNavRef.current.scrollBy({
+      left: direction === 'left' ? -distance : distance,
+      behavior: 'smooth',
+    });
+    setTimeout(checkTabsScroll, 220);
+  };
+
+  const handleTabsWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (!tabsNavRef.current) return;
+    if (Math.abs(e.deltaX) > 0) return;
+    if (tabsNavRef.current.scrollWidth > tabsNavRef.current.clientWidth && e.deltaY !== 0) {
+      tabsNavRef.current.scrollLeft += e.deltaY;
+      checkTabsScroll();
+    }
+  };
+
+  useEffect(() => {
+    const el = tabsNavRef.current;
+    if (!el) return;
+    checkTabsScroll();
+    el.addEventListener('scroll', checkTabsScroll, { passive: true });
+    window.addEventListener('resize', checkTabsScroll);
+    return () => {
+      el.removeEventListener('scroll', checkTabsScroll);
+      window.removeEventListener('resize', checkTabsScroll);
+    };
+  }, [checkTabsScroll]);
+
+  // Auto-scroll the active tab into view whenever activeTab changes or page loads
+  useEffect(() => {
+    if (!tabsNavRef.current) return;
+    const activeEl = tabsNavRef.current.querySelector<HTMLButtonElement>(`[data-tab-id="${activeTab}"]`);
+    if (activeEl) {
+      activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+    const t = setTimeout(checkTabsScroll, 250);
+    return () => clearTimeout(t);
+  }, [activeTab, checkTabsScroll]);
 
   // Student progress state
   const [studentsProgress, setStudentsProgress] = useState<IStudentProgressItem[]>([]);
@@ -1030,38 +1084,103 @@ export function TeacherDashboardPage() {
                     </div>
                   </div>
 
-                  {/* ─── 3. Workspace tabs (full width, scrolls sideways when needed) ─── */}
-                  <nav
-                    aria-label="Subject workspace sections"
-                    className="sticky top-0 z-10 flex items-center gap-1 overflow-x-auto rounded-2xl border border-line bg-panel/95 p-1.5 shadow-sm backdrop-blur scrollbar-none"
-                  >
-                    {tabList
-                      .filter((t) => t.id !== 'overview')
-                      .map((t) => (
-                        <button
-                          key={t.id}
-                          type="button"
-                          onClick={() => handleTabChange(t.id as any)}
-                          className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
-                            activeTab === t.id
-                              ? 'bg-indigo-600 text-white font-semibold shadow-sm'
-                              : 'text-muted hover:text-ink hover:bg-surface'
-                          }`}
-                        >
-                          <span>{t.icon}</span>
-                          <span>{t.label}</span>
-                          {t.badge !== undefined && (
-                            <span
-                              className={`text-[10px] font-bold px-1.5 rounded-full ${
-                                activeTab === t.id ? 'bg-white/20 text-white' : 'bg-surface text-muted border border-line'
-                              }`}
-                            >
-                              {t.badge}
-                            </span>
-                          )}
-                        </button>
-                      ))}
-                  </nav>
+                  {/* ─── 3. Workspace tabs with interactive left/right scroll controls ─── */}
+                  <div className="sticky top-16 z-20 flex items-center rounded-2xl border border-line bg-panel/95 p-1 shadow-sm backdrop-blur relative group/tabs">
+                    {/* Left Scroll Button */}
+                    <button
+                      type="button"
+                      onClick={() => scrollTabs('left')}
+                      disabled={!canScrollLeft}
+                      aria-label="Scroll tabs left"
+                      title="Scroll tabs left (‹)"
+                      className={`shrink-0 z-20 flex h-8 w-8 items-center justify-center rounded-xl border border-line bg-surface text-ink transition-all cursor-pointer ${
+                        canScrollLeft
+                          ? 'opacity-100 hover:bg-card-hover hover:text-indigo-600 hover:scale-105 active:scale-95 shadow-xs'
+                          : 'opacity-0 pointer-events-none'
+                      }`}
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+
+                    {/* Left Fade Gradient Mask */}
+                    {canScrollLeft && (
+                      <div className="pointer-events-none absolute left-9 top-1 bottom-1 w-8 bg-gradient-to-r from-panel via-panel/80 to-transparent z-10" />
+                    )}
+
+                    {/* Scrollable Tabs Ribbon */}
+                    <nav
+                      ref={tabsNavRef}
+                      onWheel={handleTabsWheel}
+                      aria-label="Subject workspace sections"
+                      className="flex-1 flex items-center gap-1.5 overflow-x-auto py-1 px-1.5 scroll-smooth scrollbar-none"
+                    >
+                      {tabList
+                        .filter((t) => t.id !== 'overview')
+                        .map((t) => (
+                          <button
+                            key={t.id}
+                            data-tab-id={t.id}
+                            type="button"
+                            onClick={() => handleTabChange(t.id as any)}
+                            className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-medium transition-all cursor-pointer whitespace-nowrap min-h-[36px] ${
+                              activeTab === t.id
+                                ? 'bg-indigo-600 text-white font-bold shadow-sm ring-1 ring-indigo-500/40'
+                                : 'text-muted hover:text-ink hover:bg-surface'
+                            }`}
+                          >
+                            <span>{t.icon}</span>
+                            <span>{t.label}</span>
+                            {t.badge !== undefined && (
+                              <span
+                                className={`text-[10px] font-bold px-1.5 rounded-full ${
+                                  activeTab === t.id ? 'bg-white/20 text-white' : 'bg-surface text-muted border border-line'
+                                }`}
+                              >
+                                {t.badge}
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                    </nav>
+
+                    {/* Right Fade Gradient Mask */}
+                    {canScrollRight && (
+                      <div className="pointer-events-none absolute right-9 top-1 bottom-1 w-8 bg-gradient-to-l from-panel via-panel/80 to-transparent z-10" />
+                    )}
+
+                    {/* Right Scroll Button */}
+                    <button
+                      type="button"
+                      onClick={() => scrollTabs('right')}
+                      disabled={!canScrollRight}
+                      aria-label="Scroll tabs right"
+                      title="Scroll tabs right (›)"
+                      className={`shrink-0 z-20 flex h-8 w-8 items-center justify-center rounded-xl border border-line bg-surface text-ink transition-all cursor-pointer ${
+                        canScrollRight
+                          ? 'opacity-100 hover:bg-card-hover hover:text-indigo-600 hover:scale-105 active:scale-95 shadow-xs'
+                          : 'opacity-0 pointer-events-none'
+                      }`}
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+
+                    {/* Quick Scroll Right Pill Button */}
+                    {canScrollRight && (
+                      <button
+                        type="button"
+                        onClick={() => scrollTabs('right')}
+                        className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 px-2 py-1 rounded-lg border border-indigo-500/20 shrink-0 ml-1 transition-colors cursor-pointer"
+                        title="More tabs — click to slide right"
+                      >
+                        <span>More</span>
+                        <span>›</span>
+                      </button>
+                    )}
+                  </div>
 
           {/* ─── TAB CONTENT PANES ─── */}
           <div className="rounded-2xl border border-line bg-panel p-6 shadow-sm min-h-[400px]">

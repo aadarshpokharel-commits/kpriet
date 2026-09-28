@@ -2,7 +2,7 @@ export type SimulationDomain = 'MATHEMATICS' | 'PHYSICS' | 'COMPUTER_SCIENCE' | 
 
 export type MathCategory = 'graphs' | 'calculus visualization' | 'geometry' | 'matrices';
 export type PhysicsCategory = 'projectile motion' | 'circular motion' | 'mechanics' | 'waves' | 'engineering physics';
-export type CSCategory = 'sorting' | 'data structures' | 'algorithms' | 'networking' | 'data structures & algorithms' | 'operating systems' | 'c programming' | 'problem solving';
+export type CSCategory = 'sorting' | 'data structures' | 'algorithms' | 'networking' | 'data structures & algorithms' | 'operating systems' | 'engineering graphics' | 'c programming' | 'problem solving';
 export type CivilCategory = 'structural analysis' | 'surveying' | 'construction simulations';
 
 export type SimulationCategory = MathCategory | PhysicsCategory | CSCategory | CivilCategory;
@@ -67,7 +67,7 @@ export interface ISimulationDefinition {
    */
   subjectKeywords?: string[];
   /** Engine that runs this simulation inside the Smart Board ('dsa' or 'cn'). */
-  boardEngine?: 'dsa' | 'cn' | 'ep';
+  boardEngine?: 'dsa' | 'cn' | 'ep' | 'eg';
   /** Engineering Physics: syllabus area of the simulation (laser, fiber-optics, ultrasonics, thermal-fluids, crystal-physics). */
   simulationSubtype?: string;
   /** Syllabus unit / topic (used to organise the subject's simulation library). */
@@ -272,4 +272,9 @@ export interface IEpPublishedConfig {
   defaultParameters?: Record<string, unknown>;
   visualizationMode?: string;
   steps?: string[];
+}
+
+/** True when the simulation is one of the Engineering Graphics simulations that open on the Smart Board. */
+export function isSmartBoardEgSimulation(def?: { boardEngine?: string } | null): boolean {
+  return Boolean(def && def.boardEngine === 'eg');
 }

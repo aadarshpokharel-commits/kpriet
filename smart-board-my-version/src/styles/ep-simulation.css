@@ -77,6 +77,14 @@ button { touch-action: manipulation; }
 .ep-chip.tone-info { background: var(--blue-soft); border-color: #93c5fd; } .ep-chip.tone-info b { color: var(--blue); }
 .ep-chip.tone-warn { background: var(--amber-soft); border-color: #fcd34d; } .ep-chip.tone-warn b { color: var(--amber); }
 .ep-view3d { display: flex; gap: 4px; flex-wrap: wrap; }
+#ep-pan.active, .ep-tool.active { background: var(--green-soft); border-color: #86c79c; color: var(--green-dark); box-shadow: inset 0 0 0 2px #86c79c; }
+.ep-tools { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+.ep-tool-sep { width: 1px; align-self: stretch; margin: 2px 4px; background: var(--line); }
+.ep-stage-row { flex: 1; min-height: 0; display: flex; gap: 6px; }
+.ep-stage-row > .ep-canvas-wrap { flex: 1; min-width: 0; }
+.ep-tools.vertical { flex-direction: column; flex-wrap: nowrap; align-items: stretch; width: 132px; flex: none; overflow-y: auto; }
+.ep-tools.vertical .ep-btn { width: 100%; text-align: left; padding: 0 9px; }
+.ep-tools.vertical .ep-tool-sep { width: auto; height: 1px; margin: 3px 0; }
 .ep-canvas-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 10px; background: #f8fafc; }
 #ep-canvas { display: block; border-radius: 10px; touch-action: none; }
 .ep-warn { padding: 6px 10px; border-radius: 10px; background: var(--amber-soft); color: #7c2d12; font-size: 12.5px; font-weight: 700; }
@@ -85,6 +93,7 @@ button { touch-action: manipulation; }
 .ep-banner-no { flex: none; padding: 4px 10px; border-radius: 999px; background: var(--ink); color: #fff; font-size: 12px; font-weight: 800; }
 .ep-banner b { color: var(--ink); }
 .ep-banner #ep-banner-text { color: #3f4f46; }
+.ep-banner .ep-banner-no { color: #fff; }
 
 .ep-bottom { min-height: 0; display: flex; flex-direction: column; gap: 8px; }
 .ep-bottom > .ep-card { min-height: 0; overflow: auto; flex: 1 1 50%; }
@@ -158,6 +167,11 @@ body.ep-board .ep-steps button { padding: 9px 8px; }
 body.ep-board .ep-field select, body.ep-board .ep-field input[type=number] { min-height: 46px; font-size: 14px; }
 body.ep-board .ep-range input[type=range] { height: 36px; }
 body.ep-board .ep-small { min-height: 40px; }
+body.ep-board .ep-stage-top .ep-btn, body.ep-board .ep-tools .ep-btn { min-height: 42px; padding: 0 11px; font-size: 13.5px; }
+body.ep-board .ep-stage-top .ep-sq { width: 42px; }
+body.ep-board .ep-stage-top { gap: 6px; }
+body.ep-board .ep-chip { padding: 4px 9px; }
+@media (max-height: 820px) { body.ep-board .ep-banner { padding: 5px 9px; font-size: 13px; } body.ep-board .ep-chip b { font-size: 14px; } }
 
 @media (max-width: 1250px) {
   .ep-layout { grid-template-columns: 240px minmax(0, 1fr) 250px; }

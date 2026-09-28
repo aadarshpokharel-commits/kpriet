@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { ISimulationDefinition, IAssignedSimulation, ISimulationLaunchContext, SimulationDomain } from './types';
-import { getDomainColor, resolveSubjectDomain, isSmartBoardDsaSimulation, isSmartBoardOsSimulation, isSmartBoardCSimulation, isSmartBoardEpSimulation } from './types';
+import { getDomainColor, resolveSubjectDomain, isSmartBoardDsaSimulation, isSmartBoardOsSimulation, isSmartBoardCSimulation, isSmartBoardEpSimulation, isSmartBoardEgSimulation } from './types';
 import type { IEpPublishedConfig } from './types';
 import { getSimulationsForSubject } from './registry';
 import { SimulationModal } from './SimulationModal';
@@ -118,7 +118,7 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
   const contextFor = (sim: ISimulationDefinition, extra: Partial<ISimulationLaunchContext> = {}): ISimulationLaunchContext => {
     if (isSmartBoardDsaSimulation(sim)) return { topic: sim.title, category: sim.dsaCategory, config: { category: sim.dsaCategory, topic: sim.title }, ...extra };
     if (sim.boardEngine === 'cn') return { topic: sim.topic, category: sim.id, config: {}, ...extra };
-    if (isSmartBoardEpSimulation(sim)) return { topic: sim.topic, category: sim.id, config: (publishedConfig.get(sim.id) as Record<string, unknown>) || {}, ...extra };
+    if (isSmartBoardEpSimulation(sim) || isSmartBoardEgSimulation(sim)) return { topic: sim.topic, category: sim.id, config: (publishedConfig.get(sim.id) as Record<string, unknown>) || {}, ...extra };
     if (isSmartBoardOsSimulation(sim)) return { topic: sim.title, category: sim.osCategory, config: { simulationId: sim.id, osCategory: sim.osCategory, topic: sim.title }, ...extra };
     if (isSmartBoardCSimulation(sim)) return { topic: sim.title, category: sim.cCategory, config: { simulationId: sim.id, cCategory: sim.cCategory, topic: sim.title }, ...extra };
     return { topic: sim.title, category: sim.category, config: {}, ...extra };
@@ -181,9 +181,10 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
 
   const previewUrl = (sim: ISimulationDefinition): string | null => {
     if (sim.boardEngine === 'cn') return `/smartboard/cn-simulation.html?${subjectQuery({ sim: sim.id, preview: '1' })}`;
-    if (isSmartBoardEpSimulation(sim)) {
+    if (isSmartBoardEpSimulation(sim) || isSmartBoardEgSimulation(sim)) {
       const cfg = publishedConfig.get(sim.id);
-      return `/smartboard/ep-simulation.html?${subjectQuery({ sim: sim.id, preview: '1', ...(cfg ? { config: JSON.stringify(cfg) } : {}) })}`;
+      const page = isSmartBoardEgSimulation(sim) ? 'eg-simulation.html' : 'ep-simulation.html';
+      return `/smartboard/${page}?${subjectQuery({ sim: sim.id, preview: '1', ...(cfg ? { config: JSON.stringify(cfg) } : {}) })}`;
     }
     if (isSmartBoardOsSimulation(sim)) return `/smartboard/os-simulation.html?${subjectQuery({ simulationId: sim.id, category: String(sim.osCategory || ''), title: sim.title, topic: sim.title })}`;
     if (isSmartBoardDsaSimulation(sim)) return `/smartboard/dsa-simulation.html?${subjectQuery({ category: String(sim.dsaCategory || 'searching'), title: sim.title, topic: sim.title })}`;

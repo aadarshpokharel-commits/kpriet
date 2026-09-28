@@ -3416,6 +3416,32 @@ export class AcademicService {
       ];
     }
 
+    // Engineering Graphics (U21ME101 / U21MEG01): its own drawing formulas and the 11 Smart Board simulations
+    if (subNameLower.includes('engineering graphics') || subCodeUpper === 'U21ME101' || subCodeUpper === 'U21MEG01') {
+      formulas = [
+        { title: 'Length of a line in the front view', latex: 'l_{FV} = L\\cos\\phi', category: 'Projection of Lines', description: 'L = true length, phi = inclination to the VP.' },
+        { title: 'Length of a line in the top view', latex: 'l_{TV} = L\\cos\\theta', category: 'Projection of Lines', description: 'theta = inclination to the HP.' },
+        { title: 'Isometric scale', latex: 'k = \\frac{\\cos 45^\\circ}{\\cos 30^\\circ} = \\sqrt{2/3} \\approx 0.816', category: 'Isometric Projection', description: 'Isometric length = true length x 0.816.' },
+        { title: 'Development of a cone', latex: '\\theta = 360^\\circ\\,\\frac{r}{L}, \\quad L = \\sqrt{h^2 + r^2}', category: 'Development of Surfaces', description: 'Sector angle of the developed lateral surface; L = slant height.' },
+        { title: 'Development of a cylinder', latex: 'P = \\pi D', category: 'Development of Surfaces', description: 'Length of the developed rectangle; its height is the cylinder height.' },
+        { title: 'Interior angle of a regular polygon', latex: '\\alpha = \\frac{180^\\circ (n-2)}{n}', category: 'Geometrical Construction', description: 'Used for the general method of constructing regular polygons.' },
+        { title: 'Perspective (visual ray) height', latex: 'h_p = H\\,\\frac{D}{D + y}', category: 'Perspective Projection', description: 'D = station point distance from the picture plane, y = depth behind it.' },
+      ];
+      defaultSimulations = [
+          { title: "3D Object → Projection Generator", key: "eg-projection-generator", type: 'EG_BOARD_SIM', category: "Unit 4 · 3D Object → Projection" },
+          { title: "Projection of Solids", key: "eg-projection-solids", type: 'EG_BOARD_SIM', category: "Unit 4 · Projection of Solids" },
+          { title: "Section of Solids", key: "eg-section-solids", type: 'EG_BOARD_SIM', category: "Unit 4 · Section of Solids" },
+          { title: "Development of Surfaces", key: "eg-development", type: 'EG_BOARD_SIM', category: "Unit 4 · Development of Surfaces" },
+          { title: "Geometrical Construction", key: "eg-geometric-construction", type: 'EG_BOARD_SIM', category: "Unit 1 · Geometrical Construction" },
+          { title: "Dimensioning Simulator", key: "eg-dimensioning", type: 'EG_BOARD_SIM', category: "Unit 1 · Dimensioning" },
+          { title: "3D Engineering Drawing Workspace", key: "eg-drawing-workspace", type: 'EG_BOARD_SIM', category: "Unit 1 · Drawing Workspace" },
+          { title: "Orthographic Projection", key: "eg-orthographic", type: 'EG_BOARD_SIM', category: "Unit 3 · Orthographic Projection" },
+          { title: "Isometric Projection", key: "eg-isometric", type: 'EG_BOARD_SIM', category: "Unit 5 · Isometric Projection" },
+          { title: "Sectional View Simulator", key: "eg-sectional-view", type: 'EG_BOARD_SIM', category: "Unit 5 · Sectional Views" },
+          { title: "Perspective Projection", key: "eg-perspective", type: 'EG_BOARD_SIM', category: "Unit 5 · Perspective Projection" },
+      ];
+    }
+
     const sessionId = `sb_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     const boardTeacherId = role === UserRole.TEACHER ? String(user._id) : '';
     const boardTeacherName = role === UserRole.TEACHER ? user.name : 'Faculty Member';
@@ -3838,20 +3864,30 @@ export class AcademicService {
     const title = data.title?.trim() || template.title;
     const description = data.description?.trim() || template.description;
     const status = data.status || ContentStatus.PUBLISHED;
+    let subjectLinks: Record<string, any> = {};
 
     // Subject-specific templates (Engineering Physics): one published configuration per simulation
     // per subject — publishing again updates it instead of creating a duplicate. Students only ever
     // read it; their own parameter changes stay in their browser.
     if (template.subjectKeywords && template.subjectKeywords.length) {
       const initialParams = { ...template.defaultParams, ...(data.customParams || {}) };
+      const unitDoc = await CurriculumUnit.findOne({ subject: subject._id, unitNumber: data.chapterOrUnit }).lean();
+      const links = {
+        programme: (unitDoc as any)?.programme || (subject as any).programme || undefined,
+        curriculumUnit: (unitDoc as any)?._id || undefined,
+        topic: template.topic || undefined,
+      };
+      const typeInfo = { simulationType: (initialParams as any).simulationType, simulationSubtype: (initialParams as any).simulationSubtype };
       const existing = await Content.findOne({ subject: subject._id, contentType: ContentType.SIMULATIONS, 'simulationConfig.type': template.id });
       if (existing) {
         existing.title = title;
         existing.description = description;
         existing.chapterOrUnit = data.chapterOrUnit;
         existing.teacher = teacherId as any;
+        existing.set(links);
         existing.simulationConfig = {
           type: template.id,
+          ...typeInfo,
           initialParams,
           smartboardPresetId: template.smartboardPresetKey,
           controls: Object.keys((initialParams as any).defaultParameters || {}),
@@ -3870,6 +3906,7 @@ export class AcademicService {
         return existing;
       }
       data = { ...data, customParams: initialParams };
+      subjectLinks = { ...links, ...typeInfo };
     }
 
     const simulationContent = await Content.create({
@@ -3881,8 +3918,12 @@ export class AcademicService {
       subject: subject._id,
       teacher: teacherId,
       chapterOrUnit: data.chapterOrUnit,
+      ...(subjectLinks.programme ? { programme: subjectLinks.programme } : {}),
+      ...(subjectLinks.curriculumUnit ? { curriculumUnit: subjectLinks.curriculumUnit } : {}),
+      ...(subjectLinks.topic ? { topic: subjectLinks.topic } : {}),
       simulationConfig: {
         type: template.id,
+        ...(subjectLinks.simulationType ? { simulationType: subjectLinks.simulationType, simulationSubtype: subjectLinks.simulationSubtype } : {}),
         initialParams: data.customParams || template.defaultParams,
         smartboardPresetId: template.smartboardPresetKey,
         controls: Object.keys(data.customParams || template.defaultParams),

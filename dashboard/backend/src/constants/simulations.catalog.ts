@@ -584,7 +584,44 @@ export const SIMULATION_CATALOG: ISimulationCatalogItem[] = [
   },
 ];
 
-SIMULATION_CATALOG.push(...EP_SIMULATION_TEMPLATES);
+/**
+ * Engineering Graphics (U21ME101) — 11 Smart Board simulations (engine: smartboard/eg-simulation.html).
+ * Published configuration: simulationConfig.type = template id, initialParams = { simulationType: 'engineering-graphics',
+ * simulationSubtype, defaultParameters, visualizationMode, steps }. Keep in sync with smart-board-my-version/src/tools/eg-catalog.js.
+ */
+const EG_SUBJECT_KEYWORDS = ['engineering graphics', 'u21me101', 'u21meg01'];
+function egTemplate(id: string, unit: number, subtype: string, topic: string, title: string, description: string): ISimulationCatalogItem {
+  return {
+    id,
+    domain: 'COMPUTER_SCIENCE',
+    category: 'engineering graphics',
+    title,
+    description,
+    suggestedUnits: [unit],
+    smartboardPresetKey: id,
+    defaultParams: { simulationType: 'engineering-graphics', simulationSubtype: subtype, defaultParameters: {}, visualizationMode: '', steps: [] },
+    tags: ['Engineering Graphics', topic],
+    subjectKeywords: EG_SUBJECT_KEYWORDS,
+    unit,
+    topic,
+  };
+}
+
+export const EG_SIMULATION_TEMPLATES: ISimulationCatalogItem[] = [
+  egTemplate("eg-projection-generator", 4, "projection-generator", "3D Object → Projection", "3D Object → Projection Generator", "Flagship: pick a solid, rotate it, choose a view and watch the front, top and side views generate with projection lines."),
+  egTemplate("eg-projection-solids", 4, "projection-of-solids", "Projection of Solids", "Projection of Solids", "Prism, pyramid, cylinder and cone — axis perpendicular, inclined to HP, inclined to VP — views drawn stage by stage."),
+  egTemplate("eg-section-solids", 4, "section-of-solids", "Section of Solids", "Section of Solids", "Move a cutting plane through a solid: sectional front/top/side views, hatched section and its true shape."),
+  egTemplate("eg-development", 4, "development-of-surfaces", "Development of Surfaces", "Development of Surfaces", "Unfold prisms, pyramids, cylinders and cones — including truncated solids — with the key dimensions."),
+  egTemplate("eg-geometric-construction", 1, "geometric-construction", "Geometrical Construction", "Geometrical Construction", "Bisectors, angles, regular polygons, circles and tangents — compass-and-ruler steps with snapping."),
+  egTemplate("eg-dimensioning", 1, "dimensioning", "Dimensioning", "Dimensioning Simulator", "Linear, angular, radial and diameter dimensions with extension lines, arrowheads and BIS notation."),
+  egTemplate("eg-drawing-workspace", 1, "drawing-workspace", "Drawing Workspace", "3D Engineering Drawing Workspace", "Draw lines, circles, arcs and polygons with snapping; select, move, rotate, dimension, generate views and export."),
+  egTemplate("eg-orthographic", 3, "orthographic-projection", "Orthographic Projection", "Orthographic Projection", "Front, top and side views of points, lines and planes with reference planes and projectors in all quadrants."),
+  egTemplate("eg-isometric", 5, "isometric-projection", "Isometric Projection", "Isometric Projection", "Orthographic views → isometric object and back, isometric axes, isometric scale and projection guides."),
+  egTemplate("eg-sectional-view", 5, "sectional-view", "Sectional Views", "Sectional View Simulator", "Cut a machine component with a movable plane — full/half section, hatched areas and sectional views."),
+  egTemplate("eg-perspective", 5, "perspective-projection", "Perspective Projection", "Perspective Projection", "Station point, picture plane, ground line, horizon, vanishing points and visual rays — step by step."),
+];
+
+SIMULATION_CATALOG.push(...EP_SIMULATION_TEMPLATES, ...EG_SIMULATION_TEMPLATES);
 
 export function resolveSubjectDomain(subject: {
   subjectCode?: string;

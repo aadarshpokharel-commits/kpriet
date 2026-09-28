@@ -417,6 +417,59 @@ function epBoardSimulation(id: string, unit: number, unitTitle: string, subtype:
   };
 }
 
+/**
+ * Engineering Graphics (U21ME101) — 11 simulations organised Unit → Topic, with the
+ * 3D Object → Projection Generator as the flagship. Each runs inside the Smart Board
+ * (engine: /smartboard/eg-simulation.html). Keep in sync with smart-board-my-version/src/tools/eg-catalog.js.
+ */
+const EG_SUBJECT_KEYWORDS = ['engineering graphics', 'u21me101', 'u21meg01'];
+
+function egBoardSimulation(id: string, unit: number, unitTitle: string, subtype: string, topic: string, title: string, icon: string, shortDescription: string): ISimulationDefinition {
+  return {
+    id,
+    boardEngine: 'eg',
+    simulationSubtype: subtype,
+    unit,
+    unitTitle,
+    topic,
+    subjectKeywords: EG_SUBJECT_KEYWORDS,
+    title,
+    domain: 'COMPUTER_SCIENCE',
+    category: 'engineering graphics',
+    icon,
+    shortDescription,
+    detailedDescription: `${shortDescription} Interactive 2D/3D, step by step, with projection lines and BIS conventions — opens inside the Smart Board.`,
+    learningObjectives: [`Construct and read ${topic} step by step`, 'Connect the 3-D object with its 2-D engineering drawing'],
+    suggestedUnits: [unit],
+    smartboardPresetKey: id,
+    tags: ['Engineering Graphics', unitTitle, topic],
+    parameters: [],
+    metrics: [],
+    engine: {
+      createInitialState: () => ({}),
+      update: (state) => state,
+      render: (ctx, width, height) => {
+        ctx.fillStyle = '#f4f8f4';
+        ctx.fillRect(0, 0, width, height);
+      },
+    },
+  };
+}
+
+export const EG_BOARD_SIMULATIONS: ISimulationDefinition[] = [
+  egBoardSimulation("eg-projection-generator", 4, "Solids, Sections and Development", "projection-generator", "3D Object → Projection", "3D Object → Projection Generator", "🧊", "Flagship: pick a solid, rotate it, choose a view and watch the front, top and side views generate with projection lines."),
+  egBoardSimulation("eg-projection-solids", 4, "Solids, Sections and Development", "projection-of-solids", "Projection of Solids", "Projection of Solids", "🔷", "Prism, pyramid, cylinder and cone — axis perpendicular, inclined to HP, inclined to VP — views drawn stage by stage."),
+  egBoardSimulation("eg-section-solids", 4, "Solids, Sections and Development", "section-of-solids", "Section of Solids", "Section of Solids", "🔪", "Move a cutting plane through a solid: sectional front/top/side views, hatched section and its true shape."),
+  egBoardSimulation("eg-development", 4, "Solids, Sections and Development", "development-of-surfaces", "Development of Surfaces", "Development of Surfaces", "📜", "Unfold prisms, pyramids, cylinders and cones — including truncated solids — with the key dimensions."),
+  egBoardSimulation("eg-geometric-construction", 1, "Drawing Basics & Geometrical Construction", "geometric-construction", "Geometrical Construction", "Geometrical Construction", "📐", "Bisectors, angles, regular polygons, circles and tangents — compass-and-ruler steps with snapping."),
+  egBoardSimulation("eg-dimensioning", 1, "Drawing Basics & Geometrical Construction", "dimensioning", "Dimensioning", "Dimensioning Simulator", "📏", "Linear, angular, radial and diameter dimensions with extension lines, arrowheads and BIS notation."),
+  egBoardSimulation("eg-drawing-workspace", 1, "Drawing Basics & Geometrical Construction", "drawing-workspace", "Drawing Workspace", "3D Engineering Drawing Workspace", "✏️", "Draw lines, circles, arcs and polygons with snapping; select, move, rotate, dimension, generate views and export."),
+  egBoardSimulation("eg-orthographic", 3, "Projection of Points, Lines and Planes", "orthographic-projection", "Orthographic Projection", "Orthographic Projection", "📐", "Front, top and side views of points, lines and planes with reference planes and projectors in all quadrants."),
+  egBoardSimulation("eg-isometric", 5, "Orthographic, Isometric and Perspective Projection", "isometric-projection", "Isometric Projection", "Isometric Projection", "🧱", "Orthographic views → isometric object and back, isometric axes, isometric scale and projection guides."),
+  egBoardSimulation("eg-sectional-view", 5, "Orthographic, Isometric and Perspective Projection", "sectional-view", "Sectional Views", "Sectional View Simulator", "🧩", "Cut a machine component with a movable plane — full/half section, hatched areas and sectional views."),
+  egBoardSimulation("eg-perspective", 5, "Orthographic, Isometric and Perspective Projection", "perspective-projection", "Perspective Projection", "Perspective Projection", "🛤️", "Station point, picture plane, ground line, horizon, vanishing points and visual rays — step by step."),
+];
+
 export const EP_BOARD_SIMULATIONS: ISimulationDefinition[] = [
   epBoardSimulation("ep-absorption", 1, "LASER", "laser", "Absorption", "Absorption and Energy Level Simulator", "⬆️", "A photon whose energy matches E₂ − E₁ lifts an atom to the excited level; other photons pass through."),
   epBoardSimulation("ep-spontaneous-emission", 1, "LASER", "laser", "Spontaneous Emission", "Spontaneous Emission Simulator", "✨", "Excited atoms decay on their own after a random time and emit photons in random directions and phases."),
@@ -1798,6 +1851,7 @@ export const SIMULATION_REGISTRY: ISimulationDefinition[] = [
   ...OS_BOARD_SIMULATIONS,
   ...CN_BOARD_SIMULATIONS,
   ...EP_BOARD_SIMULATIONS,
+  ...EG_BOARD_SIMULATIONS,
   ...C_BOARD_SIMULATIONS,
 
   // Older single "Interactive Lab" entry — hidden, kept so saved assignments still open (on the Smart Board)
@@ -2849,8 +2903,8 @@ export function getSimulationsForSubject(subject: { subjectName?: string; subjec
   const matched = inDomain.filter((s) => s.subjectKeywords?.some((k) => text.includes(k)));
   const list = matched.length ? matched : inDomain.filter((s) => !s.subjectKeywords?.length);
   return [
-    ...list.filter((s) => s.dsaCategory || s.osCategory || s.cCategory || s.boardEngine === 'cn' || s.boardEngine === 'ep'),
-    ...list.filter((s) => !s.dsaCategory && !s.osCategory && !s.cCategory && s.boardEngine !== 'cn' && s.boardEngine !== 'ep'),
+    ...list.filter((s) => s.dsaCategory || s.osCategory || s.cCategory || s.boardEngine === 'cn' || s.boardEngine === 'ep' || s.boardEngine === 'eg'),
+    ...list.filter((s) => !s.dsaCategory && !s.osCategory && !s.cCategory && s.boardEngine !== 'cn' && s.boardEngine !== 'ep' && s.boardEngine !== 'eg'),
   ];
 }
 

@@ -10,6 +10,10 @@ export interface IContentAttachment {
 
 export interface ISimulationConfig {
   type: string;
+  /** e.g. 'engineering-physics', 'engineering-graphics' */
+  simulationType?: string;
+  /** e.g. 'fiber-optics', 'projection-generator' */
+  simulationSubtype?: string;
   initialParams?: Record<string, unknown>;
   controls?: string[];
   smartboardPresetId?: string;
@@ -24,6 +28,10 @@ export interface IContent extends Document {
   subject: Types.ObjectId;
   teacher: Types.ObjectId;
   chapterOrUnit?: number;
+  /** Optional curriculum links (set for subject-specific simulation templates). */
+  programme?: Types.ObjectId;
+  curriculumUnit?: Types.ObjectId;
+  topic?: string;
   attachments: IContentAttachment[];
   resourceUrls: string[];
   simulationConfig?: ISimulationConfig;
@@ -48,6 +56,8 @@ const contentAttachmentSchema = new Schema<IContentAttachment>(
 const simulationConfigSchema = new Schema<ISimulationConfig>(
   {
     type: { type: String, required: true },
+    simulationType: { type: String, trim: true },
+    simulationSubtype: { type: String, trim: true },
     initialParams: { type: Schema.Types.Mixed },
     controls: { type: [String], default: [] },
     smartboardPresetId: { type: String },
@@ -105,6 +115,9 @@ const contentSchema = new Schema<IContent>(
       max: 10,
       index: true,
     },
+    programme: { type: Schema.Types.ObjectId, ref: 'Programme', index: true },
+    curriculumUnit: { type: Schema.Types.ObjectId, ref: 'CurriculumUnit', index: true },
+    topic: { type: String, trim: true, maxlength: 200 },
     attachments: {
       type: [contentAttachmentSchema],
       default: [],
