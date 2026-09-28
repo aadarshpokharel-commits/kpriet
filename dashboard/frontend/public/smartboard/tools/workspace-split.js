@@ -638,6 +638,24 @@ const WorkspaceSplit = (() => {
 
   function onInkPointerDown(id, e) {
     if (e.button !== undefined && e.button !== 0) return;
+
+    // Never capture ink strokes when clicking on interactive dock buttons or control overlays
+    const elUnder = document.elementFromPoint(e.clientX, e.clientY);
+    if (elUnder && (
+      elUnder.closest('.wp-ppt-stage-dock') ||
+      elUnder.closest('.wp-ppt-stage-nav') ||
+      elUnder.closest('.wp-ppt-dock-btn') ||
+      elUnder.closest('.wp-controls-layer') ||
+      elUnder.closest('.wp-header') ||
+      elUnder.closest('button') ||
+      elUnder.closest('input') ||
+      elUnder.closest('select') ||
+      elUnder.closest('.wp-action-btn') ||
+      elUnder.closest('.wp-insert-popup')
+    )) {
+      return;
+    }
+
     setActivePartition(id);
 
     const p = partitions.find(item => item.id === id);
@@ -896,6 +914,12 @@ const WorkspaceSplit = (() => {
     attachInkEvents(id, inkCanvas);
     setTimeout(() => { redrawPartitionInk(p); }, 60);
 
+    // Interactive Floating Controls Overlay (sits above drawing canvas so all buttons, docks & navigation controls respond immediately)
+    const controlsBox = document.createElement('div');
+    controlsBox.className = 'wp-controls-layer';
+    controlsBox.id = `wp-controls-${id}`;
+    body.appendChild(controlsBox);
+
     // If empty partition: show inviting + Add Content action
     if (p.type === 'empty') {
       contentBox.innerHTML = `
@@ -922,7 +946,7 @@ const WorkspaceSplit = (() => {
         mountGeometryContent(p, contentBox);
         break;
       case 'ppt':
-        mountPptContent(p, contentBox);
+        mountPptContent(p, contentBox, controlsBox);
         break;
       case 'pdf':
         mountPdfContent(p, contentBox);
@@ -2483,7 +2507,7 @@ const WorkspaceSplit = (() => {
     };
   }
 
-  function mountPptContent(p, container) {
+  function mountPptContent(p, container, controlsBox) {
     const id = p.id;
     if (!p.pptState.currentDeck) {
       if (typeof PptPresenter !== 'undefined' && PptPresenter.getCurrentDeck && PptPresenter.getCurrentDeck()) {
@@ -2496,46 +2520,52 @@ const WorkspaceSplit = (() => {
     const total = p.pptState.currentDeck?.slides?.length || 1;
     const current = (p.pptState.slideIndex || 0) + 1;
 
+    // Slide Stage inside contentBox
     container.innerHTML = `
       <div class="wp-ppt-workspace" id="wp-ppt-wrap-${id}">
         <!-- Slide Stage Container -->
         <div class="wp-ppt-stage-frame" id="wp-ppt-stage-${id}">
           <canvas class="wp-ppt-slide-cv" id="wp-ppt-slide-${id}"></canvas>
         </div>
-
-        <!-- On-Stage Touch & Hover Navigation Arrows -->
-        <button type="button" class="wp-ppt-stage-nav prev" onclick="event.stopPropagation(); WorkspaceSplit.prevSlide(${id})" title="Previous Slide (◀ / PageUp)" aria-label="Previous Slide">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-        <button type="button" class="wp-ppt-stage-nav next" onclick="event.stopPropagation(); WorkspaceSplit.nextSlide(${id})" title="Next Slide (▶ / PageDown)" aria-label="Next Slide">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
-
-        <!-- On-Stage Floating Slide Dock -->
-        <div class="wp-ppt-stage-dock" id="wp-ppt-dock-${id}">
-          <button type="button" class="wp-ppt-dock-btn" onclick="event.stopPropagation(); WorkspaceSplit.prevSlide(${id})" title="Previous Slide">◀ Prev</button>
-          <span class="wp-ppt-dock-counter" id="wp-dock-info-${id}">Slide <b>${current}</b> of ${total}</span>
-          <button type="button" class="wp-ppt-dock-btn" onclick="event.stopPropagation(); WorkspaceSplit.nextSlide(${id})" title="Next Slide">Next ▶</button>
-          <div class="wp-ppt-dock-sep"></div>
-          <button type="button" class="wp-ppt-dock-btn highlight" onclick="event.stopPropagation(); WorkspaceSplit.openPptFilePicker(${id})" title="Open PowerPoint / PDF from your folder">
-            📂 Open PPT from Folder
-          </button>
-        </div>
       </div>
     `;
 
-    // Attach Touch swipe on the PPT workspace container
-    const wrap = container.querySelector(`#wp-ppt-wrap-${id}`);
-    if (wrap) {
+    // Interactive Navigation and Dock placed in controlsBox layer above drawing canvas
+    const targetControls = controlsBox || container.querySelector(`#wp-ppt-wrap-${id}`) || container;
+    targetControls.innerHTML = `
+      <!-- On-Stage Touch & Hover Navigation Arrows -->
+      <button type="button" class="wp-ppt-stage-nav prev" onclick="event.stopPropagation(); WorkspaceSplit.prevSlide(${id})" title="Previous Slide (◀ / PageUp)" aria-label="Previous Slide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button type="button" class="wp-ppt-stage-nav next" onclick="event.stopPropagation(); WorkspaceSplit.nextSlide(${id})" title="Next Slide (▶ / PageDown)" aria-label="Next Slide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+
+      <!-- On-Stage Floating Slide Dock -->
+      <div class="wp-ppt-stage-dock" id="wp-ppt-dock-${id}">
+        <button type="button" class="wp-ppt-dock-btn" onclick="event.stopPropagation(); WorkspaceSplit.prevSlide(${id})" title="Previous Slide">◀ Prev</button>
+        <span class="wp-ppt-dock-counter" id="wp-dock-info-${id}">Slide <b>${current}</b> of ${total}</span>
+        <button type="button" class="wp-ppt-dock-btn" onclick="event.stopPropagation(); WorkspaceSplit.nextSlide(${id})" title="Next Slide">Next ▶</button>
+        <div class="wp-ppt-dock-sep"></div>
+        <button type="button" class="wp-ppt-dock-btn highlight" onclick="event.stopPropagation(); WorkspaceSplit.openPptFilePicker(${id})" title="Open PowerPoint / PDF from your folder">
+          📂 Open PPT from Folder
+        </button>
+      </div>
+    `;
+
+    // Attach Touch swipe on PPT container & controls
+    [container, targetControls].forEach(el => {
+      if (!el) return;
       let touchStartX = 0;
       let touchStartY = 0;
-      wrap.addEventListener('touchstart', (e) => {
+      el.addEventListener('touchstart', (e) => {
         if (e.touches && e.touches[0]) {
           touchStartX = e.touches[0].clientX;
           touchStartY = e.touches[0].clientY;
         }
       }, { passive: true });
-      wrap.addEventListener('touchend', (e) => {
+      el.addEventListener('touchend', (e) => {
+        if (e.target && (e.target.closest('button') || e.target.closest('.wp-ppt-dock-btn'))) return;
         if (e.changedTouches && e.changedTouches[0]) {
           const dx = e.changedTouches[0].clientX - touchStartX;
           const dy = e.changedTouches[0].clientY - touchStartY;
@@ -2545,7 +2575,7 @@ const WorkspaceSplit = (() => {
           }
         }
       }, { passive: true });
-    }
+    });
 
     renderPptSlide(p);
     requestAnimationFrame(() => renderPptSlide(p));

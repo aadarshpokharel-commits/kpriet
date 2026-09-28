@@ -11517,6 +11517,24 @@ body.gos-show-sidebar #tool-palette {
 /* ───────────────────────────────────────────────────────── */
 /* PPT PRESENTER PARTITION & SLIDE STAGE                    */
 /* ───────────────────────────────────────────────────────── */
+.wp-controls-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none !important;
+  z-index: 50 !important;
+  overflow: hidden;
+}
+
+.wp-controls-layer > *,
+.wp-controls-layer button,
+.wp-controls-layer .wp-ppt-stage-dock,
+.wp-controls-layer .wp-ppt-stage-nav,
+.wp-controls-layer .wp-ppt-dock-btn {
+  pointer-events: auto !important;
+}
+
 .wp-ppt-workspace {
   position: relative;
   width: 100%;
@@ -11543,8 +11561,9 @@ body.gos-show-sidebar #tool-palette {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  z-index: 15;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  z-index: 60 !important;
   transition: all 0.16s ease;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
   opacity: 0.85;
@@ -11560,6 +11579,7 @@ body.gos-show-sidebar #tool-palette {
 .wp-ppt-stage-nav svg {
   width: 18px;
   height: 18px;
+  pointer-events: none;
 }
 .wp-ppt-stage-nav.prev {
   left: 14px;
@@ -11581,8 +11601,8 @@ body.gos-show-sidebar #tool-palette {
   display: flex;
   align-items: center;
   gap: 8px;
-  z-index: 40;
-  pointer-events: auto;
+  z-index: 60 !important;
+  pointer-events: auto !important;
   box-shadow: 0 8px 26px rgba(0, 0, 0, 0.75);
   white-space: nowrap;
 }
@@ -11591,6 +11611,7 @@ body.gos-show-sidebar #tool-palette {
   color: #cbd5e1;
   padding: 0 4px;
   font-weight: 500;
+  user-select: none;
 }
 .wp-ppt-dock-counter b {
   color: #38bdf8;
@@ -11610,16 +11631,21 @@ body.gos-show-sidebar #tool-palette {
   font-size: 11.5px;
   font-weight: 600;
   padding: 4px 10px;
-  cursor: pointer;
+  cursor: pointer !important;
+  pointer-events: auto !important;
   transition: all 0.14s ease;
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  user-select: none;
 }
 .wp-ppt-dock-btn:hover {
   background: rgba(56, 189, 248, 0.18);
   border-color: rgba(56, 189, 248, 0.5);
   color: #ffffff;
+}
+.wp-ppt-dock-btn:active {
+  transform: scale(0.96);
 }
 .wp-ppt-dock-btn.highlight {
   background: linear-gradient(135deg, rgba(14, 165, 233, 0.25) 0%, rgba(99, 102, 241, 0.25) 100%);
