@@ -166,6 +166,7 @@ const Drawing = (() => {
   }
 
   function endStroke() {
+    if (typeof App !== 'undefined' && App.scheduleAutoSave) App.scheduleAutoSave();
     if (!isDrawing) return;
     isDrawing = false;
     activePointerId = null;
@@ -331,6 +332,7 @@ const Drawing = (() => {
   }
 
   function commitLine(start, end, tool) {
+    if (typeof App !== 'undefined' && App.scheduleAutoSave) App.scheduleAutoSave();
     const pc = document.getElementById('preview-canvas');
     if (pc && linePreviewCtx) {
       const { W, H } = (typeof Canvas !== 'undefined' && Canvas.getCanvasSize) ? Canvas.getCanvasSize() : { W: pc.offsetWidth, H: pc.offsetHeight };

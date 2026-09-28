@@ -792,6 +792,7 @@ const WorkspaceSplit = (() => {
   }
 
   function redrawPartitionInk(p) {
+    if (typeof App !== 'undefined' && App.scheduleAutoSave) App.scheduleAutoSave();
     if (!p) return;
     const canvas = document.getElementById(`wp-draw-${p.id}`);
     if (!canvas) return;
@@ -3271,11 +3272,15 @@ const WorkspaceSplit = (() => {
         title: p.title,
         type: p.type,
         boardBg: p.boardBg,
+        inkColor: p.inkColor,
+        inkSize: p.inkSize,
+        strokes: Array.isArray(p.strokes) ? JSON.parse(JSON.stringify(p.strokes)) : [],
         graphState: JSON.parse(JSON.stringify(p.graphState || {})),
-        pptState: {
-          slideIndex: p.pptState ? p.pptState.slideIndex : 0,
+        pptState: p.pptState ? {
+          slideIndex: p.pptState.slideIndex || 0,
+          currentDeck: p.pptState.currentDeck || null,
           fileName: (p.pptState && p.pptState.currentDeck) ? p.pptState.currentDeck.fileName : null
-        },
+        } : null,
         pdfState: { name: p.pdfState ? p.pdfState.name : null },
         simState: JSON.parse(JSON.stringify(p.simState || {}))
       }))
@@ -3298,15 +3303,27 @@ const WorkspaceSplit = (() => {
       pData.forEach(saved => {
         const target = partitions.find(p => p.id === saved.id);
         if (target) {
+          target.title = saved.title || target.title;
           target.type = saved.type || target.type;
           target.boardBg = saved.boardBg || target.boardBg;
+          if (saved.inkColor) target.inkColor = saved.inkColor;
+          if (saved.inkSize) target.inkSize = saved.inkSize;
+          if (Array.isArray(saved.strokes)) target.strokes = JSON.parse(JSON.stringify(saved.strokes));
           if (saved.graphState) target.graphState = JSON.parse(JSON.stringify(saved.graphState));
+          if (saved.pptState) target.pptState = JSON.parse(JSON.stringify(saved.pptState));
           if (saved.simState) target.simState = JSON.parse(JSON.stringify(saved.simState));
         }
       });
     }
 
     setMode(mode || 'normal', r);
+    setTimeout(() => {
+      partitions.forEach(p => {
+        if (p.strokes && p.strokes.length > 0) {
+          redrawPartitionInk(p);
+        }
+      });
+    }, 120);
   }
 
   return {

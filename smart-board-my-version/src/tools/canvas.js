@@ -1260,6 +1260,7 @@ const Canvas = (() => {
   // Zero JSON stringification on strokes, zero GC pauses
   // ─────────────────────────────────────────────
   function pushHistoryAction(action) {
+    if (typeof App !== 'undefined' && App.scheduleAutoSave) App.scheduleAutoSave();
     history.push(action);
     if (history.length > 50) {
       history.shift();
@@ -2789,7 +2790,7 @@ const Canvas = (() => {
   function loadPageState(savedShapes, savedDrawData, savedBgImage, savedStrokes, savedHistory, savedRedo) {
     shapes = savedShapes ? JSON.parse(JSON.stringify(savedShapes)) : [];
     strokes = (savedStrokes && Array.isArray(savedStrokes)) ? savedStrokes.map(s => {
-      const copy = { ...s, pts: s.pts ? s.pts.slice() : [] };
+      const copy = { ...s, points: (s.points && Array.isArray(s.points)) ? s.points.slice() : (s.pts && Array.isArray(s.pts) ? s.pts.slice() : []) };
       if (!copy._bbox) computeStrokeBounds(copy);
       return copy;
     }) : [];

@@ -29,7 +29,7 @@ const App = (() => {
   // ─────────────────────────────────────────────
   // INIT
   // ─────────────────────────────────────────────
-  function init() {
+  async function init() {
     // ── Init CurriculumStore if available ──
     if (typeof CurriculumStore !== 'undefined') {
       const subj = CurriculumStore.getActiveSubject();
@@ -91,8 +91,242 @@ const App = (() => {
         if (dd) dd.classList.add('hidden');
       }
     });
+  
+    // Restore previous active board session if available
+    await restoreActiveSession();
+
+    // Attach unload & visibility listeners for auto-save
+    window.addEventListener('beforeunload', () => {
+      const payload = getActiveSessionPayload();
+      saveSessionToDb(payload);
+    });
+    window.addEventListener('pagehide', () => {
+      const payload = getActiveSessionPayload();
+      saveSessionToDb(payload);
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        saveActiveSession();
+      }
+    });
   }
 
+
+  
+  // ─────────────────────────────────────────────
+  // BOARD PERSISTENCE (IndexedDB + localStorage fallback)
+  // Ensures refreshing the page (F5) never loses strokes, shapes, PPT decks, or split partitions
+  // ─────────────────────────────────────────────
+  const DB_NAME = 'EduVerseSmartBoardDB';
+  const DB_VERSION = 1;
+  const STORE_NAME = 'board_sessions';
+  const SESSION_KEY = 'current_active_session';
+  let dbInstance = null;
+  let autoSaveTimer = null;
+
+  function getDb() {
+    return new Promise((resolve) => {
+      if (dbInstance) return resolve(dbInstance);
+      if (typeof window === 'undefined' || !window.indexedDB) return resolve(null);
+      try {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME);
+          }
+        };
+        req.onsuccess = (e) => {
+          dbInstance = e.target.result;
+          resolve(dbInstance);
+        };
+        req.onerror = (err) => {
+          console.warn('IndexedDB open error:', err);
+          resolve(null);
+        };
+      } catch (e) {
+        console.warn('IndexedDB exception:', e);
+        resolve(null);
+      }
+    });
+  }
+
+  async function saveSessionToDb(sessionData) {
+    const db = await getDb();
+    if (db) {
+      return new Promise((resolve) => {
+        try {
+          const tx = db.transaction(STORE_NAME, 'readwrite');
+          const store = tx.objectStore(STORE_NAME);
+          const req = store.put(sessionData, SESSION_KEY);
+          req.onsuccess = () => resolve(true);
+          req.onerror = (e) => {
+            console.warn('IndexedDB put error:', e);
+            resolve(false);
+          };
+        } catch (err) {
+          console.warn('IndexedDB tx error:', err);
+          resolve(false);
+        }
+      });
+    }
+    return false;
+  }
+
+  async function loadSessionFromDb() {
+    const db = await getDb();
+    if (db) {
+      return new Promise((resolve) => {
+        try {
+          const tx = db.transaction(STORE_NAME, 'readonly');
+          const store = tx.objectStore(STORE_NAME);
+          const req = store.get(SESSION_KEY);
+          req.onsuccess = (e) => resolve(e.target.result || null);
+          req.onerror = () => resolve(null);
+        } catch (err) {
+          console.warn('IndexedDB get error:', err);
+          resolve(null);
+        }
+      });
+    }
+    return null;
+  }
+
+  async function clearSessionFromDb() {
+    const db = await getDb();
+    if (db) {
+      return new Promise((resolve) => {
+        try {
+          const tx = db.transaction(STORE_NAME, 'readwrite');
+          const store = tx.objectStore(STORE_NAME);
+          const req = store.delete(SESSION_KEY);
+          req.onsuccess = () => resolve(true);
+          req.onerror = () => resolve(false);
+        } catch (err) {
+          resolve(false);
+        }
+      });
+    }
+    return false;
+  }
+
+  function getActiveSessionPayload() {
+    saveCurrent();
+    return {
+      version: 2,
+      savedAt: Date.now(),
+      currentPage,
+      activeChapter,
+      activeSubject,
+      currentTool,
+      currentColor,
+      penSize,
+      eraserSize,
+      boardBrightness,
+      boardColorId: (typeof Canvas !== 'undefined' && Canvas.getBoardColorId) ? Canvas.getBoardColorId() : null,
+      pages: pages.map(pg => ({
+        id: pg.id,
+        label: pg.label,
+        shapes: pg.shapes ? JSON.parse(JSON.stringify(pg.shapes)) : [],
+        strokes: pg.strokes ? JSON.parse(JSON.stringify(pg.strokes)) : [],
+        drawDataUrl: pg.drawDataUrl || null,
+        bgImage: pg.bgImage || null,
+        boardColorId: pg.boardColorId || null,
+        splitState: pg.splitState ? JSON.parse(JSON.stringify(pg.splitState)) : null,
+        history: pg.history ? JSON.parse(JSON.stringify(pg.history)) : [],
+        redoStack: pg.redoStack ? JSON.parse(JSON.stringify(pg.redoStack)) : []
+      })),
+      pptPresenterState: (typeof PptPresenter !== 'undefined' && PptPresenter.serializeState)
+        ? PptPresenter.serializeState()
+        : null
+    };
+  }
+
+  async function saveActiveSession() {
+    try {
+      const payload = getActiveSessionPayload();
+      await saveSessionToDb(payload);
+      try {
+        localStorage.setItem('mbp_active_session_meta', JSON.stringify({
+          savedAt: payload.savedAt,
+          pageCount: payload.pages.length,
+          currentPage: payload.currentPage
+        }));
+      } catch (e) {}
+    } catch (e) {
+      console.warn('saveActiveSession failed:', e);
+    }
+  }
+
+  function scheduleAutoSave() {
+    if (autoSaveTimer) clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(() => {
+      saveActiveSession();
+    }, 250);
+  }
+
+  async function restoreActiveSession() {
+    try {
+      const data = await loadSessionFromDb();
+      if (!data || !Array.isArray(data.pages) || data.pages.length === 0) {
+        return false;
+      }
+
+      if (data.activeSubject) activeSubject = data.activeSubject;
+      if (data.activeChapter) activeChapter = data.activeChapter;
+      if (data.currentTool) currentTool = data.currentTool;
+      if (data.currentColor) currentColor = data.currentColor;
+      if (data.penSize) penSize = data.penSize;
+      if (data.eraserSize) eraserSize = data.eraserSize;
+      if (data.boardBrightness !== undefined) setBoardBrightness(data.boardBrightness, false);
+
+      pages = data.pages.map((pg, idx) => ({
+        id: pg.id || (idx + 1),
+        label: pg.label || `Page ${idx + 1}`,
+        shapes: Array.isArray(pg.shapes) ? pg.shapes : [],
+        strokes: Array.isArray(pg.strokes) ? pg.strokes : [],
+        drawData: null,
+        drawDataUrl: pg.drawDataUrl || null,
+        bgImage: pg.bgImage || null,
+        boardColorId: pg.boardColorId || null,
+        splitState: pg.splitState || null,
+        history: Array.isArray(pg.history) ? pg.history : [],
+        redoStack: Array.isArray(pg.redoStack) ? pg.redoStack : []
+      }));
+
+      currentPage = Math.max(0, Math.min(data.currentPage || 0, pages.length - 1));
+
+      if (pages[currentPage].boardColorId && typeof Canvas !== 'undefined' && Canvas.setBoardColor) {
+        Canvas.setBoardColor(pages[currentPage].boardColorId);
+      }
+
+      loadCurrent();
+      renderPageTabs();
+      updatePageControls();
+
+      if (data.pptPresenterState && typeof PptPresenter !== 'undefined' && PptPresenter.restoreState) {
+        const hasSplit = pages[currentPage].splitState && pages[currentPage].splitState.mode !== 'normal';
+        if (!hasSplit) {
+          PptPresenter.restoreState(data.pptPresenterState);
+        }
+      }
+
+      UI.updateStatus();
+      if (typeof UI.syncActiveToolBtn === 'function') {
+        UI.syncActiveToolBtn(currentTool);
+      }
+
+      return true;
+    } catch (e) {
+      console.error('restoreActiveSession error:', e);
+      return false;
+    }
+  }
+
+  function clearActiveSessionStorage() {
+    clearSessionFromDb();
+    try { localStorage.removeItem('mbp_active_session_meta'); } catch (e) {}
+  }
 
   function $(id) { return document.getElementById(id); }
 
@@ -217,6 +451,7 @@ const App = (() => {
     loadCurrent();
     renderPageTabs();
     showToast(`Page ${currentPage + 1} added`);
+    scheduleAutoSave();
   }
 
   function insertPageMiddle() {
@@ -241,6 +476,7 @@ const App = (() => {
     loadCurrent();
     renderPageTabs();
     showToast(`Page ${currentPage + 1} inserted in middle`);
+    scheduleAutoSave();
   }
 
   function deleteCurrentPage() {
@@ -269,6 +505,7 @@ const App = (() => {
     currentPage = idx;
     loadCurrent();
     renderPageTabs();
+    scheduleAutoSave();
   }
 
   function deletePage(idx) {
@@ -277,6 +514,7 @@ const App = (() => {
     if (currentPage >= pages.length) currentPage = pages.length - 1;
     loadCurrent();
     renderPageTabs();
+    scheduleAutoSave();
   }
 
   function saveCurrent() {
@@ -1523,7 +1761,11 @@ const App = (() => {
     setBoardBrightness,
     adjustBoardBrightness,
     toggleBrightnessMenu,
-    getBoardBrightness: () => boardBrightness
+    getBoardBrightness: () => boardBrightness,
+    saveActiveSession,
+    restoreActiveSession,
+    scheduleAutoSave,
+    clearActiveSessionStorage
   };
 
 })();
