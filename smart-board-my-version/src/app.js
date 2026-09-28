@@ -73,6 +73,15 @@ const App = (() => {
       setTimeout(() => {
         if (typeof Canvas !== 'undefined' && Canvas.resize) Canvas.resize();
         updatePageControls();
+
+      // Ensure DOM has computed sizes before final crisp stroke render
+      setTimeout(() => {
+        if (typeof Canvas !== 'undefined') {
+          if (Canvas.resize) Canvas.resize();
+          if (Canvas.renderStrokes) Canvas.renderStrokes();
+          if (Canvas.renderShapes) Canvas.renderShapes();
+        }
+      }, 50);
       }, 80);
     });
 
