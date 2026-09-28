@@ -1871,7 +1871,7 @@ const WorkspaceSplit = (() => {
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // 3. PPT PRESENTER CONTENT & SLIDE ENGINE
+  // 3. PPT PRESENTER CONTENT & FULL-FIDELITY SLIDE ENGINE
   // ─────────────────────────────────────────────────────────────────────────────
 
   function decodeXmlEntities(str) {
@@ -1886,25 +1886,33 @@ const WorkspaceSplit = (() => {
       .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
   }
 
-  function wrapCanvasText(ctx, text, maxWidth) {
-    if (!text) return [];
-    const words = String(text).split(' ');
-    const lines = [];
-    let currentLine = '';
-
-    for (let i = 0; i < words.length; i++) {
-      const word = words[i];
-      const testLine = currentLine ? `${currentLine} ${word}` : word;
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxWidth && currentLine) {
-        lines.push(currentLine);
-        currentLine = word;
-      } else {
-        currentLine = testLine;
-      }
+  function parseXmlColor(node, defaultColor = '#ffffff') {
+    if (!node) return defaultColor;
+    const srgb = node.querySelector('srgbClr, a\\:srgbClr');
+    if (srgb && srgb.getAttribute('val')) {
+      const val = srgb.getAttribute('val').trim();
+      return val.startsWith('#') ? val : `#${val}`;
     }
-    if (currentLine) lines.push(currentLine);
-    return lines;
+    const scheme = node.querySelector('schemeClr, a\\:schemeClr');
+    if (scheme && scheme.getAttribute('val')) {
+      const val = scheme.getAttribute('val');
+      const schemeColors = {
+        'accent1': '#38bdf8',
+        'accent2': '#f43f5e',
+        'accent3': '#22c55e',
+        'accent4': '#eab308',
+        'accent5': '#a855f7',
+        'accent6': '#06b6d4',
+        'tx1': '#ffffff',
+        'tx2': '#cbd5e1',
+        'bg1': '#081226',
+        'bg2': '#0f172a',
+        'dk1': '#020617',
+        'lt1': '#f8fafc'
+      };
+      return schemeColors[val] || defaultColor;
+    }
+    return defaultColor;
   }
 
   function generateDefaultSlideDeck(title) {
@@ -1953,7 +1961,7 @@ const WorkspaceSplit = (() => {
     const name = file.name || 'presentation';
     const ext = name.split('.').pop().toLowerCase();
 
-    // 1. PDF Presentations (.pdf)
+    // 1. PDF Presentations (.pdf) — Crisp Vector Slides
     if (ext === 'pdf' || file.type === 'application/pdf') {
       if (typeof window.pdfjsLib === 'undefined') {
         await new Promise((resolve, reject) => {
@@ -2008,7 +2016,7 @@ const WorkspaceSplit = (() => {
       };
     }
 
-    // 3. PPTX (PowerPoint OpenXML File) — Real Text & Media Extraction
+    // 3. PPTX (PowerPoint OpenXML File) — Full XML Shape & Layout Parsing
     if (ext === 'pptx') {
       try {
         if (typeof window.JSZip === 'undefined') {
@@ -2022,95 +2030,263 @@ const WorkspaceSplit = (() => {
         }
         const arrayBuffer = await file.arrayBuffer();
         const zip = await window.JSZip.loadAsync(arrayBuffer);
-        const slideFiles = [];
+
+        // Slide dimensions from presentation.xml
+        let slideW = 12192000;
+        let slideH = 6858000;
+        const presFile = zip.file('ppt/presentation.xml') || zip.file('ppt/Presentation.xml');
+        if (presFile) {
+          const presXml = await presFile.async('string');
+          const szMatch = presXml.match(/<p:sldSz[^>]*cx="(\d+)"[^>]*cy="(\d+)"/i) || presXml.match(/cx="(\d+)"[^>]*cy="(\d+)"/i);
+          if (szMatch) {
+            slideW = parseInt(szMatch[1], 10) || 12192000;
+            slideH = parseInt(szMatch[2], 10) || 6858000;
+          }
+        }
+
+        // Collect all media files (images, diagrams, logos)
+        const mediaMap = {};
+        const mediaFiles = [];
+        zip.forEach((path) => {
+          if (/^ppt\/media\//i.test(path)) mediaFiles.push(path);
+        });
+        for (const mPath of mediaFiles) {
+          try {
+            const b64 = await zip.file(mPath).async('base64');
+            const mExt = mPath.split('.').pop().toLowerCase();
+            const mime = (mExt === 'png') ? 'image/png' : (mExt === 'svg' ? 'image/svg+xml' : 'image/jpeg');
+            const cleanKey = mPath.replace(/^ppt\//i, '').replace(/^media\//i, '');
+            mediaMap[mPath] = `data:${mime};base64,${b64}`;
+            mediaMap[cleanKey] = `data:${mime};base64,${b64}`;
+          } catch(e) {}
+        }
+
+        // Find and sort slides numerically
+        const slideFileEntries = [];
         zip.forEach((relativePath) => {
           if (/^ppt\/slides\/slide\d+\.xml$/i.test(relativePath)) {
-            slideFiles.push(relativePath);
+            slideFileEntries.push(relativePath);
           }
         });
 
-        slideFiles.sort((a, b) => {
+        slideFileEntries.sort((a, b) => {
           const numA = parseInt(a.match(/slide(\d+)\.xml/i)[1], 10);
           const numB = parseInt(b.match(/slide(\d+)\.xml/i)[1], 10);
           return numA - numB;
         });
 
-        if (slideFiles.length > 0) {
+        if (slideFileEntries.length > 0) {
           const slides = [];
+          const parser = new DOMParser();
 
-          for (let i = 0; i < slideFiles.length; i++) {
-            const slidePath = slideFiles[i];
+          for (let i = 0; i < slideFileEntries.length; i++) {
+            const slidePath = slideFileEntries[i];
             const xmlStr = await zip.file(slidePath).async('string');
-            
-            // Extract paragraphs (<a:p>)
-            const pMatches = xmlStr.match(/<a:p[\s>][\s\S]*?<\/a:p>/gi) || [];
-            const textLines = [];
+            const doc = parser.parseFromString(xmlStr, 'text/xml');
 
-            for (const pStr of pMatches) {
-              const tMatches = pStr.match(/<a:t[^>]*>([\s\S]*?)<\/a:t>/gi) || [];
-              if (tMatches.length > 0) {
-                const rawLine = tMatches.map(t => t.replace(/<[^>]+>/g, '')).join('').trim();
-                const decoded = decodeXmlEntities(rawLine);
-                if (decoded && decoded.length > 0) {
-                  textLines.push(decoded);
-                }
-              }
-            }
-
-            // Fallback to standalone <a:t> if paragraph tags were non-standard
-            if (textLines.length === 0) {
-              const standaloneT = xmlStr.match(/<a:t[^>]*>([\s\S]*?)<\/a:t>/gi) || [];
-              standaloneT.forEach(t => {
-                const txt = decodeXmlEntities(t.replace(/<[^>]+>/g, '').trim());
-                if (txt) textLines.push(txt);
-              });
-            }
-
-            // Extract any image attached to this slide in ppt/media/
-            let slideImage = null;
-            const slideBase = slidePath.split('/').pop();
-            const relsPath = `ppt/slides/_rels/${slideBase}.rels`;
+            // Slide relationships (links to images)
+            const slideBaseName = slidePath.split('/').pop();
+            const relsPath = `ppt/slides/_rels/${slideBaseName}.rels`;
+            const relMap = {};
             const relsFile = zip.file(relsPath);
             if (relsFile) {
               const relsXml = await relsFile.async('string');
-              const targetMatch = relsXml.match(/Target="(\.\.\/media\/[^"]+)"/i) || relsXml.match(/Target="(media\/[^"]+)"/i);
-              if (targetMatch) {
-                const rawTarget = targetMatch[1].replace('../', 'ppt/');
-                const mediaPath = rawTarget.startsWith('ppt/') ? rawTarget : `ppt/${rawTarget}`;
-                const mFile = zip.file(mediaPath) || zip.file(mediaPath.replace('ppt/', ''));
-                if (mFile) {
-                  try {
-                    const b64 = await mFile.async('base64');
-                    const mExt = mediaPath.split('.').pop().toLowerCase();
-                    const mime = (mExt === 'png') ? 'image/png' : (mExt === 'svg' ? 'image/svg+xml' : 'image/jpeg');
-                    slideImage = `data:${mime};base64,${b64}`;
-                  } catch(e) {}
+              const relMatches = relsXml.match(/<Relationship[^>]*Id="([^"]+)"[^>]*Target="([^"]+)"/gi) || [];
+              relMatches.forEach((rm) => {
+                const idMatch = rm.match(/Id="([^"]+)"/i);
+                const targetMatch = rm.match(/Target="([^"]+)"/i);
+                if (idMatch && targetMatch) {
+                  const rId = idMatch[1];
+                  const rawTarget = targetMatch[1].replace('../', 'ppt/').replace('ppt/ppt/', 'ppt/');
+                  relMap[rId] = mediaMap[rawTarget] || mediaMap[rawTarget.replace(/^ppt\//i, '')] || mediaMap[rawTarget.replace(/^ppt\/media\//i, '')];
                 }
-              }
+              });
             }
 
-            const title = textLines[0] || `Slide ${i + 1}`;
-            const bullets = textLines.slice(1);
+            // Extract background color/image
+            let slideBg = '#081226';
+            const bgEl = doc.querySelector('p\\:bg, bg');
+            if (bgEl) {
+              const bgClr = parseXmlColor(bgEl, null);
+              if (bgClr) slideBg = bgClr;
+            }
+
+            // Extract Shapes, Text Boxes, Pictures, Tables
+            const shapeElementsHtml = [];
+            const textLinesAll = [];
+            let primaryTitle = '';
+
+            // 1. Pictures (<p:pic>)
+            const picNodes = doc.querySelectorAll('p\\:pic, pic');
+            picNodes.forEach((pic) => {
+              const blip = pic.querySelector('a\\:blip, blip');
+              const embedId = blip ? (blip.getAttribute('r:embed') || blip.getAttribute('embed')) : null;
+              const imgSrc = embedId ? relMap[embedId] : null;
+
+              const off = pic.querySelector('a\\:off, off');
+              const ext = pic.querySelector('a\\:ext, ext');
+              if (imgSrc && off && ext) {
+                const x = (parseInt(off.getAttribute('x') || '0', 10) / slideW) * 100;
+                const y = (parseInt(off.getAttribute('y') || '0', 10) / slideH) * 100;
+                const w = (parseInt(ext.getAttribute('cx') || '0', 10) / slideW) * 100;
+                const h = (parseInt(ext.getAttribute('cy') || '0', 10) / slideH) * 100;
+
+                shapeElementsHtml.push(`
+                  <img src="${imgSrc}" style="position:absolute;left:${x.toFixed(2)}%;top:${y.toFixed(2)}%;width:${w.toFixed(2)}%;height:${h.toFixed(2)}%;object-fit:contain;border-radius:4px;z-index:2;" />
+                `);
+              }
+            });
+
+            // 2. Shapes & Text Boxes (<p:sp>)
+            const spNodes = doc.querySelectorAll('p\\:sp, sp');
+            spNodes.forEach((sp) => {
+              const off = sp.querySelector('a\\:off, off');
+              const ext = sp.querySelector('a\\:ext, ext');
+              if (!off || !ext) return;
+
+              const x = (parseInt(off.getAttribute('x') || '0', 10) / slideW) * 100;
+              const y = (parseInt(off.getAttribute('y') || '0', 10) / slideH) * 100;
+              const w = (parseInt(ext.getAttribute('cx') || '0', 10) / slideW) * 100;
+              const h = (parseInt(ext.getAttribute('cy') || '0', 10) / slideH) * 100;
+
+              // Shape background fill
+              const spPr = sp.querySelector('p\\:spPr, spPr');
+              let spBg = 'transparent';
+              let spBorder = 'none';
+              if (spPr) {
+                const solidFill = spPr.querySelector('a\\:solidFill, solidFill');
+                if (solidFill) {
+                  spBg = parseXmlColor(solidFill, 'transparent');
+                }
+                const ln = spPr.querySelector('a\\:ln, ln');
+                if (ln) {
+                  const lnColor = parseXmlColor(ln, 'rgba(56,189,248,0.3)');
+                  spBorder = `1px solid ${lnColor}`;
+                }
+              }
+
+              // Text in shape
+              const paragraphs = sp.querySelectorAll('a\\:p, p');
+              const pTagsHtml = [];
+
+              paragraphs.forEach((pEl) => {
+                const pPr = pEl.querySelector('a\\:pPr, pPr');
+                const alignVal = pPr ? pPr.getAttribute('algn') : 'l';
+                const textAlign = (alignVal === 'ctr') ? 'center' : (alignVal === 'r') ? 'right' : (alignVal === 'just') ? 'justify' : 'left';
+
+                const runs = pEl.querySelectorAll('a\\:r, r');
+                const runSpans = [];
+
+                runs.forEach((r) => {
+                  const tEl = r.querySelector('a\\:t, t');
+                  if (!tEl || !tEl.textContent) return;
+                  const text = decodeXmlEntities(tEl.textContent);
+                  if (!text.trim()) return;
+
+                  textLinesAll.push(text.trim());
+                  if (!primaryTitle && y < 35 && (sp.querySelector('p\\:nvSpPr ph[type="title"], p\\:nvSpPr ph[type="ctrTitle"]') || text.length < 80)) {
+                    primaryTitle = text.trim();
+                  }
+
+                  const rPr = r.querySelector('a\\:rPr, rPr');
+                  let fontSz = 16;
+                  let isBold = false;
+                  let isItalic = false;
+                  let textColor = '#ffffff';
+
+                  if (rPr) {
+                    const sz = parseInt(rPr.getAttribute('sz') || '1600', 10);
+                    fontSz = Math.max(10, Math.min(36, sz / 100));
+                    isBold = rPr.getAttribute('b') === '1';
+                    isItalic = rPr.getAttribute('i') === '1';
+                    textColor = parseXmlColor(rPr, '#ffffff');
+                  }
+
+                  runSpans.push(`<span style="font-size:${fontSz}px;font-weight:${isBold ? '700' : '500'};font-style:${isItalic ? 'italic' : 'normal'};color:${textColor};line-height:1.35;">${text}</span>`);
+                });
+
+                if (runSpans.length > 0) {
+                  pTagsHtml.push(`<div style="text-align:${textAlign};margin-bottom:4px;word-break:break-word;">${runSpans.join('')}</div>`);
+                }
+              });
+
+              if (pTagsHtml.length > 0 || (spBg !== 'transparent' && w > 3 && h > 3)) {
+                shapeElementsHtml.push(`
+                  <div style="position:absolute;left:${x.toFixed(2)}%;top:${y.toFixed(2)}%;width:${w.toFixed(2)}%;height:${h.toFixed(2)}%;background:${spBg};border:${spBorder};border-radius:6px;padding:6px;box-sizing:border-box;overflow:hidden;z-index:3;display:flex;flex-direction:column;justify-content:center;">
+                    ${pTagsHtml.join('')}
+                  </div>
+                `);
+              }
+            });
+
+            // 3. Tables (<a:tbl>)
+            const tblNodes = doc.querySelectorAll('a\\:tbl, tbl');
+            tblNodes.forEach((tbl) => {
+              const trNodes = tbl.querySelectorAll('a\\:tr, tr');
+              const rowsHtml = [];
+              trNodes.forEach((tr) => {
+                const tcNodes = tr.querySelectorAll('a\\:tc, tc');
+                const cellsHtml = [];
+                tcNodes.forEach((tc) => {
+                  const tTexts = Array.from(tc.querySelectorAll('a\\:t, t')).map(t => decodeXmlEntities(t.textContent)).join(' ');
+                  cellsHtml.push(`<td style="border:1px solid rgba(255,255,255,0.18);padding:6px 8px;color:#e2e8f0;font-size:12px;">${tTexts || '&nbsp;'}</td>`);
+                });
+                rowsHtml.push(`<tr>${cellsHtml.join('')}</tr>`);
+              });
+              if (rowsHtml.length > 0) {
+                shapeElementsHtml.push(`
+                  <div style="position:absolute;left:8%;top:28%;width:84%;max-height:60%;overflow:auto;z-index:4;background:rgba(15,23,42,0.85);border-radius:8px;border:1px solid rgba(56,189,248,0.3);padding:8px;">
+                    <table style="width:100%;border-collapse:collapse;text-align:left;">${rowsHtml.join('')}</table>
+                  </div>
+                `);
+              }
+            });
+
+            // Slide Title & Structured Layout
+            const slideTitle = primaryTitle || textLinesAll[0] || `Slide ${i + 1}`;
+            const bullets = textLinesAll.filter(t => t !== slideTitle);
+
+            // Construct Full HTML5 Slide Layout
+            const slideHtml = `
+              <div class="wp-pptx-slide-canvas" style="position:relative;width:100%;height:100%;background:${slideBg};overflow:hidden;user-select:none;font-family:'Segoe UI',Inter,system-ui,sans-serif;">
+                <!-- Slide Header Banner Tag -->
+                <div style="position:absolute;top:0;left:0;right:0;height:40px;background:linear-gradient(135deg, rgba(14,165,233,0.35) 0%, rgba(139,92,246,0.25) 100%);border-bottom:1px solid rgba(56,189,248,0.3);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:10;">
+                  <span style="color:#38bdf8;font-size:11.5px;font-weight:700;">📑 SLIDE ${i + 1} OF ${slideFileEntries.length} — ${file.name}</span>
+                  <span style="color:#94a3b8;font-size:10.5px;">PowerPoint Presentation</span>
+                </div>
+                <!-- Real OpenXML Slide Shapes & Media Elements -->
+                <div style="position:absolute;inset:40px 0 0 0;overflow:hidden;">
+                  ${shapeElementsHtml.length > 0 ? shapeElementsHtml.join('') : `
+                    <div style="padding:24px;color:#fff;">
+                      <h2 style="color:#38bdf8;margin:0 0 16px 0;font-size:22px;">${slideTitle}</h2>
+                      <div style="display:flex;flex-direction:column;gap:10px;">
+                        ${bullets.map(b => `<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 14px;font-size:13.5px;color:#e2e8f0;">• ${b}</div>`).join('')}
+                      </div>
+                    </div>
+                  `}
+                </div>
+              </div>
+            `;
 
             slides.push({
               index: i + 1,
               name: `Slide ${i + 1}`,
-              title: title,
+              title: slideTitle,
               subtitle: file.name,
               bullets: bullets,
-              imageSrc: slideImage,
-              dataUrl: (slideImage && textLines.length === 0) ? slideImage : null
+              htmlLayout: slideHtml,
+              slideBg: slideBg
             });
           }
 
           return {
             fileName: file.name,
             slideCount: slides.length,
-            slides
+            slides: slides
           };
         }
       } catch (err) {
-        console.warn('PPTX zip parsing error:', err);
+        console.warn('PPTX OpenXML layout parsing error:', err);
       }
     }
 
@@ -2182,7 +2358,10 @@ const WorkspaceSplit = (() => {
 
     container.innerHTML = `
       <div class="wp-ppt-workspace" id="wp-ppt-wrap-${id}">
-        <canvas class="wp-ppt-slide-cv" id="wp-ppt-slide-${id}"></canvas>
+        <!-- Slide Stage Container -->
+        <div class="wp-ppt-stage-frame" id="wp-ppt-stage-${id}">
+          <canvas class="wp-ppt-slide-cv" id="wp-ppt-slide-${id}"></canvas>
+        </div>
 
         <!-- On-Stage Touch & Hover Navigation Arrows -->
         <button type="button" class="wp-ppt-stage-nav prev" onclick="WorkspaceSplit.prevSlide(${id})" title="Previous Slide (◀ / PageUp)" aria-label="Previous Slide">
@@ -2228,56 +2407,55 @@ const WorkspaceSplit = (() => {
       }, { passive: true });
     }
 
-    const slideCv = container.querySelector(`#wp-ppt-slide-${id}`);
-    requestAnimationFrame(() => {
-      renderPptSlide(p, slideCv);
-    });
-    setTimeout(() => {
-      renderPptSlide(p, slideCv);
-    }, 50);
+    renderPptSlide(p);
+    requestAnimationFrame(() => renderPptSlide(p));
+    setTimeout(() => renderPptSlide(p), 50);
   }
 
   function renderPptSlide(p, cv) {
-    if (!cv) return;
-    const rect = cv.getBoundingClientRect();
-    const parent = cv.parentElement ? cv.parentElement.getBoundingClientRect() : null;
-    const W = Math.max(200, rect.width || (parent ? parent.width : 600));
-    const H = Math.max(150, rect.height || (parent ? parent.height : 450));
-    const dpr = Math.max(1, window.devicePixelRatio || 1);
-
-    cv.width = Math.round(W * dpr);
-    cv.height = Math.round(H * dpr);
-    const ctx = cv.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const id = p.id;
+    const stage = containerEl ? containerEl.querySelector(`#wp-ppt-stage-${id}`) : document.getElementById(`wp-ppt-stage-${id}`);
+    if (!stage) return;
 
     const deck = p.pptState.currentDeck || generateDefaultSlideDeck('Lecture Presentation');
     p.pptState.currentDeck = deck;
     const slideIdx = p.pptState.slideIndex || 0;
     const slide = (deck.slides && deck.slides[slideIdx]) ? deck.slides[slideIdx] : null;
 
-    if (slide && slide.dataUrl && !slide.dataUrl.startsWith('data:application/')) {
-      const img = new Image();
-      img.onload = () => {
-        const imgAspect = (img.naturalWidth && img.naturalHeight) ? (img.naturalWidth / img.naturalHeight) : (16 / 9);
-        const boxAspect = W / H;
-        let dw, dh, dx, dy;
-        if (boxAspect > imgAspect) {
-          dh = H;
-          dw = H * imgAspect;
-          dx = (W - dw) / 2;
-          dy = 0;
-        } else {
-          dw = W;
-          dh = W / imgAspect;
-          dx = 0;
-          dy = (H - dh) / 2;
-        }
-        ctx.fillStyle = '#050b1a';
-        ctx.fillRect(0, 0, W, H);
-        ctx.drawImage(img, dx, dy, dw, dh);
-      };
-      img.src = slide.dataUrl;
-    } else {
+    if (!slide) return;
+
+    // 1. If Full HTML5 Slide Layout is available
+    if (slide.htmlLayout) {
+      stage.innerHTML = `
+        <div class="wp-pptx-slide-card" style="position:relative;width:96%;height:94%;aspect-ratio:16/9;background:${slide.slideBg || '#081226'};border-radius:10px;box-shadow:0 10px 36px rgba(0,0,0,0.65);border:1.5px solid rgba(56,189,248,0.35);overflow:hidden;">
+          ${slide.htmlLayout}
+        </div>
+      `;
+      return;
+    }
+
+    // 2. If Image / PDF Rasterized Slide is available
+    if (slide.dataUrl && !slide.dataUrl.startsWith('data:application/')) {
+      stage.innerHTML = `
+        <div class="wp-pptx-slide-card" style="position:relative;width:96%;height:94%;display:flex;align-items:center;justify-content:center;background:#050b1a;border-radius:10px;overflow:hidden;box-shadow:0 10px 36px rgba(0,0,0,0.65);border:1.5px solid rgba(56,189,248,0.35);">
+          <img src="${slide.dataUrl}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;" alt="Slide ${slideIdx + 1}" />
+        </div>
+      `;
+      return;
+    }
+
+    // 3. Fallback Canvas Card
+    stage.innerHTML = `<canvas class="wp-ppt-slide-cv" id="wp-ppt-slide-${id}"></canvas>`;
+    const slideCv = stage.querySelector(`#wp-ppt-slide-${id}`);
+    if (slideCv) {
+      const rect = stage.getBoundingClientRect();
+      const W = Math.max(200, rect.width || 600);
+      const H = Math.max(150, rect.height || 450);
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      slideCv.width = Math.round(W * dpr);
+      slideCv.height = Math.round(H * dpr);
+      const ctx = slideCv.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       drawModernPptSlideCanvas(ctx, W, H, p, slideIdx, slide);
     }
   }
