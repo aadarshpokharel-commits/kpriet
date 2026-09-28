@@ -210,14 +210,17 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
     return null; // other simulations preview in the built-in runner
   };
 
-  // Render groups: Unit → Topic for a syllabus-mapped library, otherwise one flat grid
+  // Render groups: Unit for a syllabus-mapped library, otherwise one flat grid
   const sections = useMemo(() => {
-    if (!byUnit) return [{ key: 'all', heading: '', topics: [{ topic: '', sims: visible }] }];
+    if (!byUnit) return [{ key: 'all', heading: '', sims: visible }];
     const units = Array.from(new Set(visible.map((s) => s.unit as number))).sort((a, b) => a - b);
     return units.map((u) => {
       const sims = visible.filter((s) => s.unit === u);
-      const topics = Array.from(new Set(sims.map((s) => s.topic || '')));
-      return { key: `unit-${u}`, heading: `Unit ${u} — ${sims[0]?.unitTitle || ''}`, topics: topics.map((t) => ({ topic: t, sims: sims.filter((s) => (s.topic || '') === t) })) };
+      return {
+        key: `unit-${u}`,
+        heading: `Unit ${u} — ${sims[0]?.unitTitle || ''}`,
+        sims,
+      };
     });
   }, [visible, byUnit]);
 
@@ -345,16 +348,18 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
           <section key={sec.key} className="space-y-3">
             {sec.heading && (
               <h3 className="flex items-center gap-2 text-sm font-bold text-ink">
-                <span className="rounded-md bg-primary px-2 py-0.5 text-[11px] font-bold text-white">{sec.heading.split(' — ')[0]}</span>
-                {sec.heading.split(' — ')[1]}
+                <span className="rounded-md bg-primary px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm">
+                  {sec.heading.split(' — ')[0]}
+                </span>
+                <span>{sec.heading.split(' — ')[1]}</span>
+                <span className="ml-auto text-xs font-semibold text-muted bg-surface-elevated px-2.5 py-0.5 rounded-full border border-line">
+                  {sec.sims.length} simulation{sec.sims.length === 1 ? '' : 's'}
+                </span>
               </h3>
             )}
-            {sec.topics.map((t) => (
-              <div key={t.topic || 'all'} className="space-y-2">
-                {t.topic && byUnit && <p className="text-[11px] font-bold uppercase tracking-wider text-muted">{t.topic}</p>}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6 gap-3">{t.sims.map(card)}</div>
-              </div>
-            ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3.5">
+              {sec.sims.map(card)}
+            </div>
           </section>
         ))
       )}
