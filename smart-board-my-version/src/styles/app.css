@@ -5070,6 +5070,387 @@ body.board-fullscreen #fs-page-control {
   font-weight: 600;
 }
 
+/* ═══════════════════════════════════════════════════════════
+   PIYUSHDHARA AI — UNIVERSAL RESPONSIVE ENGINE
+   Mobile (<600px), Tablet (600-1024px), Desktop (1025-1919px),
+   Smartboards & 4K Displays (>= 1920px)
+   ═══════════════════════════════════════════════════════════ */
+
+/* Header drag & dock base helpers */
+.ai-drawer-header {
+  cursor: grab;
+  touch-action: none;
+}
+.ai-drawer-header.ai-dragging {
+  cursor: grabbing !important;
+}
+.ai-drawer.docked-left {
+  left: 18px !important;
+  right: auto !important;
+}
+.ai-nav-btn.active {
+  background: rgba(139, 92, 246, 0.28) !important;
+  border-color: rgba(167, 139, 250, 0.55) !important;
+  color: #c4b5fd !important;
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+}
+
+/* 1. MOBILE DEVICES (< 600px: iPhones, Androids, Small Vertical Screens) */
+@media (max-width: 599px) {
+  .ai-drawer {
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    z-index: 2500;
+  }
+  .ai-drawer.hidden {
+    transform: translateY(100%) !important;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .ai-drawer-header {
+    padding: 10px 14px;
+    cursor: default;
+  }
+  .ai-avatar-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+  .ai-brand-headline {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .ai-brand-text {
+    font-size: 14px;
+  }
+  .ai-model-pill {
+    font-size: 9px;
+    padding: 1px 6px;
+  }
+  .ai-sub-status {
+    font-size: 10.5px;
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #ai-btn-dock {
+    display: none !important;
+  }
+  .ai-tabs-strip {
+    padding: 8px 12px 2px 12px;
+    gap: 5px;
+  }
+  .ai-tab-chip {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+  .ai-stream-container {
+    padding: 10px 14px;
+    gap: 12px;
+  }
+  .ai-empty-state {
+    padding: 12px 4px 6px 4px;
+  }
+  .ai-hero-circle {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+  }
+  .ai-hero-icon {
+    font-size: 26px;
+  }
+  .ai-hero-title {
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  .ai-hero-sub {
+    font-size: 11.5px;
+    margin-bottom: 14px;
+    max-width: 100%;
+  }
+  .ai-sug-grid {
+    grid-template-columns: 1fr !important;
+    gap: 6px;
+  }
+  .ai-sug-card {
+    padding: 9px 12px;
+    border-radius: 11px;
+  }
+  .ai-sug-text {
+    font-size: 12px;
+    -webkit-line-clamp: 2;
+  }
+  .ai-msg-bubble.user {
+    max-width: 88%;
+    font-size: 12.5px;
+    padding: 9px 12px;
+  }
+  .ai-card-content {
+    padding: 12px 14px;
+    font-size: 12.5px;
+    line-height: 1.55;
+  }
+  .ai-bottom-dock {
+    padding: 10px 14px max(12px, env(safe-area-inset-bottom)) 14px;
+    gap: 6px;
+  }
+  .ai-input-capsule {
+    padding: 6px 8px 6px 12px;
+    border-radius: 12px;
+  }
+  .ai-smart-textarea {
+    font-size: 16px !important;
+    padding: 4px 0;
+  }
+  .ai-smart-textarea::placeholder {
+    font-size: 13px;
+  }
+  .ai-dock-hints {
+    font-size: 9.5px;
+  }
+}
+
+/* 2. TABLETS & SMALL LAPTOPS (600px - 1024px) */
+@media (min-width: 600px) and (max-width: 1024px) {
+  .ai-drawer {
+    width: min(450px, calc(100vw - 24px));
+    top: 14px;
+    right: 12px;
+    height: min(700px, calc(100dvh - 28px));
+    border-radius: 20px;
+  }
+  .ai-drawer.docked-left {
+    left: 12px !important;
+    right: auto !important;
+  }
+  .ai-drawer-header {
+    padding: 12px 16px;
+  }
+  .ai-tabs-strip {
+    padding: 8px 16px 3px 16px;
+  }
+  .ai-stream-container {
+    padding: 12px 16px;
+  }
+  .ai-bottom-dock {
+    padding: 10px 16px 12px 16px;
+  }
+}
+
+/* 3. STANDARD DESKTOPS & LAPTOPS (1025px - 1919px) */
+@media (min-width: 1025px) and (max-width: 1919px) {
+  .ai-drawer {
+    width: 480px;
+    max-width: calc(100vw - 36px);
+    top: 50px;
+    right: 18px;
+    height: min(740px, calc(100vh - 80px));
+  }
+  .ai-drawer.docked-left {
+    left: 18px !important;
+    right: auto !important;
+  }
+}
+
+/* 4. LARGE SMART BOARDS & 4K CLASSROOM DISPLAYS (>= 1920px) */
+@media (min-width: 1920px) {
+  .ai-drawer {
+    width: clamp(540px, 30vw, 700px);
+    top: 60px;
+    right: 24px;
+    height: min(880px, calc(100vh - 100px));
+    border-radius: 26px;
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.08),
+      0 30px 90px rgba(0, 0, 0, 0.8),
+      0 0 60px rgba(124, 58, 237, 0.22);
+  }
+  .ai-drawer.docked-left {
+    left: 24px !important;
+    right: auto !important;
+  }
+  .ai-drawer-header {
+    padding: 16px 22px;
+  }
+  .ai-avatar-badge {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+  .ai-avatar-icon svg {
+    width: 26px;
+    height: 26px;
+  }
+  .ai-brand-text {
+    font-size: 18px;
+  }
+  .ai-model-pill {
+    font-size: 11.5px;
+    padding: 3px 9px;
+    border-radius: 8px;
+  }
+  .ai-sub-status {
+    font-size: 13px;
+  }
+  .ai-nav-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+  }
+  .ai-nav-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+  .ai-tabs-strip {
+    padding: 12px 22px 6px 22px;
+    gap: 8px;
+  }
+  .ai-tab-chip {
+    padding: 8px 16px;
+    font-size: 13.5px;
+    border-radius: 24px;
+    min-height: 42px;
+  }
+  .ai-stream-container {
+    padding: 18px 22px;
+    gap: 18px;
+  }
+  .ai-hero-circle {
+    width: 76px;
+    height: 76px;
+    border-radius: 24px;
+  }
+  .ai-hero-icon {
+    font-size: 40px;
+  }
+  .ai-hero-title {
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+  .ai-hero-sub {
+    font-size: 14px;
+    max-width: 480px;
+    line-height: 1.55;
+    margin-bottom: 22px;
+  }
+  .ai-sug-title {
+    font-size: 12.5px;
+    margin-bottom: 6px;
+  }
+  .ai-sug-grid {
+    gap: 12px;
+  }
+  .ai-sug-card {
+    padding: 14px 16px;
+    border-radius: 14px;
+    gap: 12px;
+    min-height: 56px;
+  }
+  .ai-sug-icon {
+    font-size: 24px;
+  }
+  .ai-sug-text {
+    font-size: 13.5px;
+    line-height: 1.4;
+  }
+  .ai-msg-bubble.user {
+    font-size: 15px;
+    padding: 12px 18px;
+    line-height: 1.6;
+  }
+  .ai-assistant-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+  }
+  .ai-avatar-mini {
+    font-size: 20px;
+  }
+  .ai-card-header {
+    padding: 12px 18px;
+  }
+  .ai-card-title {
+    font-size: 13.5px;
+  }
+  .ai-card-time {
+    font-size: 12px;
+  }
+  .ai-card-content {
+    padding: 16px 20px;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .ai-main-title-md {
+    font-size: 17px;
+  }
+  .ai-section-title {
+    font-size: 15.5px;
+  }
+  .ai-step-title {
+    font-size: 14.5px;
+  }
+  .ai-card-toolbar {
+    padding: 10px 18px;
+    gap: 10px;
+  }
+  .ai-tool-pill {
+    padding: 8px 16px;
+    font-size: 13px;
+    border-radius: 10px;
+    min-height: 42px;
+  }
+  .ai-bottom-dock {
+    padding: 16px 22px 18px 22px;
+    gap: 10px;
+  }
+  .ai-input-capsule {
+    padding: 8px 12px 8px 18px;
+    border-radius: 18px;
+  }
+  .ai-smart-textarea {
+    font-size: 15px;
+    line-height: 1.5;
+    padding: 8px 0;
+    max-height: 160px;
+  }
+  .ai-smart-textarea::placeholder {
+    font-size: 14px;
+  }
+  .ai-action-icon-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+  .ai-action-icon-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+  .ai-send-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+  .ai-send-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+  .ai-dock-hints {
+    font-size: 12px;
+    padding: 0 6px;
+  }
+}
+
+
 
 /* ═══════════════════════════════════════════════════════════
    SMARTBOARD TOUCH OPTIMIZATION

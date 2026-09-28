@@ -213,6 +213,99 @@ const AIAssistant = (() => {
   // ─────────────────────────────────────────────
   // UI MOUNTING — Modern Floating Smart AI Panel
   // ─────────────────────────────────────────────
+  function resetDrawerPosition() {
+    const d = document.getElementById('ai-drawer');
+    if (d) {
+      d.style.left = '';
+      d.style.top = '';
+      d.style.right = '';
+      d.style.bottom = '';
+      d.style.transform = '';
+    }
+  }
+
+  function toggleDockSide() {
+    const d = document.getElementById('ai-drawer');
+    if (!d) return;
+    resetDrawerPosition();
+    d.classList.toggle('docked-left');
+    const btn = document.getElementById('ai-btn-dock');
+    const isLeft = d.classList.contains('docked-left');
+    if (btn) {
+      btn.setAttribute('title', isLeft ? 'Dock Right (Smartboard)' : 'Dock Left (Smartboard)');
+      btn.classList.toggle('active', isLeft);
+    }
+  }
+
+  function initDraggableHeader(header, drawer) {
+    if (!header || !drawer || header._dragInitialized) return;
+    header._dragInitialized = true;
+
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let origLeft = 0;
+    let origTop = 0;
+
+    header.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0 && e.pointerType === 'mouse') return;
+      if (e.target.closest('button, input, textarea, a, select')) return;
+      if (window.innerWidth < 600) return;
+
+      isDragging = true;
+      header.setPointerCapture(e.pointerId);
+      header.classList.add('ai-dragging');
+
+      const rect = drawer.getBoundingClientRect();
+      startX = e.clientX;
+      startY = e.clientY;
+      origLeft = rect.left;
+      origTop = rect.top;
+
+      drawer.style.transition = 'none';
+      drawer.style.right = 'auto';
+      drawer.style.bottom = 'auto';
+      drawer.style.left = `${origLeft}px`;
+      drawer.style.top = `${origTop}px`;
+      e.preventDefault();
+    });
+
+    header.addEventListener('pointermove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+
+      const drawerWidth = drawer.offsetWidth;
+      const drawerHeight = drawer.offsetHeight;
+      const maxLeft = Math.max(8, window.innerWidth - drawerWidth - 8);
+      const maxTop = Math.max(8, window.innerHeight - drawerHeight - 8);
+
+      const newLeft = Math.min(Math.max(8, origLeft + dx), maxLeft);
+      const newTop = Math.min(Math.max(8, origTop + dy), maxTop);
+
+      drawer.style.left = `${newLeft}px`;
+      drawer.style.top = `${newTop}px`;
+    });
+
+    const stopDrag = (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      try {
+        header.releasePointerCapture(e.pointerId);
+      } catch (_) {}
+      header.classList.remove('ai-dragging');
+      drawer.style.transition = '';
+    };
+
+    header.addEventListener('pointerup', stopDrag);
+    header.addEventListener('pointercancel', stopDrag);
+
+    header.addEventListener('dblclick', (e) => {
+      if (e.target.closest('button, input, textarea, a, select')) return;
+      resetDrawerPosition();
+    });
+  }
+
   function ensureDrawerMounted() {
     if (document.getElementById('ai-drawer')) return;
 
@@ -247,7 +340,13 @@ const AIAssistant = (() => {
             </div>
         </div>
 
-        <div class="ai-header-right">
+                <div class="ai-header-right">
+          <button id="ai-btn-dock" class="ai-nav-btn" onclick="AIAssistant.toggleDockSide()" title="Dock Left / Right (Smartboard)" aria-label="Toggle Side">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="9" y1="3" x2="9" y2="21"></line>
+            </svg>
+          </button>
           <button class="ai-nav-btn" onclick="AIAssistant.clearChatHistory()" title="Clear conversation" aria-label="Clear Chat">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -388,6 +487,8 @@ const AIAssistant = (() => {
 
     // Initialize Web Speech Recognition if available
     initSpeechRecognition();
+
+    initDraggableHeader(drawer.querySelector('.ai-drawer-header'), drawer);
 
     updateSubjectLabel();
     mountSelectionAssistant();
@@ -1386,7 +1487,9 @@ const AIAssistant = (() => {
     setPrompt,
     clearChatHistory,
     toggleVoiceInput,
-    askAboutSelection
+    askAboutSelection,
+    toggleDockSide,
+    resetDrawerPosition
   };
 })();
 
