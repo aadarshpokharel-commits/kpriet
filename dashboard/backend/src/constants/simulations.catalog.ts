@@ -621,7 +621,63 @@ export const EG_SIMULATION_TEMPLATES: ISimulationCatalogItem[] = [
   egTemplate("eg-perspective", 5, "perspective-projection", "Perspective Projection", "Perspective Projection", "Station point, picture plane, ground line, horizon, vanishing points and visual rays — step by step."),
 ];
 
-SIMULATION_CATALOG.push(...EP_SIMULATION_TEMPLATES, ...EG_SIMULATION_TEMPLATES);
+/**
+ * Engineering Mathematics (U21MA101 · Calculus and Differential Equations) — 29 Smart Board simulations
+ * (engine: smartboard/ma-simulation.html). Published configuration: simulationConfig.type = template id,
+ * initialParams = { simulationType: 'engineering-mathematics', simulationSubtype, defaultParameters, visualizationMode, steps }.
+ * Keep in sync with smart-board-my-version/src/tools/ma-catalog.js.
+ */
+const MA_SUBJECT_KEYWORDS = ['engineering mathematics', 'u21ma101', 'calculus and differential equations'];
+function maTemplate(id: string, unit: number, subtype: string, topic: string, title: string, description: string): ISimulationCatalogItem {
+  return {
+    id,
+    domain: 'MATHEMATICS',
+    category: 'engineering mathematics',
+    title,
+    description,
+    suggestedUnits: [unit],
+    smartboardPresetKey: id,
+    defaultParams: { simulationType: 'engineering-mathematics', simulationSubtype: subtype, defaultParameters: {}, visualizationMode: '', steps: [] },
+    tags: ['Engineering Mathematics', topic],
+    subjectKeywords: MA_SUBJECT_KEYWORDS,
+    unit,
+    topic,
+  };
+}
+
+export const MA_SIMULATION_TEMPLATES: ISimulationCatalogItem[] = [
+  maTemplate("ma-matrix-ops", 1, "matrices", "Matrix Operations", "Matrix Operations Visualizer", "Addition, subtraction, scalar multiple, product and transpose — every entry calculated step by step."),
+  maTemplate("ma-eigen", 1, "matrices", "Eigenvalues & Eigenvectors", "Eigenvalue & Eigenvector Visualizer", "Flagship: Matrix → det(A − λI) = 0 → eigenvalues → eigenvectors → see which vectors keep their direction."),
+  maTemplate("ma-cayley-hamilton", 1, "matrices", "Cayley-Hamilton", "Cayley-Hamilton Theorem Simulator", "Characteristic polynomial, substitute A, verify p(A) = 0 and use it to find A⁻¹."),
+  maTemplate("ma-diagonalization", 1, "matrices", "Diagonalization", "Matrix Diagonalization", "Eigenvalues, eigenvectors, modal matrix P, D = P⁻¹AP (or orthogonal Pᵀ A P) and verification."),
+  maTemplate("ma-orthogonal", 1, "matrices", "Orthogonal Transformation", "Orthogonal Transformation", "Rotations/reflections preserve lengths and angles; reduce a quadratic form to canonical form."),
+  maTemplate("ma-matrix-applications", 1, "matrices", "Applications", "Matrix Applications", "Linear systems, network flow and population models: input → matrix form → calculation → result."),
+  maTemplate("ma-partial", 2, "several-variables", "Partial Derivatives", "Partial Derivative Visualizer", "Freeze y and vary x (and vice versa): slices of the surface, fₓ, f_y and higher partial derivatives."),
+  maTemplate("ma-total-derivative", 2, "several-variables", "Total Derivative", "Total Derivative Simulator", "du/dt = u_x dx/dt + u_y dy/dt — each component calculated and compared with direct substitution."),
+  maTemplate("ma-jacobian", 2, "several-variables", "Jacobians", "Jacobian Visualizer", "Partial derivatives → Jacobian matrix → determinant, and how a small square is mapped."),
+  maTemplate("ma-taylor2", 2, "several-variables", "Taylor Series", "Taylor Series for Two Variables", "Flagship: f(x,y) about (a,b): derivatives, terms, polynomial of order 1–4 and the approximation error."),
+  maTemplate("ma-extrema", 2, "several-variables", "Extreme Values", "Extreme Values of Two Variables", "Flagship: fₓ = f_y = 0 → critical points → rt − s² test → maximum, minimum or saddle, on contour and 3-D views."),
+  maTemplate("ma-lagrange", 2, "several-variables", "Lagrange Multipliers", "Lagrange Multipliers", "Flagship: Objective and constraint → ∇f = λ∇g → candidate points highlighted where level curves touch the constraint."),
+  maTemplate("ma-double-integral", 3, "multiple-integrals", "Double Integrals", "Double Integral Visualizer", "Region, inner and outer integration step by step, and the volume under the surface."),
+  maTemplate("ma-change-order", 3, "multiple-integrals", "Change of Order", "Change of Order of Integration", "Flagship: Plot the region, find the boundary curves, slice the other way and read the new limits."),
+  maTemplate("ma-triple-integral", 3, "multiple-integrals", "Triple Integrals", "Triple Integral Visualizer", "Inner, middle and outer integration over a 3-D region, with the region drawn in 3-D."),
+  maTemplate("ma-area", 3, "multiple-integrals", "Area", "Area Using Double Integral", "Area between two curves: intersections, limits and strips building up the area."),
+  maTemplate("ma-volume", 3, "multiple-integrals", "Volume", "Volume Using Triple Integral", "Volume of a solid bounded by surfaces — limits, slices and the accumulated volume."),
+  maTemplate("ma-line-integral", 4, "vector-calculus", "Line Integral", "Line Integral Visualizer", "∫_C F·dr along a parametrised path: direction, F·r′(t) and the running accumulation."),
+  maTemplate("ma-surface-integral", 4, "vector-calculus", "Surface Integral", "Surface Integral Visualizer", "Surface, normal vectors and flux ∬ F·n dS computed through a parametrisation."),
+  maTemplate("ma-green", 4, "vector-calculus", "Green's Theorem", "Green's Theorem Simulator", "Flagship: ∮ P dx + Q dy = ∬ (Q_x − P_y) dA — both sides computed and compared."),
+  maTemplate("ma-stokes", 4, "vector-calculus", "Stokes' Theorem", "Stokes' Theorem Simulator", "∮ F·dr around the boundary = ∬ (∇×F)·n dS over the surface, in 3-D."),
+  maTemplate("ma-gauss", 4, "vector-calculus", "Gauss Divergence Theorem", "Gauss Divergence Theorem Simulator", "∯ F·n dS through a closed surface = ∭ ∇·F dV — outward normals and both sides compared."),
+  maTemplate("ma-ode2", 5, "ode", "Second-Order ODE", "Second-Order ODE Solver", "Flagship: a y″ + b y′ + c y = f(x): auxiliary equation, CF, PI, initial conditions and the solution curve."),
+  maTemplate("ma-ode-higher", 5, "ode", "Higher-Order ODE", "Higher-Order ODE Solver", "Linear constant-coefficient ODEs up to order 6: characteristic equation, roots and the general solution."),
+  maTemplate("ma-ode-constant", 5, "ode", "Constant Coefficient ODE", "Constant Coefficient ODE Simulator", "All root cases (distinct, repeated, complex) with sliders — see the solution curve change live."),
+  maTemplate("ma-ode-variable", 5, "ode", "Variable Coefficient ODE", "Variable Coefficient ODE Simulator", "Equations reducible to constant coefficients (x = eᶻ, Legendre linear) and a known-solution reduction of order."),
+  maTemplate("ma-euler-cauchy", 5, "ode", "Euler-Cauchy Equation", "Euler-Cauchy Equation Simulator", "x²y″ + a x y′ + b y = f(x): substitution x = eᶻ, auxiliary equation, roots and solution curve."),
+  maTemplate("ma-legendre", 5, "ode", "Legendre's Equation", "Legendre's Equation Simulator", "(ax+b)²y″ + … : substitution ax + b = eᶻ, reduced equation and solution; Legendre polynomials Pₙ(x)."),
+  maTemplate("ma-variation-params", 5, "ode", "Variation of Parameters", "Variation of Parameters Simulator", "y₁, y₂, Wronskian, u₁ = −∫y₂f/W, u₂ = ∫y₁f/W, particular solution and the final curve."),
+];
+
+SIMULATION_CATALOG.push(...EP_SIMULATION_TEMPLATES, ...EG_SIMULATION_TEMPLATES, ...MA_SIMULATION_TEMPLATES);
 
 export function resolveSubjectDomain(subject: {
   subjectCode?: string;

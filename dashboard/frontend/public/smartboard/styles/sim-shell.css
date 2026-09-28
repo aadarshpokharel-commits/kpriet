@@ -1,0 +1,239 @@
+/*
+ * Eduverse SimulationShell — responsive single-screen simulation workspace (see tools/sim-shell.js).
+ * Loaded after each engine stylesheet; only layout, sizing and spacing are changed — colours and
+ * branding stay with the engine. Everything is sized from the real viewport (100dvh / vw).
+ */
+html.sim-shell, html.sim-shell body { height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; }
+html.sim-shell body { min-height: 0 !important; }
+html.sim-shell { --shell-gap: clamp(4px, 0.55vw, 10px); --shell-pad: clamp(4px, 0.6vw, 12px); --shell-zoom: 1; --shell-dock: 300px; --shell-max: none; --shell-touch: 44px; }
+html.sim-shell[data-size=board], html.sim-shell[data-size=qhd], html.sim-shell[data-size=uhd] { --shell-touch: 48px; }
+
+/* ── root: exactly one viewport ── */
+.sim-shell .shell-root {
+  height: 100vh; height: 100dvh; max-height: 100dvh; width: 100%; max-width: var(--shell-max) !important;
+  margin: 0 auto !important; padding: var(--shell-pad) !important; gap: var(--shell-gap) !important;
+  display: flex !important; flex-direction: column !important; box-sizing: border-box; overflow: hidden !important; min-height: 0 !important;
+}
+.sim-shell .shell-hidden { display: none !important; }
+.sim-shell .shell-main { flex: 1 1 auto; min-height: 0; display: flex !important; flex-direction: column; gap: var(--shell-gap); overflow: hidden; }
+.sim-shell .shell-main.hidden { display: none !important; }
+/* engine library pages (list of simulations) keep normal scrolling inside the viewport */
+.sim-shell .shell-root > [id$="-library"]:not(.hidden) { flex: 1 1 auto; min-height: 0; overflow: auto; }
+
+/* ── compact header ── */
+.sim-shell .shell-header {
+  flex: 0 0 auto; display: flex !important; align-items: center; flex-wrap: nowrap !important; gap: 8px !important;
+  min-height: 0 !important; height: auto !important; padding: 4px 8px !important; margin: 0 !important; position: relative; zoom: var(--shell-zoom);
+}
+.sim-shell .shell-header p, .sim-shell .shell-header [class*="eyebrow"] { display: none !important; }
+.sim-shell .shell-header h1, .sim-shell .shell-header [class*="brand-title"] { font-size: clamp(15px, 1.25vw, 20px) !important; line-height: 1.2 !important; margin: 0 !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sim-shell .shell-header [class*="crumbs"] { font-size: 11px !important; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sim-shell .shell-header [class*="heading"], .sim-shell .shell-header [class*="brand-meta"] { min-width: 0; flex: 1 1 auto; }
+.sim-shell .shell-header :is(.ep-brand, .cn-brand, .dsa-brand-mark, .os-brand-mark, .c-brand-mark) { width: 34px !important; height: 34px !important; min-width: 34px; font-size: 13px !important; border-radius: 10px !important; }
+.sim-shell .shell-header .shell-actions { display: flex; align-items: center; gap: 6px !important; flex-wrap: nowrap !important; min-width: 0; }
+.sim-shell .shell-header .shell-actions button, .sim-shell .shell-header .shell-actions select, .sim-shell .shell-header .shell-actions label { min-height: 36px; }
+.sim-shell .shell-header .shell-actions button { padding-top: 0 !important; padding-bottom: 0 !important; white-space: nowrap; }
+.shell-lead, .shell-tools { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+.shell-lead:empty { display: none; }
+.shell-back, .shell-more, .shell-focus-btn, .shell-exit, .shell-sheet-btn, .shell-dock-hide, .shell-dock-show {
+  font: inherit; font-weight: 800; cursor: pointer; border-radius: 10px; border: 1px solid rgba(100, 116, 139, 0.35);
+  background: rgba(255, 255, 255, 0.85); color: #0f172a; min-width: 38px; min-height: 38px; padding: 0 10px; font-size: 16px; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px; touch-action: manipulation;
+}
+.shell-back:hover, .shell-more:hover, .shell-focus-btn:hover, .shell-sheet-btn:hover, .shell-dock-hide:hover, .shell-dock-show:hover { border-color: currentColor; }
+.shell-back:focus-visible, .shell-more:focus-visible, .shell-focus-btn:focus-visible, .shell-tab:focus-visible, .shell-exit:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; }
+.shell-more { display: none; }
+html[data-engine=os] .shell-back, html[data-engine=os] .shell-more, html[data-engine=os] .shell-focus-btn,
+html[data-engine=c] .shell-back, html[data-engine=c] .shell-more, html[data-engine=c] .shell-focus-btn,
+html[data-engine=os] .shell-sheet-btn, html[data-engine=c] .shell-sheet-btn, html[data-engine=os] .shell-dock-hide, html[data-engine=c] .shell-dock-hide,
+html[data-engine=os] .shell-dock-show, html[data-engine=c] .shell-dock-show { background: rgba(15, 23, 42, 0.85); color: #e2e8f0; border-color: rgba(148, 163, 184, 0.35); }
+
+/* ── body: dock | STAGE | dock ── */
+.sim-shell .shell-body { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: var(--shell-dock) minmax(0, 1fr); gap: var(--shell-gap); }
+.sim-shell.shell-split .shell-body { grid-template-columns: var(--shell-dock) minmax(0, 1fr) var(--shell-dock); }
+.sim-shell:not(.shell-split) .shell-dock-b { display: none; }
+.sim-shell.shell-docks-collapsed .shell-body { grid-template-columns: minmax(0, 1fr); }
+.sim-shell.shell-docks-collapsed .shell-dock { display: none !important; }
+.shell-dock-show { display: none; position: absolute; left: 6px; top: 6px; z-index: 5; font-size: 13px; }
+.sim-shell.shell-docks-collapsed .shell-dock-show { display: inline-flex; }
+
+.sim-shell .shell-stage { position: relative; grid-column: 2; grid-row: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: var(--shell-gap); overflow: hidden; }
+.sim-shell.shell-docks-collapsed .shell-stage { grid-column: 1; }
+.sim-shell .shell-stage > * { min-height: 0; }
+.sim-shell .shell-stage-cols { display: grid; grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.4fr); }
+.sim-shell .shell-stage .shell-chrome { flex: 0 0 auto; zoom: var(--shell-zoom); }
+
+.sim-shell .shell-dock { grid-row: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 4px; zoom: var(--shell-zoom); }
+.sim-shell .shell-dock-a { grid-column: 1; }
+.sim-shell .shell-dock-b { grid-column: 3; }
+.sim-shell .shell-dock.shell-empty { visibility: hidden; }
+.shell-tabbar { flex: 0 0 auto; display: flex; align-items: center; gap: 4px; min-width: 0; }
+.shell-tabs { flex: 1 1 auto; display: flex; gap: 4px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.shell-tabs::-webkit-scrollbar { display: none; }
+.shell-tab {
+  flex: 1 0 auto; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; white-space: nowrap; touch-action: manipulation;
+  min-height: 38px; padding: 0 10px; border-radius: 10px; border: 1px solid rgba(100, 116, 139, 0.3); background: rgba(255, 255, 255, 0.7); color: #334155;
+}
+.shell-tab { display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+.shell-tabs-icons .shell-tab:not(.active) { flex: 0 0 auto; padding: 0 9px; }
+.shell-tabs-icons .shell-tab:not(.active) .shell-tab-lbl { display: none; }
+.shell-tab.active { background: #166534; border-color: #166534; color: #fff; }
+html[data-engine=os] .shell-tab, html[data-engine=c] .shell-tab { background: rgba(15, 23, 42, 0.8); color: #cbd5e1; border-color: rgba(148, 163, 184, 0.3); }
+html[data-engine=os] .shell-tab.active, html[data-engine=c] .shell-tab.active { background: #0284c7; border-color: #0284c7; color: #fff; }
+.shell-sheet-btn { display: none; }
+.shell-dock-hide { min-width: 34px; padding: 0 8px; }
+.sim-shell .shell-dock-b .shell-dock-hide { display: none; }
+.sim-shell .shell-dock-bare .shell-tabs { display: none; }
+.sim-shell .shell-dock-bare .shell-tabbar { position: absolute; right: 4px; bottom: 4px; z-index: 3; }
+.sim-shell .shell-dock-bare { position: relative; }
+.shell-pane { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; display: flex; flex-direction: column; }
+.sim-shell .shell-panel { display: none !important; margin: 0 !important; }
+.sim-shell .shell-panel.shell-active { display: block !important; flex: 1 1 auto; min-height: 0; overflow: auto; max-height: none !important; height: auto !important; }
+.sim-shell .shell-panel-bare.shell-active { display: flex !important; flex-direction: column; overflow: hidden; height: 100% !important; }
+
+/* ── control bar ── */
+.sim-shell .shell-controls { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px var(--shell-gap); zoom: var(--shell-zoom); }
+.sim-shell .shell-controls:empty { display: none; }
+.sim-shell .shell-controls > .shell-ctl { margin: 0 !important; flex-wrap: wrap; gap: 6px; }
+.sim-shell .shell-controls button, .sim-shell .shell-controls select { min-height: var(--shell-touch) !important; touch-action: manipulation; }
+.sim-shell .shell-controls > .shell-ctl:only-child { flex: 1 1 auto; }
+
+.sim-shell .shell-controls, .sim-shell .shell-controls > .shell-ctl { flex-wrap: wrap !important; max-width: 100%; min-width: 0; }
+.shell-ico + .shell-lbl { margin-left: 5px; }
+html.sim-shell[data-layout=column] .shell-controls .shell-lbl { display: none; }
+html.sim-shell[data-layout=column] .shell-controls button:has(.shell-ico) { min-width: var(--shell-touch); padding-left: 12px !important; padding-right: 12px !important; font-size: 18px !important; }
+html.sim-shell[data-layout=column] .shell-controls label > span, html.sim-shell[data-layout=column] .shell-controls [class*="pill-label"] { display: none !important; }
+html.sim-shell[data-layout=column] .shell-controls select { width: auto !important; min-width: 64px; }
+
+/* ── row layout (landscape tablet, desktop, Smart Board) ── */
+html.sim-shell[data-layout=row] .shell-controls { max-width: 100%; }
+
+/* ── column layout (phones, portrait tablets): stage → controls → bottom-sheet panels ── */
+html.sim-shell[data-layout=column] .shell-body { display: contents; }
+html.sim-shell[data-layout=column] .shell-main { gap: 6px; }
+html.sim-shell[data-layout=column] .shell-stage { order: 1; flex: 0 0 auto; height: min(56dvh, calc((100vw - 2 * var(--shell-pad)) / var(--shell-aspect) + 118px)); }
+html.sim-shell[data-layout=column][data-engine=c] .shell-stage { height: 52dvh; grid-template-columns: 1fr; grid-template-rows: minmax(0, 0.9fr) minmax(0, 1.1fr); }
+html.sim-shell[data-layout=column]:not([data-engine=ep]) .shell-stage { height: 50dvh; }
+html.sim-shell[data-layout=column] .shell-controls { order: 2; gap: 4px; }
+html.sim-shell[data-layout=column] .shell-controls button { padding-left: 10px !important; padding-right: 10px !important; font-size: 13px !important; }
+html.sim-shell[data-layout=column] .shell-dock-a { order: 3; flex: 1 1 auto; min-height: 120px; }
+html.sim-shell[data-layout=column] .shell-dock-b { display: none !important; }
+html.sim-shell[data-layout=column] .shell-dock-hide { display: none; }
+html.sim-shell[data-layout=column] .shell-sheet-btn { display: inline-flex; }
+html.sim-shell[data-layout=column].shell-sheet-open .shell-dock-a {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 78dvh; z-index: 60; padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+  background: inherit; background-color: var(--shell-sheet-bg, #f8faf8); border-radius: 18px 18px 0 0; box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.28);
+}
+html.sim-shell[data-layout=column][data-engine=os].shell-sheet-open .shell-dock-a, html.sim-shell[data-layout=column][data-engine=c].shell-sheet-open .shell-dock-a { --shell-sheet-bg: #0b1222; }
+/* phone header: title + ⋯ ; actions drop down */
+html.sim-shell[data-layout=column] .shell-more { display: inline-flex; }
+html.sim-shell[data-layout=column] .shell-header { flex-wrap: nowrap !important; }
+html.sim-shell[data-layout=column] .shell-header .shell-actions { display: none !important; }
+html.sim-shell[data-layout=column].shell-menu-open .shell-header .shell-actions {
+  display: flex !important; flex-direction: column; align-items: stretch; position: absolute; right: 6px; top: calc(100% + 4px); z-index: 70;
+  min-width: min(300px, calc(100vw - 16px)); max-height: 70dvh; overflow: auto; padding: 8px; border-radius: 14px; background: #fff; box-shadow: 0 16px 40px rgba(15, 23, 42, 0.25);
+}
+html.sim-shell[data-layout=column][data-engine=os].shell-menu-open .shell-header .shell-actions, html.sim-shell[data-layout=column][data-engine=c].shell-menu-open .shell-header .shell-actions { background: #0f172a; }
+html.sim-shell[data-layout=column].shell-menu-open .shell-header .shell-actions + .shell-actions { top: auto; bottom: auto; position: static; box-shadow: none; }
+html.sim-shell[data-layout=column] .shell-header .shell-actions > * { width: 100%; justify-content: flex-start; min-height: 44px; }
+html.sim-shell[data-layout=column] .shell-header [class*="crumbs"] { display: none; }
+html.sim-shell[data-layout=column] .shell-header :is(.ep-brand, .cn-brand, .dsa-brand-mark, .os-brand-mark, .c-brand-mark, .os-badge-code, .c-badge-code) { display: none !important; }
+
+/* short landscape screens (phones turned sideways, 720p boards with browser chrome) */
+html.sim-shell.shell-short .shell-header { padding: 2px 6px !important; }
+html.sim-shell.shell-short .shell-header [class*="crumbs"] { display: none; }
+html.sim-shell.shell-short .shell-controls button, html.sim-shell.shell-short .shell-controls select { min-height: 40px !important; }
+
+/* ── full-screen / focus mode: maximum canvas + floating controls ── */
+.shell-exit { display: none; position: fixed; top: 10px; right: 10px; z-index: 90; font-size: 14px; box-shadow: 0 6px 20px rgba(15, 23, 42, 0.25); }
+html.sim-shell.shell-focus .shell-exit { display: inline-flex; }
+html.sim-shell.shell-focus .shell-header, html.sim-shell.shell-focus .shell-dock { display: none !important; }
+html.sim-shell.shell-focus .shell-body { display: flex; }
+html.sim-shell.shell-focus .shell-stage { flex: 1 1 auto; height: auto; }
+html.sim-shell.shell-focus .shell-dock-show { display: none !important; }
+html.sim-shell.shell-focus .shell-root { max-width: none !important; }
+html.sim-shell.shell-focus .shell-controls {
+  position: fixed; left: 50%; bottom: calc(10px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 80; width: max-content; max-width: calc(100vw - 20px);
+  padding: 6px 10px; border-radius: 16px; background: rgba(255, 255, 255, 0.92); box-shadow: 0 10px 34px rgba(15, 23, 42, 0.3); backdrop-filter: blur(6px);
+}
+html.sim-shell.shell-focus[data-engine=os] .shell-controls, html.sim-shell.shell-focus[data-engine=c] .shell-controls { background: rgba(15, 23, 42, 0.92); }
+html.sim-shell.shell-focus .shell-main { padding-bottom: calc(var(--shell-touch) * var(--shell-zoom) + 24px); }
+
+/* ═════════ engine-specific fitting (layout only) ═════════ */
+
+/* Engineering Physics / Graphics / Mathematics */
+html[data-engine=ep] .shell-stage > .ep-center { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+html[data-engine=ep] .ep-stage { min-height: 0 !important; padding: 6px !important; gap: 4px !important; }
+html[data-engine=ep] .ep-banner { padding: 4px 10px !important; }
+html[data-engine=ep] .shell-panel.ep-card { padding: 8px 10px !important; }
+html[data-engine=ep] .shell-dock .ep-card-head { margin-bottom: 6px !important; }
+html[data-engine=ep] .shell-dock .ep-card-head h2 { font-size: 15px !important; }
+html[data-engine=ep] .ep-controls { padding: 4px 6px !important; border-radius: 12px; }
+html[data-engine=ep] .ep-controls .ep-big { padding: 0 16px !important; font-size: 15px !important; }
+html[data-engine=ep] .ep-progress { min-width: 80px; flex: 1 1 120px; }
+html[data-engine=ep][data-layout=column] .ep-progress { display: none; }
+html[data-engine=ep][data-layout=column] .ep-speed > span { display: none; }
+html[data-engine=ep][data-layout=column] .ep-stage-top { flex-wrap: nowrap !important; overflow-x: auto; scrollbar-width: none; }
+html[data-engine=ep][data-layout=column] .ep-banner { font-size: 12.5px !important; max-height: 58px; overflow: auto; }
+
+/* Computer Networks */
+html[data-engine=cn] .shell-stage > .cn-center { flex: 1 1 auto; display: flex; flex-direction: column; gap: var(--shell-gap); min-height: 0; }
+html[data-engine=cn] .cn-stage { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; padding: 8px !important; }
+html[data-engine=cn] .cn-scene { flex: 1 1 auto; min-height: 0; overflow: auto; display: flex; align-items: center; justify-content: center; }
+html[data-engine=cn] .cn-scene > svg { width: 100%; height: 100%; max-height: 100%; }
+html[data-engine=cn] .cn-explain { padding: 6px 8px !important; }
+html[data-engine=cn] .cn-explain > * { padding: 6px 8px !important; }
+html[data-engine=cn] .cn-toolbar { padding: 4px 6px !important; margin: 0 !important; }
+html[data-engine=cn] .cn-toolbar .cn-progress { min-width: 80px; flex: 1 1 100px; }
+html[data-engine=cn] .shell-panel.cn-card { padding: 8px 10px !important; }
+html[data-engine=cn][data-layout=column] .cn-explain { max-height: 96px; overflow: auto; }
+html[data-engine=cn][data-layout=column] .cn-progress, html[data-engine=cn][data-layout=column] .cn-stage-head .cn-hint { display: none; }
+
+/* Data Structures & Algorithms */
+html[data-engine=dsa] .shell-stage > .dsa-visual-card { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; padding: 8px 10px !important; margin: 0 !important; }
+html[data-engine=dsa] .dsa-visualization { flex: 1 1 auto; min-height: 0 !important; height: auto !important; overflow: auto; }
+html[data-engine=dsa] .dsa-toolbar { padding: 4px 8px !important; margin: 0 !important; gap: 6px !important; align-items: center; }
+html[data-engine=dsa] .dsa-toolbar label > span, html[data-engine=dsa] .dsa-toolbar .dsa-field-label { display: none; }
+html[data-engine=dsa] .shell-panel.dsa-card { padding: 8px 10px !important; }
+html[data-engine=dsa] .shell-dock .dsa-card-heading { margin-bottom: 6px !important; }
+html[data-engine=dsa] .shell-dock .dsa-explanation-grid { grid-template-columns: 1fr !important; }
+html[data-engine=dsa][data-layout=column] .dsa-legend { display: none; }
+
+/* Operating Systems / C Programming (dark engines) */
+html[data-engine=os] .shell-stage > .os-stage-column, html[data-engine=c] .shell-stage > :not(.shell-dock-show) { display: flex; flex-direction: column; gap: var(--shell-gap); min-height: 0; height: 100%; }
+html[data-engine=os] .os-canvas-card, html[data-engine=c] .c-stage-card, html[data-engine=c] .c-code-card { flex: 1 1 auto; min-height: 0; }
+html[data-engine=os] .os-explanation-card, html[data-engine=c] .c-explanation-card, html[data-engine=c] .c-console-card { flex: 0 0 auto; }
+html[data-engine=os] .shell-header, html[data-engine=c] .shell-header { gap: 8px !important; }
+html[data-engine=os] .shell-header .os-bar-selectors, html[data-engine=c] .shell-header .c-bar-selectors { flex: 0 1 auto; min-width: 0; }
+html[data-engine=os] .shell-header .os-pill-select, html[data-engine=c] .shell-header .c-pill-select, html[data-engine=c] .shell-header .os-pill-select { min-width: 0; max-width: 32vw; }
+html[data-engine=os] .shell-header select, html[data-engine=c] .shell-header select { min-width: 0; max-width: 100%; text-overflow: ellipsis; }
+html[data-engine=os] .shell-controls .os-bar-playback, html[data-engine=c] .shell-controls .c-bar-playback { display: flex; flex-wrap: wrap; justify-content: center; }
+html[data-engine=os] .shell-dock, html[data-engine=c] .shell-dock { gap: 0; }
+html[data-engine=os] .shell-panel-bare, html[data-engine=c] .shell-panel-bare { width: auto !important; min-width: 0 !important; max-width: none !important; }
+html[data-engine=c][data-layout=column] .c-console-card { display: none; }
+html[data-engine=os][data-layout=column] .os-explanation-card, html[data-engine=c][data-layout=column] .c-explanation-card { max-height: 30%; overflow: auto; }
+
+@media (prefers-reduced-motion: reduce) { .sim-shell * { scroll-behavior: auto !important; } }
+
+/* phones: only the most important step text beside the simulation */
+html[data-engine=cn][data-layout=column] .cn-explain > :not(:first-child) { display: none !important; }
+html[data-engine=cn][data-layout=column] .cn-explain { display: block !important; }
+html[data-engine=os][data-layout=column] .os-metrics, html[data-engine=c][data-layout=column] .c-metrics { display: none !important; }
+html[data-engine=os][data-layout=column] .os-pedagogical-grid > :not(:first-child), html[data-engine=c][data-layout=column] .c-pedagogical-grid > :not(:first-child) { display: none !important; }
+html[data-engine=os][data-layout=column] .os-pedagogical-grid, html[data-engine=c][data-layout=column] .c-pedagogical-grid { grid-template-columns: 1fr !important; }
+html[data-engine=cn][data-layout=column] .cn-seg button { padding: 0 10px !important; }
+html[data-engine=ep][data-layout=column] .ep-readouts, html[data-engine=ep][data-layout=column] .ep-view3d, html[data-engine=ep][data-layout=column] .ep-tools { flex-wrap: nowrap !important; flex: 0 0 auto; }
+html[data-engine=ep][data-layout=column] .ep-stage-top > * { flex: 0 0 auto; }
+html[data-engine=ep][data-layout=column] .ep-view3d .ep-btn, html[data-engine=ep][data-layout=column] .ep-tools .ep-btn { min-height: 40px; }
+html[data-engine=ep][data-layout=column] .ep-stage-row { flex-direction: column; }
+html[data-engine=ep][data-layout=column] .ep-seg { min-width: 38px !important; padding: 0 6px !important; }
+html[data-engine=ep][data-layout=column] .ep-controls { gap: 4px !important; }
+html[data-engine=ep][data-layout=column] .ep-banner { align-items: flex-start !important; }
+.sim-shell .shell-header :is(.os-bar-brand, .c-bar-brand) { min-width: 0; flex: 1 1 auto; overflow: hidden; }
+.sim-shell .shell-header :is(.os-brand-title, .c-brand-title, .os-brand-sub, .c-brand-sub) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* DOM-rendered engines (networks, DSA, OS, C): the stage content grows with the board, canvases scale themselves */
+html.sim-shell:not([data-engine=ep]) .shell-stage { zoom: var(--shell-zoom); }
+html.sim-shell:not([data-engine=ep]) .shell-stage .shell-chrome { zoom: 1; }
+html.sim-shell.shell-focus .shell-stage { flex: 1 1 auto !important; height: auto !important; }
+/* engines already in Smart Board mode (embedded + locked): comfortable touch targets */
+html.sim-shell:has(body.ep-board, body.cn-board, body.dsa-board-mode) { --shell-touch: 50px; }

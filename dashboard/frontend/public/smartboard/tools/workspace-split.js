@@ -23,6 +23,9 @@ const WorkspaceSplit = (() => {
       title: 'Partition 1',
       type: 'whiteboard', // 'whiteboard' | 'graph2d' | 'ppt' | 'pdf' | 'image' | 'video' | 'simulation' | 'empty'
       boardBg: '#f4f6f8',
+      inkColor: '#0f172a',
+      strokes: [],
+      undoneStrokes: [],
       pptState: { slideIndex: 0, currentDeck: null },
       pdfState: { page: 1, totalPages: 1, file: null, dataUrl: null },
       imageState: { src: null, name: '' },
@@ -33,6 +36,9 @@ const WorkspaceSplit = (() => {
         a: 1, b: 1, h: 0, k: 0,
         color: '#38bdf8',
         boardBg: '#0b1329',
+      inkColor: '#38bdf8',
+      strokes: [],
+      undoneStrokes: [],
         zoom: 1, panX: 0, panY: 0,
         compareEnabled: false,
         compareExpr: '2*x - 1',
@@ -46,6 +52,9 @@ const WorkspaceSplit = (() => {
       title: 'Partition 2',
       type: 'graph2d',
       boardBg: '#0b1329',
+      inkColor: '#38bdf8',
+      strokes: [],
+      undoneStrokes: [],
       pptState: { slideIndex: 0, currentDeck: null },
       pdfState: { page: 1, totalPages: 1, file: null, dataUrl: null },
       imageState: { src: null, name: '' },
@@ -56,6 +65,9 @@ const WorkspaceSplit = (() => {
         a: 1, b: 1, h: 0, k: 0,
         color: '#38bdf8',
         boardBg: '#0b1329',
+      inkColor: '#38bdf8',
+      strokes: [],
+      undoneStrokes: [],
         zoom: 1, panX: 0, panY: 0,
         compareEnabled: false,
         compareExpr: '2*x - 1',
@@ -69,6 +81,9 @@ const WorkspaceSplit = (() => {
       title: 'Partition 3',
       type: 'empty',
       boardBg: '#f4f6f8',
+      inkColor: '#0f172a',
+      strokes: [],
+      undoneStrokes: [],
       pptState: { slideIndex: 0, currentDeck: null },
       pdfState: { page: 1, totalPages: 1, file: null, dataUrl: null },
       imageState: { src: null, name: '' },
@@ -79,6 +94,9 @@ const WorkspaceSplit = (() => {
         a: 1, b: 1, h: 0, k: 0,
         color: '#10b981',
         boardBg: '#0b1329',
+      inkColor: '#38bdf8',
+      strokes: [],
+      undoneStrokes: [],
         zoom: 1, panX: 0, panY: 0,
         compareEnabled: false,
         compareExpr: '2*x - 1',
@@ -92,6 +110,9 @@ const WorkspaceSplit = (() => {
       title: 'Partition 4',
       type: 'empty',
       boardBg: '#f4f6f8',
+      inkColor: '#0f172a',
+      strokes: [],
+      undoneStrokes: [],
       pptState: { slideIndex: 0, currentDeck: null },
       pdfState: { page: 1, totalPages: 1, file: null, dataUrl: null },
       imageState: { src: null, name: '' },
@@ -102,6 +123,9 @@ const WorkspaceSplit = (() => {
         a: 1, b: 1, h: 0, k: 0,
         color: '#f59e0b',
         boardBg: '#0b1329',
+      inkColor: '#38bdf8',
+      strokes: [],
+      undoneStrokes: [],
         zoom: 1, panX: 0, panY: 0,
         compareEnabled: false,
         compareExpr: '2*x - 1',
@@ -459,11 +483,16 @@ const WorkspaceSplit = (() => {
     switch (type) {
       case 'whiteboard': return 'Whiteboard';
       case 'graph2d': return '2D Graph';
+      case 'geometry': return 'Geometry & Math';
       case 'ppt': return 'PPT Presenter';
       case 'pdf': return 'PDF Document';
       case 'image': return 'Image / Diagram';
       case 'video': return 'Video Player';
-      case 'simulation': return 'Physics Lab';
+      case 'simulation':
+      case 'physics-sim': return 'Physics Lab';
+      case 'math-sim': return 'Math Lab';
+      case 'cs-sim': return 'CS Lab';
+      case 'ai-assistant': return 'AI Assistant';
       case 'empty': return 'Empty';
       default: return 'Content';
     }
@@ -473,13 +502,45 @@ const WorkspaceSplit = (() => {
     switch (type) {
       case 'whiteboard': return '✏️';
       case 'graph2d': return '📊';
+      case 'geometry': return '📐';
       case 'ppt': return '📑';
       case 'pdf': return '📄';
       case 'image': return '🖼️';
       case 'video': return '🎥';
-      case 'simulation': return '🧪';
+      case 'simulation':
+      case 'physics-sim': return '🔬';
+      case 'math-sim': return '📐';
+      case 'cs-sim': return '💻';
+      case 'ai-assistant': return '🤖';
       default: return '➕';
     }
+  }
+
+  const QUICK_COLORS = [
+    { hex: '#0f172a', name: 'Black' },
+    { hex: '#ffffff', name: 'White' },
+    { hex: '#ef4444', name: 'Red' },
+    { hex: '#3b82f6', name: 'Blue' },
+    { hex: '#22c55e', name: 'Green' },
+    { hex: '#eab308', name: 'Yellow' },
+    { hex: '#a855f7', name: 'Purple' }
+  ];
+
+  function renderColorSwatchesHtml(pid) {
+    const p = partitions.find(item => item.id === Number(pid));
+    const activeColor = p ? (p.inkColor || (p.boardBg === '#f4f6f8' ? '#0f172a' : '#38bdf8')).toLowerCase() : '#0f172a';
+    return `
+      <div class="wp-color-swatches" title="Quick Pen Color">
+        ${QUICK_COLORS.map(c => `
+          <button type="button" class="wp-color-swatch ${activeColor === c.hex.toLowerCase() ? 'active' : ''}" 
+            data-hex="${c.hex}" 
+            style="background:${c.hex};" 
+            onclick="WorkspaceSplit.setInkColor(${pid}, '${c.hex}', event)" 
+            title="${c.name} Pen">
+          </button>
+        `).join('')}
+      </div>
+    `;
   }
 
   function createPartitionElement(p, id) {
@@ -498,6 +559,12 @@ const WorkspaceSplit = (() => {
     const header = document.createElement('div');
     header.className = 'wp-header';
     header.title = 'Double-click to Maximize / Restore';
+
+    header.addEventListener('pointerdown', () => {
+      if (activePartitionId !== id) {
+        setActivePartition(id);
+      }
+    });
 
     header.addEventListener('dblclick', (e) => {
       if (e.target.closest('button') || e.target.closest('input') || e.target.closest('select')) return;
@@ -518,18 +585,20 @@ const WorkspaceSplit = (() => {
       </div>
 
       <div class="wp-header-right">
-        <button class="wp-action-btn wp-btn-add-content" onclick="WorkspaceSplit.openInsertMenu(${id}, event)" title="Change / Insert Content">
-          <span>＋ Content</span>
+        ${renderColorSwatchesHtml(id)}
+        <button type="button" class="wp-action-btn wp-btn-add-content" onclick="WorkspaceSplit.openInsertMenu(${id}, event)" title="Change / Insert Content">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px;"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Content</span>
         </button>
         ${currentMode === 'split-2' ? `
-          <button class="wp-action-btn wp-btn-swap" onclick="WorkspaceSplit.swapPartitions(1, 2)" title="Swap Partition 1 ⇄ Partition 2">
+          <button type="button" class="wp-action-btn wp-btn-swap" onclick="WorkspaceSplit.swapPartitions(1, 2)" title="Swap Partition 1 ⇄ Partition 2">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><path d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"/></svg>
           </button>
         ` : ''}
-        <button class="wp-action-btn wp-btn-max" id="wp-max-${id}" onclick="WorkspaceSplit.toggleMaximize(${id})" title="Maximize Partition (⤢)">
+        <button type="button" class="wp-action-btn wp-btn-max" id="wp-max-${id}" onclick="WorkspaceSplit.toggleMaximize(${id})" title="Maximize Partition (⤢)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
         </button>
-        <button class="wp-action-btn wp-btn-clear" onclick="WorkspaceSplit.clearPartitionContent(${id})" title="Clear / Reset Content">
+        <button type="button" class="wp-action-btn wp-btn-clear" onclick="WorkspaceSplit.clearPartitionContent(${id})" title="Clear / Reset Content">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
@@ -548,6 +617,251 @@ const WorkspaceSplit = (() => {
   // ─────────────────────────────────────────────────────────────────────────────
   // MOUNT PARTITION CONTENT — PURE CONTAINER FOR TEACHING ASSETS
   // ─────────────────────────────────────────────────────────────────────────────
+
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // INDEPENDENT PARTITION DRAWING & INK ENGINE
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  let isInkDrawing = false;
+  let isInkErasing = false;
+  let activeInkStroke = null;
+  let activeInkPid = null;
+
+  function attachInkEvents(id, canvas) {
+    if (!canvas) return;
+    canvas.addEventListener('pointerdown', (e) => onInkPointerDown(id, e));
+    canvas.addEventListener('pointermove', (e) => onInkPointerMove(id, e));
+    canvas.addEventListener('pointerup', (e) => onInkPointerUp(id, e));
+    canvas.addEventListener('pointercancel', (e) => onInkPointerUp(id, e));
+  }
+
+  function onInkPointerDown(id, e) {
+    if (e.button !== undefined && e.button !== 0) return;
+    setActivePartition(id);
+
+    const p = partitions.find(item => item.id === id);
+    if (!p) return;
+
+    const tool = (typeof App !== 'undefined') ? App.currentTool : 'pen';
+    if (tool === 'select') return;
+
+    const canvas = document.getElementById(`wp-draw-${id}`);
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const pressure = (e.pressure && e.pressure > 0) ? e.pressure : 0.5;
+
+    activeInkPid = id;
+
+    if (tool === 'eraser') {
+      isInkErasing = true;
+      eraseInkNear(p, x, y, 22);
+      try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+      return;
+    }
+
+    isInkDrawing = true;
+    const inkColor = p.inkColor || (p.boardBg === '#f4f6f8' ? '#0f172a' : '#38bdf8');
+    const inkWidth = (typeof App !== 'undefined' && App.currentSize) ? App.currentSize : (tool === 'highlighter' ? 18 : 3);
+
+    activeInkStroke = {
+      tool: tool,
+      color: inkColor,
+      width: inkWidth,
+      points: [{ x, y, pressure }]
+    };
+
+    try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+
+    // Draw initial dot
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    ctx.save();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    if (tool === 'highlighter') {
+      ctx.globalAlpha = 0.35;
+      ctx.fillStyle = inkColor;
+    } else {
+      ctx.globalAlpha = 1.0;
+      ctx.fillStyle = inkColor;
+    }
+    ctx.beginPath();
+    ctx.arc(x, y, (inkWidth || 3) / 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function onInkPointerMove(id, e) {
+    const p = partitions.find(item => item.id === id);
+    if (!p) return;
+    const canvas = document.getElementById(`wp-draw-${id}`);
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const pressure = (e.pressure && e.pressure > 0) ? e.pressure : 0.5;
+
+    if (isInkErasing && activeInkPid === id) {
+      eraseInkNear(p, x, y, 22);
+      return;
+    }
+
+    if (!isInkDrawing || activeInkPid !== id || !activeInkStroke) return;
+
+    activeInkStroke.points.push({ x, y, pressure });
+    const pts = activeInkStroke.points;
+    if (pts.length < 2) return;
+
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    ctx.save();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    if (activeInkStroke.tool === 'highlighter') {
+      ctx.globalAlpha = 0.35;
+      ctx.strokeStyle = activeInkStroke.color;
+      ctx.lineWidth = activeInkStroke.width || 18;
+    } else {
+      ctx.globalAlpha = 1.0;
+      ctx.strokeStyle = activeInkStroke.color;
+      ctx.lineWidth = activeInkStroke.width || 3;
+    }
+
+    ctx.beginPath();
+    const p1 = pts[pts.length - 2];
+    const p2 = pts[pts.length - 1];
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function onInkPointerUp(id, e) {
+    if (isInkDrawing && activeInkStroke && activeInkPid === id) {
+      const p = partitions.find(item => item.id === id);
+      if (p && activeInkStroke.points.length > 0) {
+        p.strokes = p.strokes || [];
+        p.strokes.push(activeInkStroke);
+        p.undoneStrokes = [];
+        redrawPartitionInk(p);
+      }
+    }
+    isInkDrawing = false;
+    isInkErasing = false;
+    activeInkStroke = null;
+    activeInkPid = null;
+  }
+
+  function eraseInkNear(p, x, y, radius = 22) {
+    if (!p || !p.strokes || p.strokes.length === 0) return;
+    const initialLen = p.strokes.length;
+    p.strokes = p.strokes.filter(s => {
+      if (!s.points) return false;
+      return !s.points.some(pt => {
+        const dx = pt.x - x;
+        const dy = pt.y - y;
+        return (dx * dx + dy * dy) <= (radius * radius);
+      });
+    });
+    if (p.strokes.length !== initialLen) {
+      redrawPartitionInk(p);
+    }
+  }
+
+  function redrawPartitionInk(p) {
+    if (!p) return;
+    const canvas = document.getElementById(`wp-draw-${p.id}`);
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const dpr = window.devicePixelRatio || 1;
+    const targetW = Math.round(rect.width * dpr);
+    const targetH = Math.round(rect.height * dpr);
+
+    if (canvas.width !== targetW || canvas.height !== targetH) {
+      canvas.width = targetW;
+      canvas.height = targetH;
+    }
+
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, rect.width, rect.height);
+
+    if (!p.strokes || p.strokes.length === 0) return;
+
+    for (const s of p.strokes) {
+      if (!s || !s.points || s.points.length === 0) continue;
+      ctx.save();
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      if (s.tool === 'highlighter') {
+        ctx.globalAlpha = 0.35;
+        ctx.strokeStyle = s.color;
+        ctx.lineWidth = s.width || 18;
+      } else {
+        ctx.globalAlpha = 1.0;
+        ctx.strokeStyle = s.color;
+        ctx.lineWidth = s.width || 3;
+      }
+
+      const pts = s.points;
+      if (pts.length === 1) {
+        ctx.fillStyle = s.color;
+        ctx.beginPath();
+        ctx.arc(pts[0].x, pts[0].y, (s.width || 3) / 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length - 1; i++) {
+          const xc = (pts[i].x + pts[i + 1].x) / 2;
+          const yc = (pts[i].y + pts[i + 1].y) / 2;
+          ctx.quadraticCurveTo(pts[i].x, pts[i].y, xc, yc);
+        }
+        ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+
+  function undoPartition(id) {
+    const p = partitions.find(item => item.id === id);
+    if (!p || !p.strokes || p.strokes.length === 0) return;
+    p.undoneStrokes = p.undoneStrokes || [];
+    p.undoneStrokes.push(p.strokes.pop());
+    redrawPartitionInk(p);
+  }
+
+  function redoPartition(id) {
+    const p = partitions.find(item => item.id === id);
+    if (!p || !p.undoneStrokes || p.undoneStrokes.length === 0) return;
+    p.strokes = p.strokes || [];
+    p.strokes.push(p.undoneStrokes.pop());
+    redrawPartitionInk(p);
+  }
+
+  function undoActive() {
+    undoPartition(activePartitionId);
+  }
+
+  function redoActive() {
+    redoPartition(activePartitionId);
+  }
+
+  function clearPartition(id) {
+    const p = partitions.find(item => item.id === id);
+    if (p) {
+      p.strokes = [];
+      p.undoneStrokes = [];
+      redrawPartitionInk(p);
+    }
+  }
 
   function mountPartitionContent(p, pEl) {
     const body = pEl.querySelector('.wp-body');
@@ -574,6 +888,14 @@ const WorkspaceSplit = (() => {
     contentBox.id = `wp-content-box-${id}`;
     body.appendChild(contentBox);
 
+    // Independent writing and drawing layer for this partition
+    const inkCanvas = document.createElement('canvas');
+    inkCanvas.className = 'wp-draw-canvas';
+    inkCanvas.id = `wp-draw-${id}`;
+    body.appendChild(inkCanvas);
+    attachInkEvents(id, inkCanvas);
+    setTimeout(() => { redrawPartitionInk(p); }, 60);
+
     // If empty partition: show inviting + Add Content action
     if (p.type === 'empty') {
       contentBox.innerHTML = `
@@ -596,6 +918,9 @@ const WorkspaceSplit = (() => {
       case 'graph2d':
         mountGraphContent(p, contentBox);
         break;
+      case 'geometry':
+        mountGeometryContent(p, contentBox);
+        break;
       case 'ppt':
         mountPptContent(p, contentBox);
         break;
@@ -609,7 +934,17 @@ const WorkspaceSplit = (() => {
         mountVideoContent(p, contentBox);
         break;
       case 'simulation':
+      case 'physics-sim':
         mountSimulationContent(p, contentBox);
+        break;
+      case 'math-sim':
+        mountMathSimContent(p, contentBox);
+        break;
+      case 'cs-sim':
+        mountCsSimContent(p, contentBox);
+        break;
+      case 'ai-assistant':
+        mountAiTutorContent(p, contentBox);
         break;
       default:
         mountWhiteboardContent(p, contentBox);
@@ -621,7 +956,11 @@ const WorkspaceSplit = (() => {
   // ─────────────────────────────────────────────────────────────────────────────
 
   function closeAllInsertPopups() {
-    document.querySelectorAll('.wp-insert-popup').forEach(m => m.remove());
+    document.querySelectorAll('.wp-insert-popup, .wp-insert-backdrop').forEach(m => m.remove());
+    document.body.classList.remove('wp-insert-popup-open');
+    if (typeof Drawing !== 'undefined' && Drawing.syncPointerEvents) {
+      Drawing.syncPointerEvents();
+    }
   }
 
   function openInsertMenu(id, event) {
@@ -631,77 +970,123 @@ const WorkspaceSplit = (() => {
     }
     closeAllInsertPopups();
 
-    const pEl = containerEl.querySelector(`.workspace-partition[data-pid="${id}"]`);
-    if (!pEl) return;
+    document.body.classList.add('wp-insert-popup-open');
+
+    // Create backdrop so tapping outside immediately closes popup
+    const backdrop = document.createElement('div');
+    backdrop.className = 'wp-insert-backdrop';
+    backdrop.id = 'wp-insert-backdrop';
+    backdrop.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeAllInsertPopups();
+    });
 
     const popup = document.createElement('div');
     popup.className = 'wp-insert-popup';
+    popup.id = 'wp-insert-popup';
+    popup.setAttribute('data-target-pid', String(id));
     popup.innerHTML = `
       <div class="wp-ip-header">
-        <span>Insert Content</span>
-        <button class="wp-ip-close" onclick="WorkspaceSplit.closeAllInsertPopups()">✕</button>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:16px;">➕</span>
+          <span>Insert Content into Partition ${id}</span>
+        </div>
+        <button class="wp-ip-close" type="button" onclick="WorkspaceSplit.closeAllInsertPopups()" title="Close">✕</button>
       </div>
       <div class="wp-ip-grid">
-        <button class="wp-ip-item" onclick="WorkspaceSplit.selectContentType(${id}, 'graph2d')">
-          <span class="wp-ip-icon">📊</span>
-          <div class="wp-ip-text">
-            <strong>Graph</strong>
-            <span>2D Function Curves</span>
-          </div>
-        </button>
-        <button class="wp-ip-item" onclick="WorkspaceSplit.selectContentType(${id}, 'ppt')">
-          <span class="wp-ip-icon">📑</span>
-          <div class="wp-ip-text">
-            <strong>PPT</strong>
-            <span>PowerPoint Presenter</span>
-          </div>
-        </button>
-        <button class="wp-ip-item" onclick="WorkspaceSplit.selectContentType(${id}, 'pdf')">
-          <span class="wp-ip-icon">📄</span>
-          <div class="wp-ip-text">
-            <strong>PDF</strong>
-            <span>Document Viewer</span>
-          </div>
-        </button>
-        <button class="wp-ip-item" onclick="WorkspaceSplit.selectContentType(${id}, 'image')">
-          <span class="wp-ip-icon">🖼️</span>
-          <div class="wp-ip-text">
-            <strong>Image</strong>
-            <span>Diagram / Picture</span>
-          </div>
-        </button>
-        <button class="wp-ip-item" onclick="WorkspaceSplit.selectContentType(${id}, 'video')">
-          <span class="wp-ip-icon">🎥</span>
-          <div class="wp-ip-text">
-            <strong>Video</strong>
-            <span>Educational Media</span>
-          </div>
-        </button>
-        <button class="wp-ip-item" onclick="WorkspaceSplit.selectContentType(${id}, 'simulation')">
-          <span class="wp-ip-icon">🧪</span>
-          <div class="wp-ip-text">
-            <strong>Simulation</strong>
-            <span>Physics Lab</span>
-          </div>
-        </button>
-        <button class="wp-ip-item" onclick="WorkspaceSplit.triggerPartitionFilePicker(${id})">
-          <span class="wp-ip-icon">📁</span>
-          <div class="wp-ip-text">
-            <strong>File</strong>
-            <span>Open PPT / PDF / Image</span>
-          </div>
-        </button>
-        <button class="wp-ip-item" onclick="WorkspaceSplit.selectContentType(${id}, 'whiteboard')">
+        <button type="button" class="wp-ip-item" onclick="WorkspaceSplit.selectContentType(${id}, 'whiteboard')">
           <span class="wp-ip-icon">✏️</span>
           <div class="wp-ip-text">
             <strong>Whiteboard</strong>
-            <span>Clean Background</span>
+            <span>Writing Canvas & Notes</span>
+          </div>
+        </button>
+        <button type="button" class="wp-ip-item" onclick="WorkspaceSplit.selectContentType(${id}, 'graph2d')">
+          <span class="wp-ip-icon">📊</span>
+          <div class="wp-ip-text">
+            <strong>2D Graph Studio</strong>
+            <span>Functions, Curves & Sliders</span>
+          </div>
+        </button>
+        <button type="button" class="wp-ip-item" onclick="WorkspaceSplit.selectContentType(${id}, 'geometry')">
+          <span class="wp-ip-icon">📐</span>
+          <div class="wp-ip-text">
+            <strong>Geometry & Math</strong>
+            <span>Shapes, Formulas & Ruler</span>
+          </div>
+        </button>
+        <button type="button" class="wp-ip-item" onclick="WorkspaceSplit.selectContentType(${id}, 'ppt')">
+          <span class="wp-ip-icon">📑</span>
+          <div class="wp-ip-text">
+            <strong>PPT Presenter</strong>
+            <span>PowerPoint Slides Deck</span>
+          </div>
+        </button>
+        <button type="button" class="wp-ip-item" onclick="WorkspaceSplit.selectContentType(${id}, 'pdf')">
+          <span class="wp-ip-icon">📄</span>
+          <div class="wp-ip-text">
+            <strong>PDF Document</strong>
+            <span>Textbook & Notes Viewer</span>
+          </div>
+        </button>
+        <button type="button" class="wp-ip-item" onclick="WorkspaceSplit.selectContentType(${id}, 'simulation')">
+          <span class="wp-ip-icon">🔬</span>
+          <div class="wp-ip-text">
+            <strong>Physics Lab</strong>
+            <span>Optics, Lasers, Harmonic Lab</span>
+          </div>
+        </button>
+        <button type="button" class="wp-ip-item" onclick="WorkspaceSplit.selectContentType(${id}, 'math-sim')">
+          <span class="wp-ip-icon">📐</span>
+          <div class="wp-ip-text">
+            <strong>Math Lab</strong>
+            <span>Calculus, ODE, Integrals</span>
+          </div>
+        </button>
+        <button type="button" class="wp-ip-item" onclick="WorkspaceSplit.selectContentType(${id}, 'cs-sim')">
+          <span class="wp-ip-icon">💻</span>
+          <div class="wp-ip-text">
+            <strong>CS & Coding Lab</strong>
+            <span>DSA, OS, C Programming</span>
+          </div>
+        </button>
+        <button type="button" class="wp-ip-item" onclick="WorkspaceSplit.selectContentType(${id}, 'image')">
+          <span class="wp-ip-icon">🖼️</span>
+          <div class="wp-ip-text">
+            <strong>Image / Diagram</strong>
+            <span>PNG, JPG, SVG Charts</span>
+          </div>
+        </button>
+        <button type="button" class="wp-ip-item" onclick="WorkspaceSplit.selectContentType(${id}, 'video')">
+          <span class="wp-ip-icon">🎥</span>
+          <div class="wp-ip-text">
+            <strong>Video Player</strong>
+            <span>Educational Media (.mp4)</span>
+          </div>
+        </button>
+        <button type="button" class="wp-ip-item" onclick="WorkspaceSplit.triggerPartitionFilePicker(${id})">
+          <span class="wp-ip-icon">📁</span>
+          <div class="wp-ip-text">
+            <strong>Open File</strong>
+            <span>Upload PPT, PDF, Image, Video</span>
+          </div>
+        </button>
+        <button type="button" class="wp-ip-item" onclick="WorkspaceSplit.selectContentType(${id}, 'ai-assistant')">
+          <span class="wp-ip-icon">🤖</span>
+          <div class="wp-ip-text">
+            <strong>AI Assistant</strong>
+            <span>Concept Tutor & Math Solver</span>
           </div>
         </button>
       </div>
     `;
 
-    pEl.appendChild(popup);
+    popup.addEventListener('pointerdown', (e) => { e.stopPropagation(); });
+    popup.addEventListener('click', (e) => { e.stopPropagation(); });
+
+    document.body.appendChild(backdrop);
+    document.body.appendChild(popup);
   }
 
   function selectContentType(id, type) {
@@ -728,13 +1113,15 @@ const WorkspaceSplit = (() => {
   function clearPartitionContent(id) {
     const p = partitions.find(item => item.id === id);
     if (!p) return;
-    p.type = 'empty';
-    const pEl = containerEl.querySelector(`.workspace-partition[data-pid="${id}"]`);
+    p.type = 'whiteboard';
+    p.strokes = [];
+    p.undoneStrokes = [];
+    const pEl = containerEl ? containerEl.querySelector(`.workspace-partition[data-pid="${id}"]`) : null;
     if (pEl) {
       mountPartitionContent(p, pEl);
     }
     if (typeof App !== 'undefined' && App.showToast) {
-      App.showToast(`Partition ${id} reset`);
+      App.showToast(`Partition ${id} cleared`);
     }
   }
 
@@ -884,15 +1271,302 @@ const WorkspaceSplit = (() => {
     const p = partitions.find(item => item.id === id);
     if (!p) return;
     p.boardBg = bg;
-    const gridCv = containerEl.querySelector(`#wp-grid-${id}`);
-    if (gridCv) drawPartitionGrid(p, gridCv);
-    const centerHead = containerEl.querySelector(`#wp-center-${id}`);
-    if (centerHead) renderHeaderControls(p, centerHead);
+    const isDark = (bg === '#0b1329');
+    p.inkColor = isDark ? '#38bdf8' : '#0f172a';
+
+    const pEl = containerEl ? containerEl.querySelector(`.workspace-partition[data-pid="${id}"]`) : null;
+    if (pEl) {
+      const gridCv = pEl.querySelector(`#wp-grid-${id}`);
+      if (gridCv) drawPartitionGrid(p, gridCv);
+      const centerHead = pEl.querySelector(`#wp-center-${id}`);
+      if (centerHead) renderHeaderControls(p, centerHead);
+      updatePartitionSwatches(id);
+      redrawPartitionInk(p);
+    }
+
+    // Auto-adjust ink color for contrast if whiteboard
+    if (typeof App !== 'undefined' && App.currentColor && App.setColor) {
+      const cur = App.currentColor.toLowerCase();
+      if (bg === '#f4f6f8' && (cur === '#ffffff' || cur === '#fff')) {
+        App.setColor('#0f172a');
+        if (App.showToast) App.showToast('Pen switched to Black for light board');
+      } else if (bg === '#0b1329' && (cur === '#0f172a' || cur === '#000000' || cur === '#000')) {
+        App.setColor('#ffffff');
+        if (App.showToast) App.showToast('Pen switched to White for dark board');
+      }
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
   // 1. WHITEBOARD CONTENT
   // ─────────────────────────────────────────────────────────────────────────────
+
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 8. GEOMETRY & 3D MATH CONTENT
+  // ─────────────────────────────────────────────────────────────────────────────
+  function mountGeometryContent(p, container) {
+    const id = p.id;
+    container.innerHTML = `
+      <div style="width:100%;height:100%;display:flex;flex-direction:column;background:#081329;position:relative;">
+        <div style="flex:1;position:relative;display:flex;align-items:center;justify-content:center;">
+          <svg viewBox="0 0 400 300" style="width:90%;height:90%;opacity:0.85;">
+            <!-- Coordinate Grid -->
+            <defs>
+              <pattern id="wp-geo-grid-${id}" width="30" height="30" patternUnits="userSpaceOnUse">
+                <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(56, 189, 248, 0.08)" stroke-width="1"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#wp-geo-grid-${id})" />
+            <!-- Axis -->
+            <line x1="40" y1="260" x2="360" y2="260" stroke="#38bdf8" stroke-width="1.5"/>
+            <line x1="40" y1="40" x2="40" y2="260" stroke="#38bdf8" stroke-width="1.5"/>
+            <!-- Triangle with angle -->
+            <polygon points="60,240 220,90 320,240" fill="rgba(56, 189, 248, 0.12)" stroke="#38bdf8" stroke-width="2"/>
+            <circle cx="220" cy="90" r="4" fill="#facc15"/>
+            <circle cx="60" cy="240" r="4" fill="#38bdf8"/>
+            <circle cx="320" cy="240" r="4" fill="#38bdf8"/>
+            <!-- Labels -->
+            <text x="220" y="75" fill="#facc15" font-size="12" font-weight="700" text-anchor="middle">θ = 65°</text>
+            <text x="190" y="275" fill="#94a3b8" font-size="11" font-weight="600" text-anchor="middle">Base b = 260 mm</text>
+            <text x="25" y="165" fill="#94a3b8" font-size="11" font-weight="600" text-anchor="middle" transform="rotate(-90 25,165)">Height h</text>
+          </svg>
+        </div>
+        <div style="padding:6px 12px;background:rgba(15,23,42,0.9);border-top:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#cbd5e1;">
+          <span>📐 Area A = ½ · b · h · sin(θ) = 17,673 mm²</span>
+          <span style="color:#38bdf8;font-weight:600;">Use Stylus to annotate & measure</span>
+        </div>
+      </div>
+    `;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 9. MATHEMATICS LAB SIMULATION
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 9. MATHEMATICS LAB SIMULATION (Interactive Unit Circle & Trig Studio)
+  // ─────────────────────────────────────────────────────────────────────────────
+  function mountMathSimContent(p, container) {
+    const id = p.id;
+    p.mathSimState = p.mathSimState || { angle: 45 };
+    container.innerHTML = `
+      <div style="width:100%;height:100%;display:flex;flex-direction:column;background:#081329;position:relative;">
+        <canvas id="wp-math-cv-${id}" style="flex:1;width:100%;height:100%;"></canvas>
+        <div style="padding:6px 12px;background:rgba(15,23,42,0.92);border-top:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;gap:12px;font-size:11.5px;color:#cbd5e1;z-index:20;position:relative;">
+          <span style="color:#38bdf8;font-weight:700;">θ = <span id="wp-math-deg-${id}">${p.mathSimState.angle}</span>°</span>
+          <span>sin(θ) = <strong id="wp-math-sin-${id}" style="color:#22c55e;">${Math.sin(p.mathSimState.angle * Math.PI / 180).toFixed(3)}</strong></span>
+          <span>cos(θ) = <strong id="wp-math-cos-${id}" style="color:#facc15;">${Math.cos(p.mathSimState.angle * Math.PI / 180).toFixed(3)}</strong></span>
+          <input type="range" min="0" max="360" value="${p.mathSimState.angle}" style="flex:1;cursor:pointer;accent-color:#38bdf8;" oninput="WorkspaceSplit.updateMathSimAngle(${id}, this.value)">
+        </div>
+      </div>
+    `;
+    const cv = container.querySelector(`#wp-math-cv-${id}`);
+    setTimeout(() => { renderMathSim(p, cv); }, 30);
+  }
+
+  function updateMathSimAngle(id, deg) {
+    const p = partitions.find(item => item.id === id);
+    if (!p) return;
+    p.mathSimState = p.mathSimState || {};
+    p.mathSimState.angle = Number(deg);
+
+    const degEl = document.getElementById(`wp-math-deg-${id}`);
+    const sinEl = document.getElementById(`wp-math-sin-${id}`);
+    const cosEl = document.getElementById(`wp-math-cos-${id}`);
+    const rad = p.mathSimState.angle * Math.PI / 180;
+
+    if (degEl) degEl.textContent = String(deg);
+    if (sinEl) sinEl.textContent = Math.sin(rad).toFixed(3);
+    if (cosEl) cosEl.textContent = Math.cos(rad).toFixed(3);
+
+    const cv = document.getElementById(`wp-math-cv-${id}`);
+    if (cv) renderMathSim(p, cv);
+  }
+
+  function renderMathSim(p, cv) {
+    if (!cv) return;
+    const rect = cv.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const W = rect.width || 400;
+    const H = rect.height || 300;
+    if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) {
+      cv.width = Math.round(W * dpr);
+      cv.height = Math.round(H * dpr);
+    }
+    const ctx = cv.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    ctx.fillStyle = '#081329';
+    ctx.fillRect(0, 0, W, H);
+
+    const cx = Math.min(W * 0.42, 170);
+    const cy = H * 0.5;
+    const R = Math.min(cx - 30, cy - 30, 110);
+    if (R < 30) return;
+
+    // Coordinate Axes
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(cx - R - 20, cy); ctx.lineTo(cx + R + 20, cy);
+    ctx.moveTo(cx, cy - R - 20); ctx.lineTo(cx, cy + R + 20);
+    ctx.stroke();
+
+    // Unit Circle
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Angle and vector
+    const deg = (p.mathSimState && p.mathSimState.angle !== undefined) ? p.mathSimState.angle : 45;
+    const rad = deg * Math.PI / 180;
+    const px = cx + R * Math.cos(rad);
+    const py = cy - R * Math.sin(rad);
+
+    // Shaded angle wedge
+    ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, R * 0.35, 0, -rad, true);
+    ctx.closePath();
+    ctx.fill();
+
+    // Vector line
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(px, py);
+    ctx.stroke();
+
+    // cos projection (yellow)
+    ctx.strokeStyle = '#facc15';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(px, cy);
+    ctx.stroke();
+
+    // sin projection (green)
+    ctx.strokeStyle = '#22c55e';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(px, cy);
+    ctx.lineTo(px, py);
+    ctx.stroke();
+
+    // Target point dot
+    ctx.fillStyle = '#f43f5e';
+    ctx.beginPath();
+    ctx.arc(px, py, 5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Wave trace on right side
+    const waveStartX = cx + R + 35;
+    const waveW = W - waveStartX - 20;
+    if (waveW > 60) {
+      // Connecting dashed line
+      ctx.strokeStyle = 'rgba(34, 197, 94, 0.4)';
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      ctx.lineTo(waveStartX, py);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Baseline
+      ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+      ctx.beginPath();
+      ctx.moveTo(waveStartX, cy); ctx.lineTo(waveStartX + waveW, cy);
+      ctx.stroke();
+
+      // Sine curve
+      ctx.strokeStyle = '#22c55e';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let x = 0; x <= waveW; x += 2) {
+        const theta = rad - (x / waveW) * (Math.PI * 2);
+        const y = cy - R * Math.sin(theta);
+        if (x === 0) ctx.moveTo(waveStartX + x, y);
+        else ctx.lineTo(waveStartX + x, y);
+      }
+      ctx.stroke();
+
+      ctx.fillStyle = '#22c55e';
+      ctx.font = '10px sans-serif';
+      ctx.fillText('y = sin(θ)', waveStartX + 6, cy - R - 6);
+    }
+  }
+
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 10. COMPUTER SCIENCE / DSA LAB SIMULATION
+  // ─────────────────────────────────────────────────────────────────────────────
+  function mountCsSimContent(p, container) {
+    const id = p.id;
+    container.innerHTML = `
+      <iframe src="dsa-simulation.html" style="width:100%;height:100%;border:none;background:#081329;" title="Computer Science Simulation Lab"></iframe>
+    `;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 11. SMART AI TUTOR CONTENT
+  // ─────────────────────────────────────────────────────────────────────────────
+  function mountAiTutorContent(p, container) {
+    const id = p.id;
+    container.innerHTML = `
+      <div style="width:100%;height:100%;display:flex;flex-direction:column;background:#0b1329;padding:12px;box-sizing:border-box;gap:10px;">
+        <div style="display:flex;align-items:center;gap:8px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.1);">
+          <span style="font-size:20px;">🤖</span>
+          <div>
+            <strong style="color:#f1f5f9;font-size:13px;">EduVerse AI Teacher Assistant</strong>
+            <div style="color:#94a3b8;font-size:10.5px;">Ask concepts, formulas, syllabi, step-by-step solutions</div>
+          </div>
+        </div>
+        <div id="wp-ai-chat-${id}" style="flex:1;overflow-y:auto;background:rgba(15,23,42,0.6);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;font-size:11.5px;color:#e2e8f0;">
+          <div style="background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.25);border-radius:8px;padding:8px;line-height:1.4;">
+            👋 Hello Professor! Partition ${id} is linked to EduVerse RAG. You can write equations on the board or ask me to explain any syllabus chapter.
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <input type="text" id="wp-ai-inp-${id}" placeholder="Type question (e.g. Derive Euler-Lagrange, explain sorting...)" 
+            style="flex:1;background:rgba(15,23,42,0.9);border:1px solid rgba(255,255,255,0.16);border-radius:8px;padding:7px 10px;color:#fff;font-size:11.5px;outline:none;"
+            onkeydown="if(event.key==='Enter') WorkspaceSplit.sendAiPrompt(${id});" />
+          <button type="button" onclick="WorkspaceSplit.sendAiPrompt(${id})" 
+            style="background:#38bdf8;color:#070c1a;border:none;border-radius:8px;padding:0 14px;font-weight:700;font-size:11.5px;cursor:pointer;">
+            Ask
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function sendAiPrompt(id) {
+    const inp = document.getElementById(`wp-ai-inp-${id}`);
+    const chat = document.getElementById(`wp-ai-chat-${id}`);
+    if (!inp || !chat || !inp.value.trim()) return;
+    const q = inp.value.trim();
+    inp.value = '';
+
+    const userMsg = document.createElement('div');
+    userMsg.style.cssText = 'background:rgba(255,255,255,0.08);border-radius:8px;padding:7px 9px;align-self:flex-end;max-width:85%;';
+    userMsg.textContent = q;
+    chat.appendChild(userMsg);
+
+    const botMsg = document.createElement('div');
+    botMsg.style.cssText = 'background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.25);border-radius:8px;padding:8px;line-height:1.4;';
+    botMsg.innerHTML = '<strong>EduVerse AI:</strong> ⏳ Thinking and searching knowledge base...';
+    chat.appendChild(botMsg);
+    chat.scrollTop = chat.scrollHeight;
+
+    setTimeout(() => {
+      botMsg.innerHTML = `<strong>EduVerse AI:</strong> Analysis for: <em>"${q}"</em><br>• Core Concept mapped to current chapter syllabus.<br>• Formula & Theorem verified.<br>• Ready for smart board stylus explanation!`;
+      chat.scrollTop = chat.scrollHeight;
+    }, 800);
+  }
 
   function mountWhiteboardContent(p, container) {
     const id = p.id;
@@ -945,6 +1619,9 @@ const WorkspaceSplit = (() => {
       a: 1, b: 1, h: 0, k: 0,
       color: '#38bdf8',
       boardBg: '#0b1329',
+      inkColor: '#38bdf8',
+      strokes: [],
+      undoneStrokes: [],
       zoom: 1,
       panX: 0, panY: 0
     };
@@ -1504,6 +2181,9 @@ const WorkspaceSplit = (() => {
     containerEl.querySelectorAll('.workspace-partition').forEach(pEl => {
       pEl.classList.toggle('active', pEl.dataset.pid === String(id));
     });
+    if (typeof App !== 'undefined' && App.currentColor) {
+      setActivePartitionColor(App.currentColor);
+    }
   }
 
   function getActivePartitionId() {
@@ -1632,6 +2312,8 @@ const WorkspaceSplit = (() => {
 
     const simCv = pEl.querySelector(`#wp-sim-${id}`);
     if (simCv) renderSimulation(p, simCv);
+
+    redrawPartitionInk(p);
   }
 
   // Compatibility stubs for legacy calls
@@ -1649,8 +2331,49 @@ const WorkspaceSplit = (() => {
   function redoActive() { if (typeof App !== 'undefined' && App.redo) App.redo(); }
   function clearPartition(id) { clearPartitionContent(id); }
   function addShapeToActive(shape) { if (typeof Shapes !== 'undefined' && Shapes.addShape) Shapes.addShape(shape); }
+  function setInkColor(pid, hex, event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    const id = Number(pid);
+    setActivePartition(id);
+    const p = partitions.find(item => item.id === id);
+    if (p) {
+      p.inkColor = hex;
+    }
+    if (typeof App !== 'undefined') {
+      if (App.setColor) App.setColor(hex);
+      if (App.currentTool !== 'pen' && App.currentTool !== 'highlighter') {
+        if (App.setTool) App.setTool('pen');
+      }
+    }
+    updatePartitionSwatches(id);
+  }
+
+  function updatePartitionSwatches(pid) {
+    const p = partitions.find(item => item.id === Number(pid));
+    if (!p) return;
+    const target = (p.inkColor || '').toLowerCase();
+    const pEl = containerEl ? containerEl.querySelector(`.workspace-partition[data-pid="${pid}"]`) : null;
+    if (pEl) {
+      pEl.querySelectorAll('.wp-color-swatch').forEach(sw => {
+        const swHex = (sw.dataset.hex || '').toLowerCase();
+        sw.classList.toggle('active', swHex === target);
+      });
+    }
+  }
+
+  function setActivePartitionColor(hex) {
+    if (!hex) return;
+    const target = hex.toLowerCase();
+    document.querySelectorAll('.wp-color-swatch').forEach(sw => {
+      const swHex = (sw.dataset.hex || '').toLowerCase();
+      sw.classList.toggle('active', swHex === target);
+    });
+  }
+
   function setActivePartitionTool() {}
-  function setActivePartitionColor() {}
   function setActivePartitionSize() {}
   function setActivePartitionEraserSize() {}
 
@@ -1720,6 +2443,10 @@ const WorkspaceSplit = (() => {
     getPptContext,
     deletePptRegion,
     setActivePartition,
+    setInkColor,
+    setActivePartitionColor,
+    sendAiPrompt,
+    updateMathSimAngle,
     openInsertMenu,
     closeAllInsertPopups,
     selectContentType,

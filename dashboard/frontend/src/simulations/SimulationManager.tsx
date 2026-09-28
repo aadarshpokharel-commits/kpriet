@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { ISimulationDefinition, IAssignedSimulation, ISimulationLaunchContext, SimulationDomain } from './types';
-import { getDomainColor, resolveSubjectDomain, isSmartBoardDsaSimulation, isSmartBoardOsSimulation, isSmartBoardCSimulation, isSmartBoardEpSimulation, isSmartBoardEgSimulation } from './types';
+import { getDomainColor, resolveSubjectDomain, isSmartBoardDsaSimulation, isSmartBoardOsSimulation, isSmartBoardCSimulation, isSmartBoardEpSimulation, isSmartBoardEgSimulation, isSmartBoardMaSimulation } from './types';
 import type { IEpPublishedConfig } from './types';
 import { getSimulationsForSubject } from './registry';
 import { SimulationModal } from './SimulationModal';
@@ -53,6 +53,7 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
   assignedSimulations = [],
   isTeacher = false,
   onAssignSimulation,
+  onToggleStatus,
   onLaunchSmartBoard,
 }) => {
   const domain: SimulationDomain = useMemo(() => resolveSubjectDomain(subject), [subject]);
@@ -83,6 +84,24 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
       });
     return map;
   }, [assignedSimulations]);
+
+  /** Latest saved Content record per simulation template (published or draft) — drives Publish / Unpublish. */
+  const savedRecord = useMemo(() => {
+    const map = new Map<string, IAssignedSimulation>();
+    (assignedSimulations || []).forEach((a) => { const key = a?.simulationConfig?.type || ''; if (key && !map.has(key)) map.set(key, a); });
+    return map;
+  }, [assignedSimulations]);
+  const [busy, setBusy] = useState<string>('');
+  const togglePublish = async (sim: ISimulationDefinition) => {
+    const rec = savedRecord.get(sim.id);
+    setBusy(sim.id);
+    try {
+      if (rec && onToggleStatus) await onToggleStatus(rec._id, String(rec.status || 'PUBLISHED'));
+      else if (onAssignSimulation) {
+        await onAssignSimulation({ simulationId: sim.id, chapterOrUnit: sim.unit || 1, title: sim.title, description: sim.shortDescription, customParams: {}, status: 'PUBLISHED' });
+      }
+    } finally { setBusy(''); }
+  };
 
   const [selected, setSelected] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -118,7 +137,7 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
   const contextFor = (sim: ISimulationDefinition, extra: Partial<ISimulationLaunchContext> = {}): ISimulationLaunchContext => {
     if (isSmartBoardDsaSimulation(sim)) return { topic: sim.title, category: sim.dsaCategory, config: { category: sim.dsaCategory, topic: sim.title }, ...extra };
     if (sim.boardEngine === 'cn') return { topic: sim.topic, category: sim.id, config: {}, ...extra };
-    if (isSmartBoardEpSimulation(sim) || isSmartBoardEgSimulation(sim)) return { topic: sim.topic, category: sim.id, config: (publishedConfig.get(sim.id) as Record<string, unknown>) || {}, ...extra };
+    if (isSmartBoardEpSimulation(sim) || isSmartBoardEgSimulation(sim) || isSmartBoardMaSimulation(sim)) return { topic: sim.topic, category: sim.id, config: (publishedConfig.get(sim.id) as Record<string, unknown>) || {}, ...extra };
     if (isSmartBoardOsSimulation(sim)) return { topic: sim.title, category: sim.osCategory, config: { simulationId: sim.id, osCategory: sim.osCategory, topic: sim.title }, ...extra };
     if (isSmartBoardCSimulation(sim)) return { topic: sim.title, category: sim.cCategory, config: { simulationId: sim.id, cCategory: sim.cCategory, topic: sim.title }, ...extra };
     return { topic: sim.title, category: sim.category, config: {}, ...extra };
@@ -181,9 +200,9 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
 
   const previewUrl = (sim: ISimulationDefinition): string | null => {
     if (sim.boardEngine === 'cn') return `/smartboard/cn-simulation.html?${subjectQuery({ sim: sim.id, preview: '1' })}`;
-    if (isSmartBoardEpSimulation(sim) || isSmartBoardEgSimulation(sim)) {
+    if (isSmartBoardEpSimulation(sim) || isSmartBoardEgSimulation(sim) || isSmartBoardMaSimulation(sim)) {
       const cfg = publishedConfig.get(sim.id);
-      const page = isSmartBoardEgSimulation(sim) ? 'eg-simulation.html' : 'ep-simulation.html';
+      const page = isSmartBoardMaSimulation(sim) ? 'ma-simulation.html' : isSmartBoardEgSimulation(sim) ? 'eg-simulation.html' : 'ep-simulation.html';
       return `/smartboard/${page}?${subjectQuery({ sim: sim.id, preview: '1', ...(cfg ? { config: JSON.stringify(cfg) } : {}) })}`;
     }
     if (isSmartBoardOsSimulation(sim)) return `/smartboard/os-simulation.html?${subjectQuery({ simulationId: sim.id, category: String(sim.osCategory || ''), title: sim.title, topic: sim.title })}`;
@@ -222,6 +241,26 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
           <span className="inline-block rounded-md bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">📌 {isTeacher ? 'Published class settings' : 'Teacher’s settings'}</span>
         )}
       </div>
+      {isTeacher && isSmartBoardMaSimulation(sim) && (
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setPreview(sim)}
+            title="Open the simulation, set the parameters, then press Publish inside it"
+            className="py-2 rounded-xl border border-line bg-surface-elevated hover:border-primary/50 text-ink text-xs font-semibold transition cursor-pointer"
+          >
+            ⚙ Configure
+          </button>
+          <button
+            type="button"
+            disabled={busy === sim.id || (!onAssignSimulation && !onToggleStatus)}
+            onClick={() => { void togglePublish(sim); }}
+            className={`py-2 rounded-xl border text-xs font-semibold transition cursor-pointer disabled:opacity-50 ${savedRecord.get(sim.id) && (savedRecord.get(sim.id)?.status || 'PUBLISHED') === 'PUBLISHED' ? 'border-amber-400/60 text-amber-600 hover:bg-amber-50' : 'border-emerald-400/60 text-emerald-700 hover:bg-emerald-50'}`}
+          >
+            {savedRecord.get(sim.id) && (savedRecord.get(sim.id)?.status || 'PUBLISHED') === 'PUBLISHED' ? '⏸ Unpublish' : '📢 Publish'}
+          </button>
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-2">
         <button
           type="button"
@@ -322,24 +361,26 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
 
       {/* Preview */}
       {preview && previewUrl(preview) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3 sm:p-6" role="dialog" aria-modal="true" aria-label={`${preview.title} preview`}>
-          <div className="flex h-[92vh] w-full max-w-[min(96vw,1700px)] flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-2xl">
-            <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-2.5">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-bold text-ink">{preview.title}</p>
-                <p className="truncate text-[11px] text-muted">
-                  {subject.subjectCode} · {preview.unit ? `Unit ${preview.unit} · ${preview.topic}` : categoryLabel(preview.category)} · Preview
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-0 sm:p-2" role="dialog" aria-modal="true" aria-label={`${preview.title} preview`}>
+          {/* Single-screen simulation workspace: thin context bar + the simulation (the engine page has its own responsive shell) */}
+          <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-surface shadow-2xl sm:h-[calc(100dvh-1rem)] sm:rounded-2xl sm:border sm:border-line">
+            <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line px-2 py-1 sm:px-3">
+              <div className="flex min-w-0 items-center gap-2">
+                <button type="button" onClick={() => setPreview(null)} aria-label="Back to simulations" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-line text-base font-bold text-ink hover:border-primary/50">←</button>
+                <p className="min-w-0 truncate text-[11px] text-muted sm:text-xs">
+                  <span className="font-semibold text-ink">{subject.subjectCode}</span> · {preview.unit ? `Unit ${preview.unit} · ${preview.topic}` : categoryLabel(preview.category)} · Preview
                 </p>
               </div>
-              <div className="flex shrink-0 gap-2">
+              <div className="flex shrink-0 gap-1.5">
                 <button
                   type="button"
                   onClick={() => { const sim = preview; setPreview(null); launchOnSmartBoard(sim); }}
-                  className="rounded-xl bg-primary px-3.5 py-2 text-xs font-bold text-white hover:bg-primary/90"
+                  className="h-9 rounded-lg bg-primary px-3 text-xs font-bold text-white hover:bg-primary/90"
+                  aria-label="Launch Smart Board"
                 >
-                  🖥 Launch Smart Board
+                  🖥<span className="hidden sm:inline"> Launch Smart Board</span>
                 </button>
-                <button type="button" onClick={() => setPreview(null)} className="rounded-xl border border-line px-3 py-2 text-xs font-semibold text-muted hover:text-ink">
+                <button type="button" onClick={() => setPreview(null)} className="hidden h-9 rounded-lg border border-line px-3 text-xs font-semibold text-muted hover:text-ink sm:inline-block">
                   Close
                 </button>
               </div>

@@ -4,18 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f4f7f3">
-  <title>Engineering Graphics Simulations · Eduverse</title>
+  <title>Engineering Mathematics Simulations · Eduverse</title>
   <link rel="stylesheet" href="styles/ep-simulation.css">
   <link rel="stylesheet" href="styles/sim-shell.css">
 </head>
 <body>
   <main class="ep-app" id="ep-app">
     <header class="ep-header">
-      <div class="ep-brand" aria-hidden="true">EG</div>
+      <div class="ep-brand" aria-hidden="true">MA</div>
       <div class="ep-heading">
-        <nav class="ep-crumbs" id="ep-crumbs" aria-label="Location">Semester I › Engineering Graphics</nav>
-        <h1><span id="ep-title">Engineering Graphics Visualization Lab</span> <span class="ep-concept hidden" id="ep-concept" title="This is a conceptual model, not a precise real-world measurement">Conceptual Visualization</span></h1>
-        <p id="ep-subtitle">U21ME101 · Interactive simulation library</p>
+        <nav class="ep-crumbs" id="ep-crumbs" aria-label="Location">Semester I › Engineering Mathematics</nav>
+        <h1><span id="ep-title">Engineering Mathematics Visualization Lab</span> <span class="ep-concept hidden" id="ep-concept" title="This is a conceptual model, not a precise real-world measurement">Conceptual Visualization</span></h1>
+        <p id="ep-subtitle">U21MA101 · Interactive simulation library</p>
       </div>
       <div class="ep-header-actions">
         <label class="ep-mode ep-player-only hidden" id="ep-mode-wrap">Mode
@@ -32,7 +32,7 @@
     </header>
 
     <!-- Library: Unit → Topic → Simulation -->
-    <section id="ep-library" class="ep-library hidden" aria-label="Engineering Graphics simulation library"></section>
+    <section id="ep-library" class="ep-library hidden" aria-label="Engineering Mathematics simulation library"></section>
 
     <!-- Player -->
     <section id="ep-player" class="ep-player hidden">
@@ -109,20 +109,20 @@
     </section>
     <div id="ep-toast" class="ep-toast" role="status" aria-live="polite"></div>
   </main>
-  <script src="tools/eg-catalog.js"></script>
+  <script src="tools/ma-catalog.js"></script>
   <script src="tools/ep-draw.js"></script>
-  <script src="tools/eg-geom.js"></script>
-  <script src="tools/eg-sims-generator.js"></script>
-  <script src="tools/eg-sims-construction.js"></script>
-  <script src="tools/eg-sims-projection.js"></script>
-  <script src="tools/eg-sims-sections.js"></script>
-  <script src="tools/eg-sims-pictorial.js"></script>
-  <script src="tools/eg-sims-workspace.js"></script>
+  <script src="tools/ma-core.js"></script>
+  <script src="tools/ma-frame.js"></script>
+  <script src="tools/ma-u1.js"></script>
+  <script src="tools/ma-u2.js"></script>
+  <script src="tools/ma-u3.js"></script>
+  <script src="tools/ma-u4.js"></script>
+  <script src="tools/ma-u5.js"></script>
   <script>
     window.EduverseSimLabConfig = {
-      catalog: window.EduverseEGCatalog, sims: window.EGSims || {}, engine: 'engineering-graphics',
-      aiType: 'Engineering Graphics simulation state', source: 'eg-simulation',
-      libraryTitle: 'Engineering Graphics Visualization Lab', docTitle: 'Engineering Graphics Simulations',
+      catalog: window.EduverseMACatalog, sims: window.MASims || {}, engine: 'engineering-mathematics',
+      aiType: 'Engineering Mathematics simulation state', source: 'ma-simulation',
+      libraryTitle: 'Engineering Mathematics Visualization Lab', docTitle: 'Engineering Mathematics Simulations',
     };
   </script>
   <script src="tools/ep-simulation.js"></script>

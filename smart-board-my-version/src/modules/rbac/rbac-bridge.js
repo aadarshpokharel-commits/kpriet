@@ -947,15 +947,23 @@
     id: 'sim-' + sim.id, simKey: sim.id, title: sim.title, domain: 'DSA', category: `Unit ${sim.unit} · ${sim.topic}`,
     description: sim.description, icon: sim.icon, subjectKeywords: EG_SUBJECT_KEYWORDS, unit: sim.unit, topic: sim.topic,
   })) : [];
-  /** Catalogue entry (CN / EP / EG) for a simulation key, so backend-listed sims keep their unit, topic and subject tags. */
+  /* Engineering Mathematics (U21MA101 · Calculus and Differential Equations) — 29 simulations from tools/ma-catalog.js (engine: ma-simulation.html). */
+  const MA_SUBJECT_KEYWORDS = ['engineering mathematics', 'u21ma101', 'calculus and differential equations'];
+  const MA_CATALOG = (typeof window !== 'undefined' && window.EduverseMACatalog) || null;
+  const MA_SIMULATIONS = MA_CATALOG ? MA_CATALOG.simulations.map((sim) => ({
+    id: 'sim-' + sim.id, simKey: sim.id, title: sim.title, domain: 'MATHEMATICS', category: `Unit ${sim.unit} · ${sim.topic}`,
+    description: sim.description, icon: sim.icon, subjectKeywords: MA_SUBJECT_KEYWORDS, unit: sim.unit, topic: sim.topic,
+  })) : [];
+  /** Catalogue entry (CN / EP / EG / MA) for a simulation key, so backend-listed sims keep their unit, topic and subject tags. */
   function catalogLabSimFor(key) {
-    return [...CN_SIMULATIONS, ...EP_SIMULATIONS, ...EG_SIMULATIONS].find((x) => x.simKey === key) || null;
+    return [...CN_SIMULATIONS, ...EP_SIMULATIONS, ...EG_SIMULATIONS, ...MA_SIMULATIONS].find((x) => x.simKey === key) || null;
   }
 
   const COMPREHENSIVE_SIMULATIONS = [
     ...CN_SIMULATIONS,
     ...EP_SIMULATIONS,
     ...EG_SIMULATIONS,
+    ...MA_SIMULATIONS,
     // ─── DATA STRUCTURES & ALGORITHMS (10 simulations, one engine, shown on the board) ───
     ...DSA_SIMULATIONS,
     // ─── OTHER COMPUTER SCIENCE ───
@@ -1412,6 +1420,15 @@
       activeResourceTitle = title || cn.title;
       launchSmartBoardSimWidget('cn-lab', title || cn.title, { ...(simulationContext || {}), simId: key, unit: cn.unit, unitTitle: cn.unitTitle, topic: cn.topic });
       if (window.App && typeof window.App.showToast === 'function') window.App.showToast('🚀 ' + (title || cn.title) + ' opened on the board', 'success');
+      return;
+    }
+
+    // Engineering Mathematics: open the chosen simulation on the board
+    if (MA_CATALOG && MA_CATALOG.get(key)) {
+      const ma = MA_CATALOG.get(key);
+      activeResourceTitle = title || ma.title;
+      launchSmartBoardSimWidget('ma-lab', title || ma.title, { ...(simulationContext || {}), simId: key, unit: ma.unit, unitTitle: ma.unitTitle, topic: ma.topic });
+      if (window.App && typeof window.App.showToast === 'function') window.App.showToast('🚀 ' + (title || ma.title) + ' opened on the board', 'success');
       return;
     }
 
@@ -2319,8 +2336,9 @@
       existing.remove();
     }
 
+    const isMaLab = simKey === 'ma-lab';
     const isEgLab = simKey === 'eg-lab';
-    const isEpLab = simKey === 'ep-lab' || isEgLab; // EP and EG share the canvas engine (ep-simulation.js)
+    const isEpLab = simKey === 'ep-lab' || isEgLab || isMaLab; // EP, EG and MA share the canvas engine (ep-simulation.js)
     const isCnLab = simKey === 'cn-lab' || isEpLab; // catalogue labs share one code path (CN / EP / EG)
     const isDsaLab = simKey === 'cs-dsa-lab';
     const isOsLab = !isCnLab && (simKey === 'cs-os-lab' || simKey.startsWith('os-') || (session && (session.subjectCode === 'U21CS403' || String(session.subjectName || '').toLowerCase().includes('operating system'))));
@@ -2341,7 +2359,7 @@
         semesterId: String(session.semesterId || ''), semesterNumber: String(session.semesterNumber || ''), role: String(session.role || 'teacher'),
         config: JSON.stringify(cnCtx.config || {}), state: JSON.stringify(cnCtx.state || {}),
       });
-      const cnUrl = new URL(isEgLab ? 'eg-simulation.html' : isEpLab ? 'ep-simulation.html' : 'cn-simulation.html', window.location.href);
+      const cnUrl = new URL(isMaLab ? 'ma-simulation.html' : isEgLab ? 'eg-simulation.html' : isEpLab ? 'ep-simulation.html' : 'cn-simulation.html', window.location.href);
       cnUrl.search = cnQuery.toString();
       labFrameUrl = cnUrl.toString();
     } else if (isIframeLab) {
@@ -2380,7 +2398,7 @@
           <span style="font-size:16px">${isCLab ? '⚡' : isOsLab ? '💻' : '🔬'}</span>
           <div>
             <h4 style="margin:0;font-size:13.5px;font-weight:800;color:#ffffff">${escapeHtml(title || (isCLab ? 'C Programming Simulation Lab' : isOsLab ? 'Operating Systems Simulation Lab' : 'Interactive Academic Simulation'))}</h4>
-            <span style="font-size:10px;color:${isCLab || isOsLab ? '#bae6fd' : '#a7f3d0'};font-weight:600">${isCnLab ? escapeHtml(`${session.subjectCode || (isEgLab ? 'U21ME101' : isEpLab ? 'U21PH101' : 'U21CSG05')} · Unit ${simulationContext.unit || ''} · ${simulationContext.topic || ''}`) : isCLab ? escapeHtml(`${session.subjectCode || 'U21CS101'} · Problem Solving & C Programming`) : 'Smart Board Live Widget • Stylus Ready'}</span>
+            <span style="font-size:10px;color:${isCLab || isOsLab ? '#bae6fd' : '#a7f3d0'};font-weight:600">${isCnLab ? escapeHtml(`${session.subjectCode || (isMaLab ? 'U21MA101' : isEgLab ? 'U21ME101' : isEpLab ? 'U21PH101' : 'U21CSG05')} · Unit ${simulationContext.unit || ''} · ${simulationContext.topic || ''}`) : isCLab ? escapeHtml(`${session.subjectCode || 'U21CS101'} · Problem Solving & C Programming`) : 'Smart Board Live Widget • Stylus Ready'}</span>
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:6px">
@@ -2394,7 +2412,7 @@
 
       <div id="rbac-sim-w-body" style="${isIframeLab ? 'padding:0;display:flex;flex:1;min-height:0;' : 'padding:14px;display:flex;flex-direction:column;gap:10px;'}">
         ${isIframeLab
-          ? `<iframe id="rbac-sim-w-dsa-frame" title="${isEgLab ? 'Engineering Graphics interactive simulation' : isEpLab ? 'Engineering Physics interactive simulation' : isCnLab ? 'Computer Networks interactive simulation' : isOsLab ? 'Operating Systems interactive simulation' : 'Data Structures & Algorithms interactive simulation'}" src="${escapeHtml(labFrameUrl)}" allow="fullscreen" style="display:block;width:100%;height:100%;min-height:0;border:0;background:${isOsLab ? '#f8fafc' : '#f4f7f3'}"></iframe><canvas id="rbac-sim-w-canvas" width="960" height="520" aria-hidden="true" style="display:none"></canvas>`
+          ? `<iframe id="rbac-sim-w-dsa-frame" title="${isMaLab ? 'Engineering Mathematics interactive simulation' : isEgLab ? 'Engineering Graphics interactive simulation' : isEpLab ? 'Engineering Physics interactive simulation' : isCnLab ? 'Computer Networks interactive simulation' : isOsLab ? 'Operating Systems interactive simulation' : 'Data Structures & Algorithms interactive simulation'}" src="${escapeHtml(labFrameUrl)}" allow="fullscreen" style="display:block;width:100%;height:100%;min-height:0;border:0;background:${isOsLab ? '#f8fafc' : '#f4f7f3'}"></iframe><canvas id="rbac-sim-w-canvas" width="960" height="520" aria-hidden="true" style="display:none"></canvas>`
           : `<div style="background:#020617;border-radius:10px;border:1px solid #1e293b;position:relative;overflow:hidden;height:240px;display:flex;align-items:center;justify-content:center"><canvas id="rbac-sim-w-canvas" width="612" height="240" style="width:100%;height:100%;display:block"></canvas></div><div id="rbac-sim-w-controls" style="background:rgba(255,255,255,0.04);border-radius:10px;padding:10px 12px;border:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:8px"><!-- Dynamic Controls --></div>`}
       </div>
     `;
@@ -2523,7 +2541,7 @@
           window.EduverseSubjectContext = session;
           if (window.AIAssistant && typeof window.AIAssistant.openPanel === 'function') {
             window.AIAssistant.openPanel();
-            window.AIAssistant.askQuestion(String(message.question || 'Explain the current simulation step.'), message.selection || { type: 'Simulation state', content: JSON.stringify(session.simulationContext).slice(0, 7500), source: isEgLab ? 'eg-simulation' : isEpLab ? 'ep-simulation' : 'cn-simulation' });
+            window.AIAssistant.askQuestion(String(message.question || 'Explain the current simulation step.'), message.selection || { type: 'Simulation state', content: JSON.stringify(session.simulationContext).slice(0, 7500), source: isMaLab ? 'ma-simulation' : isEgLab ? 'eg-simulation' : isEpLab ? 'ep-simulation' : 'cn-simulation' });
           }
           return;
         }

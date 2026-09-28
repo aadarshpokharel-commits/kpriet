@@ -207,6 +207,41 @@ const Drawing = (() => {
     const tool = (typeof App !== 'undefined') ? App.currentTool : 'pen';
     if (tool !== 'pen' && tool !== 'highlighter' && tool !== 'eraser') return;
 
+    // Check if pointer is over any interactive UI elements (headers, action buttons, color swatches, inputs, popups)
+    if (e.target && e.target.closest && (
+      e.target.closest('.wp-header') ||
+      e.target.closest('.wp-insert-popup') ||
+      e.target.closest('.wp-graph-controls-panel') ||
+      e.target.closest('.wp-ppt-controls') ||
+      e.target.closest('.wp-split-divider') ||
+      e.target.closest('button') ||
+      e.target.closest('input') ||
+      e.target.closest('select')
+    )) {
+      return;
+    }
+
+    if (document.elementsFromPoint) {
+      const els = document.elementsFromPoint(e.clientX, e.clientY);
+      const dc = getDrawCanvas();
+      const interactive = els.find(el => 
+        el !== dc && el !== e.target && (
+          el.closest('.wp-header') ||
+          el.closest('.wp-insert-popup') ||
+          el.closest('.wp-graph-controls-panel') ||
+          el.closest('.wp-ppt-controls') ||
+          el.closest('.wp-split-divider')
+        )
+      );
+      if (interactive) {
+        const btn = interactive.closest('button, input, select, .wp-action-btn, .wp-color-swatch, .wp-preset-chip, .wp-bg-chip, .wp-pill-btn, .wp-ip-item');
+        if (btn) {
+          btn.click();
+        }
+        return;
+      }
+    }
+
     e.preventDefault();
     try {
       e.target.setPointerCapture(e.pointerId);
@@ -718,6 +753,21 @@ const Drawing = (() => {
     const vp = document.getElementById('canvas-viewport');
     if (!dc) return;
 
+    if (isSplit) {
+      // In split mode, each partition has its own independent wp-draw-canvas
+      // Disable global viewport events so it never blocks or intercepts partition interaction
+      dc.style.pointerEvents = 'none';
+      if (sc) sc.style.pointerEvents = 'none';
+      if (vp) vp.style.pointerEvents = 'none';
+
+      // Update partition ink canvases: if select tool, allow clicking through to underlying interactive elements
+      document.querySelectorAll('.wp-draw-canvas').forEach(cv => {
+        cv.style.pointerEvents = (tool === 'select') ? 'none' : 'auto';
+        cv.style.cursor = (tool === 'select') ? 'default' : (tool === 'eraser' ? 'cell' : 'crosshair');
+      });
+      return;
+    }
+
     // Freehand continuous ink drawing tools handled directly by drawing.js on draw-canvas
     const isFreehandInk = (tool === 'pen' || tool === 'highlighter' || tool === 'eraser');
 
@@ -738,7 +788,7 @@ const Drawing = (() => {
       dc.style.pointerEvents = 'none';
       dc.style.zIndex = '1';
       if (sc) {
-        sc.style.pointerEvents = (isSplit && tool === 'select') ? 'none' : 'auto';
+        sc.style.pointerEvents = 'auto';
         sc.style.zIndex = '10';
         sc.style.cursor = (tool === 'select') ? 'default' : (tool === 'text' ? 'text' : 'crosshair');
       }

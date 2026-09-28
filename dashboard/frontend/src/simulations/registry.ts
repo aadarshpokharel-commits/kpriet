@@ -456,6 +456,78 @@ function egBoardSimulation(id: string, unit: number, unitTitle: string, subtype:
   };
 }
 
+/**
+ * Engineering Mathematics (U21MA101 · Calculus and Differential Equations) — 29 simulations organised
+ * Unit → Topic on reusable engines (matrix, multivariable, integration, vector-calculus and ODE kernels).
+ * Each runs inside the Smart Board (engine: /smartboard/ma-simulation.html).
+ * Keep in sync with smart-board-my-version/src/tools/ma-catalog.js.
+ */
+const MA_SUBJECT_KEYWORDS = ['engineering mathematics', 'u21ma101', 'calculus and differential equations'];
+
+function maBoardSimulation(id: string, unit: number, unitTitle: string, subtype: string, topic: string, title: string, icon: string, shortDescription: string): ISimulationDefinition {
+  return {
+    id,
+    boardEngine: 'ma',
+    simulationSubtype: subtype,
+    unit,
+    unitTitle,
+    topic,
+    subjectKeywords: MA_SUBJECT_KEYWORDS,
+    title,
+    domain: 'MATHEMATICS',
+    category: 'engineering mathematics',
+    icon,
+    shortDescription,
+    detailedDescription: `${shortDescription} Real calculations with step-by-step working, formulas and 2D/3D visualisation — opens inside the Smart Board.`,
+    learningObjectives: [`Work through ${topic} step by step`, 'Connect every formula with its numerical result and graph'],
+    suggestedUnits: [unit],
+    smartboardPresetKey: id,
+    tags: ['Engineering Mathematics', unitTitle, topic],
+    parameters: [],
+    metrics: [],
+    engine: {
+      createInitialState: () => ({}),
+      update: (state) => state,
+      render: (ctx, width, height) => {
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(0, 0, width, height);
+      },
+    },
+  };
+}
+
+export const MA_BOARD_SIMULATIONS: ISimulationDefinition[] = [
+  maBoardSimulation("ma-matrix-ops", 1, "Matrices", "matrices", "Matrix Operations", "Matrix Operations Visualizer", "🧮", "Addition, subtraction, scalar multiple, product and transpose — every entry calculated step by step."),
+  maBoardSimulation("ma-eigen", 1, "Matrices", "matrices", "Eigenvalues & Eigenvectors", "Eigenvalue & Eigenvector Visualizer", "⭐", "Flagship: Matrix → det(A − λI) = 0 → eigenvalues → eigenvectors → see which vectors keep their direction."),
+  maBoardSimulation("ma-cayley-hamilton", 1, "Matrices", "matrices", "Cayley-Hamilton", "Cayley-Hamilton Theorem Simulator", "🔁", "Characteristic polynomial, substitute A, verify p(A) = 0 and use it to find A⁻¹."),
+  maBoardSimulation("ma-diagonalization", 1, "Matrices", "matrices", "Diagonalization", "Matrix Diagonalization", "🔳", "Eigenvalues, eigenvectors, modal matrix P, D = P⁻¹AP (or orthogonal Pᵀ A P) and verification."),
+  maBoardSimulation("ma-orthogonal", 1, "Matrices", "matrices", "Orthogonal Transformation", "Orthogonal Transformation", "🔄", "Rotations/reflections preserve lengths and angles; reduce a quadratic form to canonical form."),
+  maBoardSimulation("ma-matrix-applications", 1, "Matrices", "matrices", "Applications", "Matrix Applications", "🧩", "Linear systems, network flow and population models: input → matrix form → calculation → result."),
+  maBoardSimulation("ma-partial", 2, "Functions of Several Variables", "several-variables", "Partial Derivatives", "Partial Derivative Visualizer", "∂", "Freeze y and vary x (and vice versa): slices of the surface, fₓ, f_y and higher partial derivatives."),
+  maBoardSimulation("ma-total-derivative", 2, "Functions of Several Variables", "several-variables", "Total Derivative", "Total Derivative Simulator", "🔗", "du/dt = u_x dx/dt + u_y dy/dt — each component calculated and compared with direct substitution."),
+  maBoardSimulation("ma-jacobian", 2, "Functions of Several Variables", "several-variables", "Jacobians", "Jacobian Visualizer", "🧭", "Partial derivatives → Jacobian matrix → determinant, and how a small square is mapped."),
+  maBoardSimulation("ma-taylor2", 2, "Functions of Several Variables", "several-variables", "Taylor Series", "Taylor Series for Two Variables", "⭐", "Flagship: f(x,y) about (a,b): derivatives, terms, polynomial of order 1–4 and the approximation error."),
+  maBoardSimulation("ma-extrema", 2, "Functions of Several Variables", "several-variables", "Extreme Values", "Extreme Values of Two Variables", "⭐", "Flagship: fₓ = f_y = 0 → critical points → rt − s² test → maximum, minimum or saddle, on contour and 3-D views."),
+  maBoardSimulation("ma-lagrange", 2, "Functions of Several Variables", "several-variables", "Lagrange Multipliers", "Lagrange Multipliers", "⭐", "Flagship: Objective and constraint → ∇f = λ∇g → candidate points highlighted where level curves touch the constraint."),
+  maBoardSimulation("ma-double-integral", 3, "Multiple Integrals", "multiple-integrals", "Double Integrals", "Double Integral Visualizer", "∬", "Region, inner and outer integration step by step, and the volume under the surface."),
+  maBoardSimulation("ma-change-order", 3, "Multiple Integrals", "multiple-integrals", "Change of Order", "Change of Order of Integration", "⭐", "Flagship: Plot the region, find the boundary curves, slice the other way and read the new limits."),
+  maBoardSimulation("ma-triple-integral", 3, "Multiple Integrals", "multiple-integrals", "Triple Integrals", "Triple Integral Visualizer", "∭", "Inner, middle and outer integration over a 3-D region, with the region drawn in 3-D."),
+  maBoardSimulation("ma-area", 3, "Multiple Integrals", "multiple-integrals", "Area", "Area Using Double Integral", "📐", "Area between two curves: intersections, limits and strips building up the area."),
+  maBoardSimulation("ma-volume", 3, "Multiple Integrals", "multiple-integrals", "Volume", "Volume Using Triple Integral", "🧊", "Volume of a solid bounded by surfaces — limits, slices and the accumulated volume."),
+  maBoardSimulation("ma-line-integral", 4, "Line and Surface Integrals", "vector-calculus", "Line Integral", "Line Integral Visualizer", "〰️", "∫_C F·dr along a parametrised path: direction, F·r′(t) and the running accumulation."),
+  maBoardSimulation("ma-surface-integral", 4, "Line and Surface Integrals", "vector-calculus", "Surface Integral", "Surface Integral Visualizer", "🌐", "Surface, normal vectors and flux ∬ F·n dS computed through a parametrisation."),
+  maBoardSimulation("ma-green", 4, "Line and Surface Integrals", "vector-calculus", "Green's Theorem", "Green's Theorem Simulator", "⭐", "Flagship: ∮ P dx + Q dy = ∬ (Q_x − P_y) dA — both sides computed and compared."),
+  maBoardSimulation("ma-stokes", 4, "Line and Surface Integrals", "vector-calculus", "Stokes' Theorem", "Stokes' Theorem Simulator", "🌀", "∮ F·dr around the boundary = ∬ (∇×F)·n dS over the surface, in 3-D."),
+  maBoardSimulation("ma-gauss", 4, "Line and Surface Integrals", "vector-calculus", "Gauss Divergence Theorem", "Gauss Divergence Theorem Simulator", "📦", "∯ F·n dS through a closed surface = ∭ ∇·F dV — outward normals and both sides compared."),
+  maBoardSimulation("ma-ode2", 5, "Ordinary Differential Equations", "ode", "Second-Order ODE", "Second-Order ODE Solver", "⭐", "Flagship: a y″ + b y′ + c y = f(x): auxiliary equation, CF, PI, initial conditions and the solution curve."),
+  maBoardSimulation("ma-ode-higher", 5, "Ordinary Differential Equations", "ode", "Higher-Order ODE", "Higher-Order ODE Solver", "📈", "Linear constant-coefficient ODEs up to order 6: characteristic equation, roots and the general solution."),
+  maBoardSimulation("ma-ode-constant", 5, "Ordinary Differential Equations", "ode", "Constant Coefficient ODE", "Constant Coefficient ODE Simulator", "🎚️", "All root cases (distinct, repeated, complex) with sliders — see the solution curve change live."),
+  maBoardSimulation("ma-ode-variable", 5, "Ordinary Differential Equations", "ode", "Variable Coefficient ODE", "Variable Coefficient ODE Simulator", "🔧", "Equations reducible to constant coefficients (x = eᶻ, Legendre linear) and a known-solution reduction of order."),
+  maBoardSimulation("ma-euler-cauchy", 5, "Ordinary Differential Equations", "ode", "Euler-Cauchy Equation", "Euler-Cauchy Equation Simulator", "📐", "x²y″ + a x y′ + b y = f(x): substitution x = eᶻ, auxiliary equation, roots and solution curve."),
+  maBoardSimulation("ma-legendre", 5, "Ordinary Differential Equations", "ode", "Legendre's Equation", "Legendre's Equation Simulator", "📜", "(ax+b)²y″ + … : substitution ax + b = eᶻ, reduced equation and solution; Legendre polynomials Pₙ(x)."),
+  maBoardSimulation("ma-variation-params", 5, "Ordinary Differential Equations", "ode", "Variation of Parameters", "Variation of Parameters Simulator", "🧷", "y₁, y₂, Wronskian, u₁ = −∫y₂f/W, u₂ = ∫y₁f/W, particular solution and the final curve."),
+];
+
 export const EG_BOARD_SIMULATIONS: ISimulationDefinition[] = [
   egBoardSimulation("eg-projection-generator", 4, "Solids, Sections and Development", "projection-generator", "3D Object → Projection", "3D Object → Projection Generator", "🧊", "Flagship: pick a solid, rotate it, choose a view and watch the front, top and side views generate with projection lines."),
   egBoardSimulation("eg-projection-solids", 4, "Solids, Sections and Development", "projection-of-solids", "Projection of Solids", "Projection of Solids", "🔷", "Prism, pyramid, cylinder and cone — axis perpendicular, inclined to HP, inclined to VP — views drawn stage by stage."),
@@ -1852,6 +1924,7 @@ export const SIMULATION_REGISTRY: ISimulationDefinition[] = [
   ...CN_BOARD_SIMULATIONS,
   ...EP_BOARD_SIMULATIONS,
   ...EG_BOARD_SIMULATIONS,
+  ...MA_BOARD_SIMULATIONS,
   ...C_BOARD_SIMULATIONS,
 
   // Older single "Interactive Lab" entry — hidden, kept so saved assignments still open (on the Smart Board)
@@ -2903,8 +2976,8 @@ export function getSimulationsForSubject(subject: { subjectName?: string; subjec
   const matched = inDomain.filter((s) => s.subjectKeywords?.some((k) => text.includes(k)));
   const list = matched.length ? matched : inDomain.filter((s) => !s.subjectKeywords?.length);
   return [
-    ...list.filter((s) => s.dsaCategory || s.osCategory || s.cCategory || s.boardEngine === 'cn' || s.boardEngine === 'ep' || s.boardEngine === 'eg'),
-    ...list.filter((s) => !s.dsaCategory && !s.osCategory && !s.cCategory && s.boardEngine !== 'cn' && s.boardEngine !== 'ep' && s.boardEngine !== 'eg'),
+    ...list.filter((s) => s.dsaCategory || s.osCategory || s.cCategory || s.boardEngine === 'cn' || s.boardEngine === 'ep' || s.boardEngine === 'eg' || s.boardEngine === 'ma'),
+    ...list.filter((s) => !s.dsaCategory && !s.osCategory && !s.cCategory && s.boardEngine !== 'cn' && s.boardEngine !== 'ep' && s.boardEngine !== 'eg' && s.boardEngine !== 'ma'),
   ];
 }
 

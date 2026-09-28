@@ -90,6 +90,7 @@
   const visibleParams = () => (spec.params || []).filter((d) => !d.showIf || d.showIf(p));
   function clampParam(d, v) {
     if (d.type === 'toggle') return Boolean(v);
+    if (d.type === 'text') { const t = String(v == null ? '' : v).slice(0, d.maxLength || 200); return t.trim() ? t : d.default; }
     if (d.type === 'select') return d.options.some((o) => String(o.value) === String(v)) ? d.options.find((o) => String(o.value) === String(v)).value : d.default;
     let n = Number(v); if (!Number.isFinite(n)) n = d.default;
     if (d.min != null) n = Math.max(d.min, n); if (d.max != null) n = Math.min(d.max, n);
@@ -103,6 +104,7 @@
       const id = `ep-in-${d.key}`; const v = p[d.key]; const unit = d.unit ? `<em>${esc(d.unit)}</em>` : '';
       const help = d.help ? `<small>${esc(d.help)}</small>` : '';
       if (d.type === 'select') return `<label class="ep-field" for="${id}"><span>${esc(d.label)}</span><select id="${id}" data-key="${d.key}">${d.options.map((o) => `<option value="${esc(o.value)}"${String(v) === String(o.value) ? ' selected' : ''}>${esc(o.label)}</option>`).join('')}</select>${help}</label>`;
+      if (d.type === 'text') return `<label class="ep-field" for="${id}"><span>${esc(d.label)}</span><input id="${id}" type="text" class="ep-text" data-key="${d.key}" value="${esc(v)}" spellcheck="false" autocomplete="off"${d.placeholder ? ` placeholder="${esc(d.placeholder)}"` : ''}>${help}</label>`;
       if (d.type === 'toggle') return `<label class="ep-field ep-toggle" for="${id}"><span>${esc(d.label)}</span><input id="${id}" type="checkbox" role="switch" data-key="${d.key}"${v ? ' checked' : ''}>${help}</label>`;
       if (d.type === 'range') return `<label class="ep-field" for="${id}"><span>${esc(d.label)} <b id="${id}-v">${esc(D.fmt(v, 4))}</b>${unit}</span><div class="ep-range"><input id="${id}" type="range" data-key="${d.key}" min="${d.min}" max="${d.max}" step="${d.step || 1}" value="${v}"><input type="number" class="ep-num" data-num="${d.key}" min="${d.min}" max="${d.max}" step="${d.step || 1}" value="${v}" aria-label="${esc(d.label)} value"></div>${help}</label>`;
       return `<label class="ep-field" for="${id}"><span>${esc(d.label)}${unit}</span><input id="${id}" type="number" data-key="${d.key}" min="${d.min ?? ''}" max="${d.max ?? ''}" step="${d.step || 'any'}" value="${v}">${help}</label>`;

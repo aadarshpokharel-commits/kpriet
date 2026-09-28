@@ -3442,6 +3442,53 @@ export class AcademicService {
       ];
     }
 
+    // Engineering Mathematics (U21MA101 · Calculus and Differential Equations): its own formulas and the 29 Smart Board simulations
+    if (subNameLower.includes('engineering mathematics') || subNameLower.includes('calculus and differential equations') || subCodeUpper === 'U21MA101') {
+      formulas = [
+        { title: 'Characteristic equation', latex: '\\det(A - \\lambda I) = 0', category: 'Matrices', description: 'Eigenvalues of A; sum = trace, product = det A.' },
+        { title: 'Cayley-Hamilton theorem', latex: 'p(A) = 0,\\quad p(\\lambda) = \\det(A - \\lambda I)', category: 'Matrices', description: 'Every square matrix satisfies its own characteristic equation.' },
+        { title: 'Total derivative', latex: '\\frac{du}{dt} = u_x \\frac{dx}{dt} + u_y \\frac{dy}{dt}', category: 'Functions of Several Variables', description: 'Chain rule for u = f(x, y).' },
+        { title: 'Extreme values', latex: 'rt - s^2 > 0:\\ r < 0\\ \\text{max},\\ r > 0\\ \\text{min};\\quad rt - s^2 < 0\\ \\text{saddle}', category: 'Functions of Several Variables', description: 'r = f_xx, s = f_xy, t = f_yy at a critical point.' },
+        { title: 'Lagrange multipliers', latex: '\\nabla f = \\lambda \\nabla g,\\quad g = 0', category: 'Functions of Several Variables', description: 'Extrema of f subject to the constraint g = 0.' },
+        { title: "Green's theorem", latex: '\\oint_C P\\,dx + Q\\,dy = \\iint_R \\left(\\frac{\\partial Q}{\\partial x} - \\frac{\\partial P}{\\partial y}\\right) dA', category: 'Vector Calculus', description: 'C is the positively oriented boundary of R.' },
+        { title: "Stokes' theorem", latex: '\\oint_C \\mathbf{F}\\cdot d\\mathbf{r} = \\iint_S (\\nabla \\times \\mathbf{F})\\cdot \\mathbf{n}\\,dS', category: 'Vector Calculus', description: 'C is the boundary of the open surface S.' },
+        { title: 'Gauss divergence theorem', latex: '\\oiint_S \\mathbf{F}\\cdot \\mathbf{n}\\,dS = \\iiint_V \\nabla\\cdot \\mathbf{F}\\,dV', category: 'Vector Calculus', description: 'S is the closed surface enclosing V.' },
+        { title: 'Complete solution of a linear ODE', latex: 'y = \\text{CF} + \\text{PI}', category: 'Ordinary Differential Equations', description: 'CF from the roots of the auxiliary equation f(m) = 0.' },
+        { title: 'Variation of parameters', latex: 'y_p = -y_1\\int \\frac{y_2 X}{W}dx + y_2\\int \\frac{y_1 X}{W}dx', category: 'Ordinary Differential Equations', description: 'W = y_1 y_2\' - y_1\' y_2 (Wronskian).' },
+      ];
+      defaultSimulations = [
+          { title: "Matrix Operations Visualizer", key: "ma-matrix-ops", type: 'MA_BOARD_SIM', category: "Unit 1 · Matrix Operations" },
+          { title: "Eigenvalue & Eigenvector Visualizer", key: "ma-eigen", type: 'MA_BOARD_SIM', category: "Unit 1 · Eigenvalues & Eigenvectors" },
+          { title: "Cayley-Hamilton Theorem Simulator", key: "ma-cayley-hamilton", type: 'MA_BOARD_SIM', category: "Unit 1 · Cayley-Hamilton" },
+          { title: "Matrix Diagonalization", key: "ma-diagonalization", type: 'MA_BOARD_SIM', category: "Unit 1 · Diagonalization" },
+          { title: "Orthogonal Transformation", key: "ma-orthogonal", type: 'MA_BOARD_SIM', category: "Unit 1 · Orthogonal Transformation" },
+          { title: "Matrix Applications", key: "ma-matrix-applications", type: 'MA_BOARD_SIM', category: "Unit 1 · Applications" },
+          { title: "Partial Derivative Visualizer", key: "ma-partial", type: 'MA_BOARD_SIM', category: "Unit 2 · Partial Derivatives" },
+          { title: "Total Derivative Simulator", key: "ma-total-derivative", type: 'MA_BOARD_SIM', category: "Unit 2 · Total Derivative" },
+          { title: "Jacobian Visualizer", key: "ma-jacobian", type: 'MA_BOARD_SIM', category: "Unit 2 · Jacobians" },
+          { title: "Taylor Series for Two Variables", key: "ma-taylor2", type: 'MA_BOARD_SIM', category: "Unit 2 · Taylor Series" },
+          { title: "Extreme Values of Two Variables", key: "ma-extrema", type: 'MA_BOARD_SIM', category: "Unit 2 · Extreme Values" },
+          { title: "Lagrange Multipliers", key: "ma-lagrange", type: 'MA_BOARD_SIM', category: "Unit 2 · Lagrange Multipliers" },
+          { title: "Double Integral Visualizer", key: "ma-double-integral", type: 'MA_BOARD_SIM', category: "Unit 3 · Double Integrals" },
+          { title: "Change of Order of Integration", key: "ma-change-order", type: 'MA_BOARD_SIM', category: "Unit 3 · Change of Order" },
+          { title: "Triple Integral Visualizer", key: "ma-triple-integral", type: 'MA_BOARD_SIM', category: "Unit 3 · Triple Integrals" },
+          { title: "Area Using Double Integral", key: "ma-area", type: 'MA_BOARD_SIM', category: "Unit 3 · Area" },
+          { title: "Volume Using Triple Integral", key: "ma-volume", type: 'MA_BOARD_SIM', category: "Unit 3 · Volume" },
+          { title: "Line Integral Visualizer", key: "ma-line-integral", type: 'MA_BOARD_SIM', category: "Unit 4 · Line Integral" },
+          { title: "Surface Integral Visualizer", key: "ma-surface-integral", type: 'MA_BOARD_SIM', category: "Unit 4 · Surface Integral" },
+          { title: "Green's Theorem Simulator", key: "ma-green", type: 'MA_BOARD_SIM', category: "Unit 4 · Green's Theorem" },
+          { title: "Stokes' Theorem Simulator", key: "ma-stokes", type: 'MA_BOARD_SIM', category: "Unit 4 · Stokes' Theorem" },
+          { title: "Gauss Divergence Theorem Simulator", key: "ma-gauss", type: 'MA_BOARD_SIM', category: "Unit 4 · Gauss Divergence Theorem" },
+          { title: "Second-Order ODE Solver", key: "ma-ode2", type: 'MA_BOARD_SIM', category: "Unit 5 · Second-Order ODE" },
+          { title: "Higher-Order ODE Solver", key: "ma-ode-higher", type: 'MA_BOARD_SIM', category: "Unit 5 · Higher-Order ODE" },
+          { title: "Constant Coefficient ODE Simulator", key: "ma-ode-constant", type: 'MA_BOARD_SIM', category: "Unit 5 · Constant Coefficient ODE" },
+          { title: "Variable Coefficient ODE Simulator", key: "ma-ode-variable", type: 'MA_BOARD_SIM', category: "Unit 5 · Variable Coefficient ODE" },
+          { title: "Euler-Cauchy Equation Simulator", key: "ma-euler-cauchy", type: 'MA_BOARD_SIM', category: "Unit 5 · Euler-Cauchy Equation" },
+          { title: "Legendre's Equation Simulator", key: "ma-legendre", type: 'MA_BOARD_SIM', category: "Unit 5 · Legendre's Equation" },
+          { title: "Variation of Parameters Simulator", key: "ma-variation-params", type: 'MA_BOARD_SIM', category: "Unit 5 · Variation of Parameters" },
+      ];
+    }
+
     const sessionId = `sb_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     const boardTeacherId = role === UserRole.TEACHER ? String(user._id) : '';
     const boardTeacherName = role === UserRole.TEACHER ? user.name : 'Faculty Member';
