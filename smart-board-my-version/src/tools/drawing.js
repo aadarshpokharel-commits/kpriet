@@ -172,7 +172,7 @@ const Drawing = (() => {
 
     const tool   = (typeof App !== 'undefined') ? App.currentTool : 'pen';
     const penSz  = (typeof App !== 'undefined') ? App.penSize : 3;
-    const curCol = (typeof App !== 'undefined') ? App.currentColor : '#ffffff';
+    const curCol = (typeof App !== 'undefined') ? App.currentColor : '#0f172a';
 
     if (tool === 'pen' || tool === 'highlighter') {
       if (points.length > 0 && typeof Canvas !== 'undefined' && Canvas.addStroke) {
@@ -182,7 +182,6 @@ const Drawing = (() => {
           size: (tool === 'highlighter') ? penSz * 5 : penSz,
           points: points.slice()
         });
-        // Notify AreaSolver if it's waiting for a drawn shape
         if (typeof AreaSolver !== 'undefined' && AreaSolver.onStrokeEnd) {
           AreaSolver.onStrokeEnd();
         }
@@ -197,9 +196,10 @@ const Drawing = (() => {
     const ctx = getDrawCtx();
     if (ctx) ctx.globalCompositeOperation = 'source-over';
 
-    if (typeof App !== 'undefined' && App.scheduleAutoSave) {
-      App.scheduleAutoSave();
+    if (typeof App !== 'undefined' && App.saveActiveSession) {
+      App.saveActiveSession();
     }
+  }
   }
 
   // ─────────────────────────────────────────────

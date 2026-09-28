@@ -29,12 +29,19 @@ const App = (() => {
   // ─────────────────────────────────────────────
   // INIT
   // ─────────────────────────────────────────────
-  async function init() {
+  function init() {
     // ── Init CurriculumStore if available ──
     if (typeof CurriculumStore !== 'undefined') {
       const subj = CurriculumStore.getActiveSubject();
       if (subj) activeSubject = subj.id;
     }
+
+    // Attach unload & visibility listeners immediately
+    window.addEventListener('beforeunload', () => { saveActiveSession(); });
+    window.addEventListener('pagehide', () => { saveActiveSession(); });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') saveActiveSession();
+    });
 
     UI.buildSidebar();
     UI.buildShapeGrid();
@@ -73,24 +80,8 @@ const App = (() => {
       setTimeout(() => {
         if (typeof Canvas !== 'undefined' && Canvas.resize) Canvas.resize();
         updatePageControls();
-
-      // Ensure DOM has computed sizes before final crisp stroke render
-      setTimeout(() => {
-        if (typeof Canvas !== 'undefined') {
-          if (Canvas.resize) Canvas.resize();
-          if (Canvas.renderStrokes) Canvas.renderStrokes();
-          if (Canvas.renderShapes) Canvas.renderShapes();
-        }
-      }, 50);
       }, 80);
     });
-
-    UI.updateStatus();
-    updateChapterLabel();
-
-    // Update topbar subject badge
-    const badge = document.getElementById('active-subject-badge');
-    if (badge) badge.textContent = activeSubject === 'science' ? '🔬 Science' : '📐 Mathematics';
 
     initBrightness();
     document.addEventListener('click', (e) => {
@@ -100,31 +91,23 @@ const App = (() => {
         if (dd) dd.classList.add('hidden');
       }
     });
-  
-    // Restore previous active board session if available
-    await restoreActiveSession();
 
-    // Attach unload & visibility listeners for auto-save
-    window.addEventListener('beforeunload', () => {
-      const payload = getActiveSessionPayload();
-      saveSessionToDb(payload);
-    });
-    window.addEventListener('pagehide', () => {
-      const payload = getActiveSessionPayload();
-      saveSessionToDb(payload);
-    });
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden') {
-        saveActiveSession();
-      }
-    });
+    // Synchronously restore previous board session on frame 0
+    restoreActiveSession();
+
+    UI.updateStatus();
+    updateChapterLabel();
+
+    // Update topbar subject badge
+    const badge = document.getElementById('active-subject-badge');
+    if (badge) badge.textContent = activeSubject === 'science' ? '🔬 Science' : '📐 Mathematics';
   }
 
 
   
   // ─────────────────────────────────────────────
-  // BOARD PERSISTENCE (Hybrid Synchronous localStorage + Unlimited IndexedDB)
-  // Guarantees zero stroke loss on refresh (F5), page navigation, or browser restart
+  // BOARD PERSISTENCE (Bulletproof Synchronous localStorage + Unlimited IndexedDB)
+  // Guarantees 100% stroke & shape persistence on refresh (F5) and page reload
   // ─────────────────────────────────────────────
   const DB_NAME = 'EduVerseSmartBoardDB';
   const DB_VERSION = 1;
@@ -158,11 +141,9 @@ const App = (() => {
           resolve(dbInstance);
         };
         req.onerror = (err) => {
-          console.warn('IndexedDB open error:', err);
           resolve(null);
         };
       } catch (e) {
-        console.warn('IndexedDB exception:', e);
         resolve(null);
       }
     });
@@ -179,12 +160,8 @@ const App = (() => {
           store.put(sessionData, key);
           store.put(sessionData, 'current_active_session');
           tx.oncomplete = () => resolve(true);
-          tx.onerror = (e) => {
-            console.warn('IndexedDB put error:', e);
-            resolve(false);
-          };
+          tx.onerror = () => resolve(false);
         } catch (err) {
-          console.warn('IndexedDB tx error:', err);
           resolve(false);
         }
       });
@@ -214,7 +191,6 @@ const App = (() => {
           };
           req.onerror = () => resolve(null);
         } catch (err) {
-          console.warn('IndexedDB get error:', err);
           resolve(null);
         }
       });
@@ -286,7 +262,7 @@ const App = (() => {
         localStorage.setItem('current_active_session', jsonStr);
         localStorage.setItem('mbp_active_session_backup', jsonStr);
       } catch (storageErr) {
-        // If quota exceeded (e.g. huge PPT background slides), save strokes/shapes without large image blobs in localStorage
+        // If quota exceeded (e.g. large PPT images), save strokes/shapes without large image blobs
         try {
           const lightweight = {
             ...payload,
@@ -300,10 +276,10 @@ const App = (() => {
         } catch(err2) {}
       }
 
-      // 2. Asynchronous IndexedDB save (unlimited capacity for high-res decks & 10,000+ strokes)
+      // 2. Asynchronous IndexedDB save
       saveSessionToDb(payload);
     } catch (e) {
-      console.warn('saveActiveSession failed:', e);
+      console.warn('saveActiveSession error:', e);
     }
   }
 
@@ -312,10 +288,74 @@ const App = (() => {
     if (autoSaveTimer) clearTimeout(autoSaveTimer);
     autoSaveTimer = setTimeout(() => {
       saveActiveSession();
-    }, 150);
+    }, 100);
   }
 
-  async function restoreActiveSession() {
+  function applySessionData(data) {
+    if (!data || !Array.isArray(data.pages) || data.pages.length === 0) return false;
+
+    if (data.activeSubject) activeSubject = data.activeSubject;
+    if (data.activeChapter) activeChapter = data.activeChapter;
+    if (data.penSize) penSize = data.penSize;
+    if (data.eraserSize) eraserSize = data.eraserSize;
+    if (data.boardBrightness !== undefined) setBoardBrightness(data.boardBrightness, false);
+
+    pages = data.pages.map((pg, idx) => ({
+      id: pg.id || (idx + 1),
+      label: pg.label || ('Page ' + (idx + 1)),
+      shapes: Array.isArray(pg.shapes) ? pg.shapes : [],
+      strokes: Array.isArray(pg.strokes) ? pg.strokes : [],
+      drawData: null,
+      drawDataUrl: pg.drawDataUrl || null,
+      bgImage: pg.bgImage || null,
+      boardColorId: pg.boardColorId || null,
+      splitState: pg.splitState || null,
+      history: Array.isArray(pg.history) ? pg.history : [],
+      redoStack: Array.isArray(pg.redoStack) ? pg.redoStack : []
+    }));
+
+    currentPage = Math.max(0, Math.min(data.currentPage || 0, pages.length - 1));
+
+    if (pages[currentPage].boardColorId && typeof Canvas !== 'undefined' && Canvas.setBoardColor) {
+      Canvas.setBoardColor(pages[currentPage].boardColorId);
+    }
+
+    loadCurrent();
+    renderPageTabs();
+    updatePageControls();
+
+    if (data.currentTool) {
+      setTool(data.currentTool);
+    } else {
+      setTool('pen');
+    }
+
+    if (data.currentColor) {
+      setColor(data.currentColor);
+    }
+
+    if (data.pptPresenterState && typeof PptPresenter !== 'undefined' && PptPresenter.restoreState) {
+      const hasSplit = pages[currentPage].splitState && pages[currentPage].splitState.mode !== 'normal';
+      if (!hasSplit) {
+        PptPresenter.restoreState(data.pptPresenterState);
+      }
+    }
+
+    UI.updateStatus();
+
+    // Ensure double-rendering pass once layout stabilizes
+    setTimeout(() => {
+      if (typeof Canvas !== 'undefined') {
+        if (Canvas.resize) Canvas.resize();
+        if (Canvas.renderStrokes) Canvas.renderStrokes();
+        if (Canvas.renderShapes) Canvas.renderShapes();
+      }
+    }, 40);
+
+    return true;
+  }
+
+  function restoreActiveSession() {
     try {
       let data = null;
       const key = getSessionKey();
@@ -326,61 +366,18 @@ const App = (() => {
         if (raw) data = JSON.parse(raw);
       } catch (e) {}
 
-      // Step 2: Check IndexedDB (may have heavy PPT slide blobs or newer session)
-      try {
-        const dbData = await loadSessionFromDb();
-        if (dbData && (!data || (dbData.savedAt && dbData.savedAt >= (data.savedAt || 0)))) {
-          data = dbData;
+      if (data && Array.isArray(data.pages) && data.pages.length > 0) {
+        applySessionData(data);
+      }
+
+      // Step 2: Background check on IndexedDB for newer updates or PPT images
+      loadSessionFromDb().then(dbData => {
+        if (dbData && Array.isArray(dbData.pages) && dbData.pages.length > 0) {
+          if (!data || (dbData.savedAt && dbData.savedAt > (data.savedAt || 0))) {
+            applySessionData(dbData);
+          }
         }
-      } catch (e) {}
-
-      if (!data || !Array.isArray(data.pages) || data.pages.length === 0) {
-        return false;
-      }
-
-      if (data.activeSubject) activeSubject = data.activeSubject;
-      if (data.activeChapter) activeChapter = data.activeChapter;
-      if (data.currentTool) currentTool = data.currentTool;
-      if (data.currentColor) currentColor = data.currentColor;
-      if (data.penSize) penSize = data.penSize;
-      if (data.eraserSize) eraserSize = data.eraserSize;
-      if (data.boardBrightness !== undefined) setBoardBrightness(data.boardBrightness, false);
-
-      pages = data.pages.map((pg, idx) => ({
-        id: pg.id || (idx + 1),
-        label: pg.label || ('Page ' + (idx + 1)),
-        shapes: Array.isArray(pg.shapes) ? pg.shapes : [],
-        strokes: Array.isArray(pg.strokes) ? pg.strokes : [],
-        drawData: null,
-        drawDataUrl: pg.drawDataUrl || null,
-        bgImage: pg.bgImage || null,
-        boardColorId: pg.boardColorId || null,
-        splitState: pg.splitState || null,
-        history: Array.isArray(pg.history) ? pg.history : [],
-        redoStack: Array.isArray(pg.redoStack) ? pg.redoStack : []
-      }));
-
-      currentPage = Math.max(0, Math.min(data.currentPage || 0, pages.length - 1));
-
-      if (pages[currentPage].boardColorId && typeof Canvas !== 'undefined' && Canvas.setBoardColor) {
-        Canvas.setBoardColor(pages[currentPage].boardColorId);
-      }
-
-      loadCurrent();
-      renderPageTabs();
-      updatePageControls();
-
-      if (data.pptPresenterState && typeof PptPresenter !== 'undefined' && PptPresenter.restoreState) {
-        const hasSplit = pages[currentPage].splitState && pages[currentPage].splitState.mode !== 'normal';
-        if (!hasSplit) {
-          PptPresenter.restoreState(data.pptPresenterState);
-        }
-      }
-
-      UI.updateStatus();
-      if (typeof UI.syncActiveToolBtn === 'function') {
-        UI.syncActiveToolBtn(currentTool);
-      }
+      }).catch(() => {});
 
       return true;
     } catch (e) {

@@ -692,6 +692,7 @@ const Canvas = (() => {
       computeStrokeBounds(stroke);
       strokes.push(stroke);
       pushHistoryAction({ type: 'add-stroke', stroke });
+      if (typeof App !== 'undefined' && App.saveActiveSession) App.saveActiveSession();
     }
   }
 
@@ -773,7 +774,7 @@ const Canvas = (() => {
 
     const tool = s.tool || 'pen';
     const size = s.size || 3;
-    const col  = s.color || '#ffffff';
+    const col  = s.color || (currentBoardColor && (currentBoardColor.bg === '#f4f6f8' || currentBoardColor.id === 'white') ? '#0f172a' : '#ffffff');
 
     if (tool === 'eraser') {
       ctx.globalCompositeOperation = 'destination-out';
