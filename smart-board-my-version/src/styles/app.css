@@ -11053,3 +11053,12 @@ body.gos-show-sidebar #tool-palette {
   from { opacity: 0; transform: translateX(-15px); }
   to { opacity: 1; transform: translateX(0); }
 }
+
+
+/* Hide intrusive Focus Mode bar in fullscreen mode */
+#focus-mode-bar,
+.focus-mode-pill {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

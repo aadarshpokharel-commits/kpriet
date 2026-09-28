@@ -628,19 +628,9 @@
     document.body.insertBefore(bar, document.body.firstChild);
     document.body.classList.add('rbac-session-active');
 
-    // Floating Focus Mode Bar (Visible ONLY in Fullscreen / Focus Mode)
-    if (!document.getElementById('focus-mode-bar')) {
-      const fmb = document.createElement('div');
-      fmb.id = 'focus-mode-bar';
-      fmb.className = 'focus-mode-pill hidden';
-      fmb.innerHTML =
-        '<span class="fmb-badge">🎯 Focus</span>' +
-        '<span class="fmb-subject" id="fmb-subject-name">' + subName + '</span>' +
-        '<span class="fmb-sep">•</span>' +
-        '<span class="fmb-dept" id="fmb-dept-name">' + deptName + '</span>' +
-        '<button class="fmb-exit-btn" id="fmb-exit-btn" title="Exit Focus Mode (Esc)">✕ Exit Focus</button>';
-      document.body.appendChild(fmb);
-    }
+    // Focus Mode Bar removed per user request (was intrusively blocking canvas during fullscreen)
+    const existingFmb = document.getElementById('focus-mode-bar');
+    if (existingFmb) existingFmb.remove();
 
     // Mini Reopen Tab for Left Controls (Visible when controls collapsed)
     if (!document.getElementById('mini-controls-reopen')) {
@@ -715,7 +705,7 @@
       '.mini-controls-reopen-tab:hover{background:#15803d;padding-left:14px;}',
       /* Fullscreen active hide header */
       'body.board-fullscreen #rbac-session-bar{display:none !important;}',
-      'body.board-fullscreen #focus-mode-bar{display:flex !important;}',
+      '#focus-mode-bar, .focus-mode-pill{display:none !important;}',
       /* Responsive breakpoints */
       '@media (max-width:1150px){#rbac-session-bar .rbac-sb-meta{display:none;}}',
       '@media (max-width:960px){#rbac-session-bar .rbac-btn-focus,#rbac-session-bar .rbac-btn-portal{display:none;}#rbac-session-bar .rbac-btn-more{display:inline-flex;}}',
