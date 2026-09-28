@@ -422,7 +422,7 @@ export function StudentDashboardPage() {
       {activeTab === 'overview' && (
         <div className="space-y-6">
           {/* 4 Metric Cards (Live MongoDB Data) */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 3xl:grid-cols-4">
             <div className="rounded-2xl border border-line bg-panel p-5 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted">Active Semester</p>
               <p className="mt-2 text-3xl font-extrabold text-indigo-400">
@@ -508,7 +508,7 @@ export function StudentDashboardPage() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6">
                 {enrolledSubjects.map((sub) => {
                   return (
                     <div
@@ -862,7 +862,7 @@ export function StudentDashboardPage() {
               }
 
               return (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4">
                   {filtered.map((note) => (
                     <div
                       key={note._id}
@@ -973,7 +973,7 @@ export function StudentDashboardPage() {
             }
 
             return (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4">
                 {filtered.map((mat: any) => (
                   <div key={mat._id} className="rounded-xl border border-line bg-surface/30 p-4 space-y-3 flex flex-col justify-between">
                     <div>
@@ -1067,7 +1067,7 @@ export function StudentDashboardPage() {
             }
 
             return (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4">
                 {filtered.map((vid: any) => (
                   <div key={vid._id} className="rounded-xl border border-line bg-surface/30 p-4 space-y-3 flex flex-col justify-between">
                     <div>
@@ -1156,7 +1156,7 @@ export function StudentDashboardPage() {
             }
 
             return (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4">
                 {filtered.map((ppt: any) => (
                   <div key={ppt._id} className="rounded-xl border border-line bg-surface/30 p-4 space-y-3 flex flex-col justify-between">
                     <div>
@@ -1215,7 +1215,7 @@ export function StudentDashboardPage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4">
               {upcomingQuizzes
                 .filter((q) => {
                   const matchesSubject =
@@ -1309,7 +1309,7 @@ export function StudentDashboardPage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4">
               {pendingAssignments
                 .filter((a) => {
                   const matchesSubject =

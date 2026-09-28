@@ -198,6 +198,11 @@
 @theme {
   --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
+  /* Viewport-based Smart Board & Display Breakpoints */
+  --breakpoint-3xl: 1920px;
+  --breakpoint-4xl: 2560px;
+  --breakpoint-5xl: 3840px;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
@@ -490,3 +495,81 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   SMART BOARD & RESPONSIVE MULTI-DISPLAY DESIGN ENGINE
+   Supports: Mobile, Tablet, Desktop, Smart Boards (55"-135"+), 105" Ultra-Wide
+   Rule 1: Space-efficiency — never simply enlarge desktop UI to huge displays.
+   Rule 2: Comfortable touch targets (>=38px) with compact padding.
+   Rule 3: Content-driven height, responsive card grids, zero horizontal overflow.
+   ══════════════════════════════════════════════════════════════ */
+
+/* 1. Fluid container that allows wide Smart Boards to breathe without rigid 1280px restrictions */
+.sb-container {
+  width: 100%;
+  max-width: min(98vw, 2560px);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(0.75rem, 1.4vw, 2rem);
+  padding-right: clamp(0.75rem, 1.4vw, 2rem);
+}
+
+/* 2. Responsive Auto-Fitting Card Grids (Fits more cards per row on larger displays) */
+.sb-grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: clamp(0.625rem, 0.9vw, 1rem);
+}
+
+/* Dense card grid for subject lists, notes, quizzes, and simulations */
+.sb-grid-dense {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: clamp(0.5rem, 0.75vw, 0.875rem);
+}
+
+/* 3. Horizontal Stats Summary Strip (single sleek row on wide boards) */
+.sb-grid-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+  gap: clamp(0.5rem, 0.8vw, 0.875rem);
+}
+
+/* 4. Compact Touch-Friendly Buttons */
+.sb-touch-btn {
+  min-height: 38px;
+  min-width: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+}
+
+/* 5. Safe Area Margins for Smart Board bezels */
+.sb-safe-area {
+  padding-left: env(safe-area-inset-left, clamp(0.5rem, 1vw, 1.25rem));
+  padding-right: env(safe-area-inset-right, clamp(0.5rem, 1vw, 1.25rem));
+  padding-bottom: env(safe-area-inset-bottom, clamp(0.5rem, 1vw, 1.25rem));
+}
+
+/* 6. Viewport-bounded Dialogs & Modals */
+.sb-dialog-content {
+  max-height: min(88vh, 850px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* 7. 105" Ultra-Wide Classroom Display Optimization (21:9 / 32:9 Aspect Ratios >= 2:1) */
+@media (min-width: 2000px) and (min-aspect-ratio: 2/1) {
+  .sb-container {
+    max-width: min(96vw, 3200px);
+  }
+  .sb-grid-cards {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    gap: 1.125rem;
+  }
+  .sb-grid-stats {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+}
+

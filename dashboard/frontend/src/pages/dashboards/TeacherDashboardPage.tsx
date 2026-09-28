@@ -702,7 +702,7 @@ export function TeacherDashboardPage() {
           {activeTab === 'overview' && (
             <div className="space-y-6">
               {/* 4 Clean Metric Cards */}
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 3xl:grid-cols-4">
                 <div className="rounded-2xl border border-line bg-panel p-5 shadow-sm">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted">Assigned Courses</p>
                   <p className="mt-2 text-3xl font-extrabold text-ink">{stats.totalAssignedSubjects}</p>
@@ -742,7 +742,7 @@ export function TeacherDashboardPage() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6">
                   {subjectWiseProgress.map((sp) => {
                     const isSelected = selectedSubjectId === sp.subjectId;
                     return (
@@ -1165,7 +1165,7 @@ export function TeacherDashboardPage() {
                               <span className="text-xs font-mono text-muted">{semSubs.length} Assigned Course(s)</span>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6">
                               {semSubs.map((sub) => {
                                 const isActiveCourse = selectedSubjectId === sub._id;
                                 const progressInfo = subjectWiseProgress.find((p) => p.subjectId === sub._id);
@@ -1481,7 +1481,7 @@ export function TeacherDashboardPage() {
                                 </span>
                               </div>
 
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                              <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6">
                                 {matchingSubjects.map((sub) => {
                                   const isAssignedToMe = assignedData.subjects.some((as) => as._id === sub._id);
                                   const isSyllabusOpen = !!expandedSyllabusSubjects[sub._id];
@@ -1703,7 +1703,7 @@ export function TeacherDashboardPage() {
                                 <span className="text-xs font-mono text-muted">Semesters 5–8 (PEC I to PEC VI)</span>
                               </div>
 
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                              <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6">
                                 {vert.electives.map((pe) => (
                                   <div
                                     key={pe._id}
@@ -2249,7 +2249,7 @@ export function TeacherDashboardPage() {
                 {workspace.tabs.videos.length === 0 ? (
                   <div className="py-12 text-center text-xs text-muted">No video lectures added yet.</div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4">
                     {workspace.tabs.videos.map((v) => (
                       <div key={v._id} className="rounded-xl border border-line bg-surface/30 p-4 space-y-2">
                         <div className="aspect-video bg-black/40 rounded-lg flex items-center justify-center text-3xl">
@@ -2877,7 +2877,7 @@ export function TeacherDashboardPage() {
 
                     {/* Progress Analytics: Grade & Attendance Distribution */}
                     {teacherResults?.analytics && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4">
                         {/* Grade Distribution */}
                         <div className="rounded-2xl border border-line bg-surface/20 p-4 space-y-3">
                           <h4 className="text-xs font-bold uppercase tracking-wider text-muted">
@@ -3281,7 +3281,7 @@ export function TeacherDashboardPage() {
                 </div>
 
                 {/* Architecture & Isolation Guarantees */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4">
                   <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-4 space-y-2">
                     <div className="flex items-center gap-2">
                       <span className="text-base">🛡️</span>

@@ -342,7 +342,7 @@ export function HomePage() {
     <div className="min-h-screen bg-[#FBFDFB] text-slate-900 font-sans selection:bg-[#247D4C] selection:text-white">
       {/* ══════════ 1. TOP NAVIGATION ══════════ */}
       <header className="sticky top-0 z-50 border-b border-slate-200/90 bg-white/95 backdrop-blur-md transition-all shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-16 sm:h-18 max-w-[min(96vw,1920px)] items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Brand Logo & Name */}
           <Link to="/" className="flex items-center gap-3.5 group">
             <img
@@ -409,7 +409,7 @@ export function HomePage() {
 
       {/* ══════════ 2. HERO SECTION ══════════ */}
       <section id="home" className="relative overflow-hidden pt-12 pb-20 lg:pt-16 lg:pb-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[min(96vw,1920px)] px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             
             {/* Left Column: Headlines & CTAs */}
@@ -624,7 +624,7 @@ export function HomePage() {
 
       {/* ══════════ 3. PLATFORM CAPABILITIES SECTION ══════════ */}
       <section id="features" className="py-20 bg-slate-50/60 border-y border-slate-200/80">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[min(96vw,1920px)] px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <span className="inline-block rounded-full bg-emerald-100 text-emerald-800 px-3.5 py-1 text-xs font-semibold">
               Platform Capabilities
@@ -709,7 +709,7 @@ export function HomePage() {
 
       {/* ══════════ 4. SEAMLESS WORKFLOW SECTION ══════════ */}
       <section className="py-20 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[min(96vw,1920px)] px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <span className="inline-block rounded-full bg-sky-100 text-sky-800 px-3.5 py-1 text-xs font-semibold">
               Seamless Workflow
@@ -764,7 +764,7 @@ export function HomePage() {
 
       {/* ══════════ 5. INTERACTIVE CLASSROOM TECHNOLOGY SECTION ══════════ */}
       <section className="py-20 bg-slate-950 text-white relative overflow-hidden">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[min(96vw,1920px)] px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto space-y-3 mb-14">
             <span className="inline-block rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3.5 py-1 text-xs font-semibold">
               Interactive Classroom Technology
@@ -833,7 +833,7 @@ export function HomePage() {
 
       {/* ══════════ 6. LEARNER WORKSPACE SECTION ══════════ */}
       <section id="students" className="py-20 bg-slate-50/50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[min(96vw,1920px)] px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <span className="inline-block rounded-full bg-emerald-100 text-emerald-800 px-3.5 py-1 text-xs font-semibold">
               Learner Workspace
@@ -893,7 +893,7 @@ export function HomePage() {
 
       {/* ══════════ 7. FACULTY EMPOWERMENT SECTION ══════════ */}
       <section id="teachers" className="py-20 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[min(96vw,1920px)] px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <span className="inline-block rounded-full bg-sky-100 text-sky-800 px-3.5 py-1 text-xs font-semibold">
               Faculty Empowerment
@@ -953,7 +953,7 @@ export function HomePage() {
 
       {/* ══════════ 8. INSTITUTIONAL GOVERNANCE SECTION ══════════ */}
       <section className="py-20 bg-slate-50/70 border-t border-slate-200">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[min(96vw,1920px)] px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <span className="inline-block rounded-full bg-emerald-100 text-emerald-800 px-3.5 py-1 text-xs font-semibold">
               Institutional Governance
@@ -1008,7 +1008,7 @@ export function HomePage() {
 
       {/* ══════════ 9. ACADEMIC DISCIPLINES (ALL PROGRAMMES — B.E. list from the programme master) SECTION ══════════ */}
       <section id="programmes" className="py-20 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[min(96vw,1920px)] px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <span className="inline-block rounded-full bg-emerald-100 text-emerald-800 px-3.5 py-1 text-xs font-semibold">
               Academic Disciplines
@@ -1142,7 +1142,7 @@ export function HomePage() {
 
       {/* ══════════ 10. NEXT-GEN ACADEMIC AI SECTION ══════════ */}
       <section className="py-20 bg-slate-50/70 border-t border-slate-200">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[min(96vw,1920px)] px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <span className="inline-block rounded-full bg-emerald-100 text-emerald-800 px-3.5 py-1 text-xs font-semibold">
               Next-Gen Academic AI
@@ -1214,7 +1214,7 @@ export function HomePage() {
 
       {/* ══════════ 12. INSTITUTIONAL FOOTER ══════════ */}
       <footer id="about" className="border-t border-slate-200 bg-white py-14 text-slate-600 text-xs">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[min(96vw,1920px)] px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
             {/* Col 1: Brand */}
             <div className="space-y-3">

@@ -42,16 +42,16 @@ export const Modal: React.FC<ModalProps> = ({
   if (!isOpen) return null;
 
   const sizeClasses = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
-    full: 'max-w-6xl',
+    sm: 'max-w-[min(94vw,28rem)]',
+    md: 'max-w-[min(94vw,32rem)]',
+    lg: 'max-w-[min(94vw,42rem)]',
+    xl: 'max-w-[min(94vw,56rem)]',
+    full: 'max-w-[min(96vw,72rem)]',
   };
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
       role="dialog"
       aria-modal="true"
     >
@@ -65,23 +65,23 @@ export const Modal: React.FC<ModalProps> = ({
       {/* Modal Dialog Card */}
       <div
         className={cn(
-          'relative w-full rounded-3xl border shadow-2xl transition-all duration-200 animate-in zoom-in-95 duration-150',
-          'bg-card border-border text-card-foreground',
+          'relative w-full rounded-2xl sm:rounded-3xl border shadow-2xl transition-all duration-200 animate-in zoom-in-95 duration-150',
+          'bg-card border-border text-card-foreground my-auto',
           sizeClasses[size],
           className
         )}
       >
         {/* Header */}
         {(title || description) && (
-          <div className="flex items-start justify-between p-5 sm:p-6 border-b border-border">
+          <div className="flex items-start justify-between p-4 sm:p-5 border-b border-border gap-3">
             <div>
               {title && (
-                <h3 className="text-lg font-bold text-card-foreground tracking-tight">
+                <h3 className="text-base sm:text-lg font-bold text-card-foreground tracking-tight">
                   {title}
                 </h3>
               )}
               {description && (
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   {description}
                 </p>
               )}
@@ -89,7 +89,7 @@ export const Modal: React.FC<ModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+              className="min-w-[36px] min-h-[36px] rounded-xl p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer flex items-center justify-center shrink-0"
               aria-label="Close modal"
             >
               <X className="w-5 h-5" />
@@ -98,7 +98,7 @@ export const Modal: React.FC<ModalProps> = ({
         )}
 
         {/* Content Body */}
-        <div className="p-5 sm:p-6 max-h-[80vh] overflow-y-auto text-card-foreground">{children}</div>
+        <div className="p-4 sm:p-5 max-h-[min(82vh,780px)] overflow-y-auto overscroll-contain text-card-foreground">{children}</div>
       </div>
     </div>
   );

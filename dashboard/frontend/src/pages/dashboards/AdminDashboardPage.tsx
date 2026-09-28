@@ -537,7 +537,7 @@ export function AdminDashboardPage() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6">
                   {overview.departments.map((dept) => (
                     <div
                       key={dept._id}
@@ -1580,7 +1580,7 @@ export function AdminDashboardPage() {
             {overview?.departments.length === 0 ? (
               <p className="text-xs text-muted py-6 text-center">No academic departments registered.</p>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6">
                 {overview?.departments.map((dept) => (
                   <div
                     key={dept._id}

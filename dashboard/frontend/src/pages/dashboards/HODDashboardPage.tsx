@@ -552,7 +552,7 @@ export function HODDashboardPage() {
       {activeTab === 'overview' && (
         <div className="space-y-6">
           {/* Live Metric Cards */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 3xl:grid-cols-4">
             <div className="rounded-2xl border border-line bg-panel p-5 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted">Students</p>
               <div className="mt-2 flex items-baseline justify-between">
@@ -756,7 +756,7 @@ export function HODDashboardPage() {
           )}
 
           {!facultyLoading && filteredFaculty.length > 0 && (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6">
               {filteredFaculty.map((teacher) => {
                 const activeAssignments = teacher.assignments || [];
                 const distinctSems = Array.from(
@@ -1067,7 +1067,7 @@ export function HODDashboardPage() {
           )}
 
           {!enrollmentsLoading && pendingEnrollmentsList.length > 0 && (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4">
               {pendingEnrollmentsList.map((enrollment) => {
                 const student = enrollment.student as any;
                 const sem = enrollment.semester as any;
@@ -1316,7 +1316,7 @@ export function HODDashboardPage() {
                           </span>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6">
                           {matchingSubjects.map((sub) => {
                             const assignedTeacher = assignments.find(
                               (a) => (a.subject as any)?._id === sub._id || (a.subject as any)?.subjectCode === sub.subjectCode
@@ -1489,7 +1489,7 @@ export function HODDashboardPage() {
               )}
 
               {!subjectsLoading && filteredSubjects.length > 0 && (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6">
                   {filteredSubjects.map((sub) => (
                     <div
                       key={sub._id}
@@ -1634,7 +1634,7 @@ export function HODDashboardPage() {
                           <span className="text-xs font-mono text-muted">Semesters 5–8 (PEC I to PEC VI)</span>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6">
                           {vert.electives.map((pe) => (
                             <div
                               key={pe._id}
@@ -1802,7 +1802,7 @@ export function HODDashboardPage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6">
               {semesters.map((sem) => {
                 const semSubjects = subjects.filter(
                   (s) =>

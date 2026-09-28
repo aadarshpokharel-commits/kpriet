@@ -312,7 +312,7 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
             {sec.topics.map((t) => (
               <div key={t.topic || 'all'} className="space-y-2">
                 {t.topic && byUnit && <p className="text-[11px] font-bold uppercase tracking-wider text-muted">{t.topic}</p>}
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">{t.sims.map(card)}</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6 gap-3">{t.sims.map(card)}</div>
               </div>
             ))}
           </section>
@@ -322,7 +322,7 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
       {/* Preview */}
       {preview && previewUrl(preview) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3 sm:p-6" role="dialog" aria-modal="true" aria-label={`${preview.title} preview`}>
-          <div className="flex h-[92vh] w-full max-w-[1500px] flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-2xl">
+          <div className="flex h-[92vh] w-full max-w-[min(96vw,1700px)] flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-2xl">
             <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-2.5">
               <div className="min-w-0">
                 <p className="truncate text-sm font-bold text-ink">{preview.title}</p>

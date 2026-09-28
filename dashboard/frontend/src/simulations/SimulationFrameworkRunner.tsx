@@ -194,7 +194,7 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
           {/* Play / Pause */}
           <button
             onClick={() => setIsPlaying((p) => !p)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`px-3 py-1.5 min-h-[38px] rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
               isPlaying
                 ? 'bg-amber-600 hover:bg-amber-500 text-white'
                 : 'bg-emerald-600 hover:bg-emerald-500 text-white'
@@ -208,7 +208,7 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
           <button
             onClick={handleStep}
             disabled={isPlaying}
-            className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 border border-slate-700 transition cursor-pointer"
+            className="px-2.5 py-1.5 min-h-[38px] rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 border border-slate-700 transition cursor-pointer"
             title="Step Forward One Frame"
           >
             ⏭ Step
@@ -217,14 +217,14 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
           {/* Reset */}
           <button
             onClick={resetSimulation}
-            className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition cursor-pointer"
+            className="px-2.5 py-1.5 min-h-[38px] rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition cursor-pointer"
             title="Reset Simulation State"
           >
             🔄 Reset
           </button>
 
           {/* Speed Selector */}
-          <div className="flex items-center rounded-lg bg-slate-800 border border-slate-700 p-0.5 text-[11px] font-mono">
+          <div className="flex items-center min-h-[38px] rounded-lg bg-slate-800 border border-slate-700 p-0.5 text-[11px] font-mono">
             {[0.5, 1, 2].map((sp) => (
               <button
                 key={sp}
@@ -261,7 +261,7 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
                 window.open(`/smartboard/index.html?${q.toString()}`, '_blank');
               }
             }}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md transition flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-1.5 min-h-[38px] rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md transition flex items-center gap-1.5 cursor-pointer"
             title="Open in PiyushDhara Smart Board"
           >
             🔬 Smart Board
@@ -271,7 +271,7 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
           {onClose && (
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+              className="p-2 min-h-[38px] min-w-[38px] flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
               title="Close Runner"
             >
               ✕

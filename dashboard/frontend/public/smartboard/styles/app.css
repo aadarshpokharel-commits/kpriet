@@ -9464,92 +9464,87 @@ body.controls-collapsed #tool-palette.floating-left-palette {
 /* ─── 1. Ultra-Large Smart Boards (4K, 86", 98", 100", 120"+, >= 2560px) ─── */
 @media (min-width: 2560px) {
   :root {
-    --header-h: 58px;
-    --ribbon-h: 46px;
-    --status-h: 32px;
+    --header-h: 32px !important;
+    --rbac-h: 30px !important;
   }
   #topbar {
-    gap: 8px;
-    padding: 0 16px;
+    height: 32px !important;
+    gap: 6px;
+    padding: 0 12px;
   }
   .tb-btn {
-    padding: 6px 12px;
-    font-size: 13px;
-    gap: 6px;
-    border-radius: 8px;
-  }
-  .tb-btn svg {
-    width: 18px;
-    height: 18px;
+    min-height: 22px !important;
+    height: 22px !important;
+    padding: 1px 6px !important;
+    font-size: 10.5px !important;
+    border-radius: 5px !important;
   }
   .floating-left-palette .tool-btn {
-    width: 46px;
-    height: 46px;
-  }
-  .floating-left-palette .tool-btn svg {
-    width: 22px;
-    height: 22px;
-  }
-  .fp-main-card, .fp-undo-card {
-    width: 56px;
-    padding: 8px 5px;
-  }
-  .bswatch {
-    width: 22px;
-    height: 22px;
+    width: 38px !important;
+    height: 38px !important;
   }
 }
 
 /* ─── 2. Standard Classroom Smart Boards (55", 65", 75", Full HD 1920px - 2559px) ─── */
 @media (min-width: 1920px) and (max-width: 2559px) {
   :root {
-    --header-h: 52px;
-    --ribbon-h: 40px;
-    --status-h: 28px;
+    --header-h: 32px !important;
+    --rbac-h: 30px !important;
+  }
+  #topbar {
+    height: 32px !important;
+    gap: 5px;
+    padding: 0 8px;
   }
   .tb-btn {
-    padding: 4px 10px;
-    font-size: 11.5px;
-    gap: 5px;
-    border-radius: 7px;
-  }
-  .tb-btn svg {
-    width: 16px;
-    height: 16px;
+    min-height: 22px !important;
+    height: 22px !important;
+    padding: 1px 6px !important;
+    font-size: 10px !important;
+    border-radius: 5px !important;
   }
   .floating-left-palette .tool-btn {
-    width: 42px;
-    height: 42px;
-  }
-  .floating-left-palette .tool-btn svg {
-    width: 20px;
-    height: 20px;
+    width: 38px !important;
+    height: 38px !important;
   }
 }
 
 /* ─── 3. Standard Desktop & Laptop Displays (1366px - 1919px) ─── */
 @media (min-width: 1366px) and (max-width: 1919px) {
   :root {
-    --header-h: 50px;
-    --ribbon-h: 38px;
-    --status-h: 27px;
+    --header-h: 32px !important;
+    --rbac-h: 30px !important;
+  }
+  #topbar {
+    height: 32px !important;
+    gap: 4px;
+    padding: 0 6px;
   }
   .tb-btn {
-    padding: 3.5px 8px;
-    font-size: 11px;
-    gap: 4px;
-  }
-  .tb-btn svg {
-    width: 15px;
-    height: 15px;
+    min-height: 22px !important;
+    height: 22px !important;
+    padding: 1px 5px !important;
+    font-size: 10px !important;
+    border-radius: 5px !important;
   }
   .floating-left-palette .tool-btn {
-    width: 40px;
-    height: 40px;
+    width: 38px !important;
+    height: 38px !important;
   }
-  .floating-left-palette .tool-btn svg {
-    width: 19px;
-    height: 19px;
+}
+
+/* ─── 105" Ultra-Wide Classroom Display (21:9 / 32:9 Aspect Ratios >= 2:1) ─── */
+@media (min-width: 2000px) and (min-aspect-ratio: 2/1) {
+  #topbar {
+    height: 32px !important;
+    padding: 0 16px;
+    gap: 8px;
+  }
+  .floating-left-palette {
+    left: 12px !important;
+  }
+  #board-fullscreen-float-btn {
+    right: 14px !important;
   }
 }
 
