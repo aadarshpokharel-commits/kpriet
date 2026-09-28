@@ -338,7 +338,8 @@ const PptPresenter = (() => {
     clearSlideFromBoard,
     toggleThumbnails,
     closeDock,
-    getCurrentSlideContext
+    getCurrentSlideContext,
+    getCurrentDeck: () => currentDeck
   };
 })();
 
