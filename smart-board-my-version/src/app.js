@@ -120,9 +120,17 @@ const App = (() => {
   const DB_NAME = 'EduVerseSmartBoardDB';
   const DB_VERSION = 1;
   const STORE_NAME = 'board_sessions';
-  const SESSION_KEY = 'current_active_session';
   let dbInstance = null;
   let autoSaveTimer = null;
+
+  function getSessionKey() {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const subId = urlParams.get('subjectId') || urlParams.get('sim') || urlParams.get('id');
+      if (subId) return 'board_session_' + subId;
+    } catch(e) {}
+    return 'current_active_session';
+  }
 
   function getDb() {
     return new Promise((resolve) => {
@@ -153,14 +161,16 @@ const App = (() => {
 
   async function saveSessionToDb(sessionData) {
     const db = await getDb();
+    const key = getSessionKey();
     if (db) {
       return new Promise((resolve) => {
         try {
           const tx = db.transaction(STORE_NAME, 'readwrite');
           const store = tx.objectStore(STORE_NAME);
-          const req = store.put(sessionData, SESSION_KEY);
-          req.onsuccess = () => resolve(true);
-          req.onerror = (e) => {
+          store.put(sessionData, key);
+          store.put(sessionData, 'current_active_session');
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = (e) => {
             console.warn('IndexedDB put error:', e);
             resolve(false);
           };
@@ -175,13 +185,24 @@ const App = (() => {
 
   async function loadSessionFromDb() {
     const db = await getDb();
+    const key = getSessionKey();
     if (db) {
       return new Promise((resolve) => {
         try {
           const tx = db.transaction(STORE_NAME, 'readonly');
           const store = tx.objectStore(STORE_NAME);
-          const req = store.get(SESSION_KEY);
-          req.onsuccess = (e) => resolve(e.target.result || null);
+          const req = store.get(key);
+          req.onsuccess = (e) => {
+            if (e.target.result) {
+              resolve(e.target.result);
+            } else if (key !== 'current_active_session') {
+              const reqDef = store.get('current_active_session');
+              reqDef.onsuccess = (ev) => resolve(ev.target.result || null);
+              reqDef.onerror = () => resolve(null);
+            } else {
+              resolve(null);
+            }
+          };
           req.onerror = () => resolve(null);
         } catch (err) {
           console.warn('IndexedDB get error:', err);
@@ -194,14 +215,16 @@ const App = (() => {
 
   async function clearSessionFromDb() {
     const db = await getDb();
+    const key = getSessionKey();
     if (db) {
       return new Promise((resolve) => {
         try {
           const tx = db.transaction(STORE_NAME, 'readwrite');
           const store = tx.objectStore(STORE_NAME);
-          const req = store.delete(SESSION_KEY);
-          req.onsuccess = () => resolve(true);
-          req.onerror = () => resolve(false);
+          store.delete(key);
+          store.delete('current_active_session');
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
         } catch (err) {
           resolve(false);
         }
@@ -250,7 +273,8 @@ const App = (() => {
         localStorage.setItem('mbp_active_session_meta', JSON.stringify({
           savedAt: payload.savedAt,
           pageCount: payload.pages.length,
-          currentPage: payload.currentPage
+          currentPage: payload.currentPage,
+          key: getSessionKey()
         }));
       } catch (e) {}
     } catch (e) {
@@ -262,7 +286,7 @@ const App = (() => {
     if (autoSaveTimer) clearTimeout(autoSaveTimer);
     autoSaveTimer = setTimeout(() => {
       saveActiveSession();
-    }, 250);
+    }, 200);
   }
 
   async function restoreActiveSession() {
@@ -282,7 +306,7 @@ const App = (() => {
 
       pages = data.pages.map((pg, idx) => ({
         id: pg.id || (idx + 1),
-        label: pg.label || `Page ${idx + 1}`,
+        label: pg.label || ('Page ' + (idx + 1)),
         shapes: Array.isArray(pg.shapes) ? pg.shapes : [],
         strokes: Array.isArray(pg.strokes) ? pg.strokes : [],
         drawData: null,
