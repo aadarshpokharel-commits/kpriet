@@ -1874,6 +1874,39 @@ const WorkspaceSplit = (() => {
   // 3. PPT PRESENTER CONTENT & SLIDE ENGINE
   // ─────────────────────────────────────────────────────────────────────────────
 
+  function decodeXmlEntities(str) {
+    if (!str) return '';
+    return str
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&apos;/g, "'")
+      .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec))
+      .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+  }
+
+  function wrapCanvasText(ctx, text, maxWidth) {
+    if (!text) return [];
+    const words = String(text).split(' ');
+    const lines = [];
+    let currentLine = '';
+
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > maxWidth && currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    }
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  }
+
   function generateDefaultSlideDeck(title) {
     return {
       fileName: 'Lecture-Presentation.pptx',
@@ -1975,7 +2008,7 @@ const WorkspaceSplit = (() => {
       };
     }
 
-    // 3. PPTX (PowerPoint OpenXML File)
+    // 3. PPTX (PowerPoint OpenXML File) — Real Text & Media Extraction
     if (ext === 'pptx') {
       try {
         if (typeof window.JSZip === 'undefined') {
@@ -1987,7 +2020,8 @@ const WorkspaceSplit = (() => {
             document.head.appendChild(s);
           });
         }
-        const zip = await window.JSZip.loadAsync(file);
+        const arrayBuffer = await file.arrayBuffer();
+        const zip = await window.JSZip.loadAsync(arrayBuffer);
         const slideFiles = [];
         zip.forEach((relativePath) => {
           if (/^ppt\/slides\/slide\d+\.xml$/i.test(relativePath)) {
@@ -2003,36 +2037,69 @@ const WorkspaceSplit = (() => {
 
         if (slideFiles.length > 0) {
           const slides = [];
-          const parser = new DOMParser();
 
           for (let i = 0; i < slideFiles.length; i++) {
             const slidePath = slideFiles[i];
             const xmlStr = await zip.file(slidePath).async('string');
-            const doc = parser.parseFromString(xmlStr, 'text/xml');
             
-            const paragraphs = doc.querySelectorAll('a\\:p, p');
+            // Extract paragraphs (<a:p>)
+            const pMatches = xmlStr.match(/<a:p[\s>][\s\S]*?<\/a:p>/gi) || [];
             const textLines = [];
-            paragraphs.forEach((pEl) => {
-              const texts = [];
-              pEl.querySelectorAll('a\\:t, t').forEach((t) => {
-                if (t.textContent && t.textContent.trim()) texts.push(t.textContent.trim());
+
+            for (const pStr of pMatches) {
+              const tMatches = pStr.match(/<a:t[^>]*>([\s\S]*?)<\/a:t>/gi) || [];
+              if (tMatches.length > 0) {
+                const rawLine = tMatches.map(t => t.replace(/<[^>]+>/g, '')).join('').trim();
+                const decoded = decodeXmlEntities(rawLine);
+                if (decoded && decoded.length > 0) {
+                  textLines.push(decoded);
+                }
+              }
+            }
+
+            // Fallback to standalone <a:t> if paragraph tags were non-standard
+            if (textLines.length === 0) {
+              const standaloneT = xmlStr.match(/<a:t[^>]*>([\s\S]*?)<\/a:t>/gi) || [];
+              standaloneT.forEach(t => {
+                const txt = decodeXmlEntities(t.replace(/<[^>]+>/g, '').trim());
+                if (txt) textLines.push(txt);
               });
-              const line = texts.join(' ');
-              if (line.trim()) textLines.push(line.trim());
-            });
+            }
+
+            // Extract any image attached to this slide in ppt/media/
+            let slideImage = null;
+            const slideBase = slidePath.split('/').pop();
+            const relsPath = `ppt/slides/_rels/${slideBase}.rels`;
+            const relsFile = zip.file(relsPath);
+            if (relsFile) {
+              const relsXml = await relsFile.async('string');
+              const targetMatch = relsXml.match(/Target="(\.\.\/media\/[^"]+)"/i) || relsXml.match(/Target="(media\/[^"]+)"/i);
+              if (targetMatch) {
+                const rawTarget = targetMatch[1].replace('../', 'ppt/');
+                const mediaPath = rawTarget.startsWith('ppt/') ? rawTarget : `ppt/${rawTarget}`;
+                const mFile = zip.file(mediaPath) || zip.file(mediaPath.replace('ppt/', ''));
+                if (mFile) {
+                  try {
+                    const b64 = await mFile.async('base64');
+                    const mExt = mediaPath.split('.').pop().toLowerCase();
+                    const mime = (mExt === 'png') ? 'image/png' : (mExt === 'svg' ? 'image/svg+xml' : 'image/jpeg');
+                    slideImage = `data:${mime};base64,${b64}`;
+                  } catch(e) {}
+                }
+              }
+            }
 
             const title = textLines[0] || `Slide ${i + 1}`;
-            const bullets = textLines.slice(1).filter(Boolean);
+            const bullets = textLines.slice(1);
 
             slides.push({
               index: i + 1,
               name: `Slide ${i + 1}`,
               title: title,
               subtitle: file.name,
-              bullets: bullets.length ? bullets : [
-                '• Concept discussion and mathematical derivation',
-                '• Key lecture principles ready for stylus annotation'
-              ]
+              bullets: bullets,
+              imageSrc: slideImage,
+              dataUrl: (slideImage && textLines.length === 0) ? slideImage : null
             });
           }
 
@@ -2043,11 +2110,11 @@ const WorkspaceSplit = (() => {
           };
         }
       } catch (err) {
-        console.warn('PPTX zip parsing fallback:', err);
+        console.warn('PPTX zip parsing error:', err);
       }
     }
 
-    // Fallback structured presentation deck for .ppt or legacy files:
+    // Fallback structured presentation deck for legacy .ppt
     return {
       fileName: file.name,
       slideCount: 4,
@@ -2217,10 +2284,10 @@ const WorkspaceSplit = (() => {
 
   function drawModernPptSlideCanvas(ctx, W, H, p, slideIdx, slide) {
     const aspect = 16 / 9;
-    let cardW = W - 32;
+    let cardW = W - 28;
     let cardH = cardW / aspect;
-    if (cardH > H - 32) {
-      cardH = H - 32;
+    if (cardH > H - 28) {
+      cardH = H - 28;
       cardW = cardH * aspect;
     }
     const cardX = (W - cardW) / 2;
@@ -2231,22 +2298,22 @@ const WorkspaceSplit = (() => {
 
     // Slide Card Background
     ctx.save();
-    ctx.fillStyle = '#0b152e';
+    ctx.fillStyle = '#081226';
     ctx.beginPath();
     if (ctx.roundRect) ctx.roundRect(cardX, cardY, cardW, cardH, 14);
     else ctx.rect(cardX, cardY, cardW, cardH);
     ctx.fill();
     ctx.restore();
 
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
     // Top Header Banner
-    const bannerH = Math.max(36, cardH * 0.18);
+    const bannerH = Math.max(42, cardH * 0.2);
     const grad = ctx.createLinearGradient(cardX, cardY, cardX + cardW, cardY);
-    grad.addColorStop(0, 'rgba(14, 165, 233, 0.25)');
-    grad.addColorStop(1, 'rgba(139, 92, 246, 0.2)');
+    grad.addColorStop(0, 'rgba(14, 165, 233, 0.3)');
+    grad.addColorStop(1, 'rgba(139, 92, 246, 0.22)');
     ctx.fillStyle = grad;
     ctx.beginPath();
     if (ctx.roundRect) ctx.roundRect(cardX, cardY, cardW, bannerH, [14, 14, 0, 0]);
@@ -2254,49 +2321,94 @@ const WorkspaceSplit = (() => {
     ctx.fill();
 
     const titleText = (slide && slide.title) || `Slide ${slideIdx + 1}: Overview & Concepts`;
+    const totalSlides = p.pptState.currentDeck?.slides?.length || 1;
 
+    // Top Slide Tag Badge
     ctx.fillStyle = '#38bdf8';
     ctx.font = 'bold 11px system-ui, sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText(`📑 SLIDE ${slideIdx + 1} OF ${(p.pptState.currentDeck?.slides?.length || 3)}`, cardX + 20, cardY + bannerH * 0.42);
+    ctx.fillText(`📑 SLIDE ${slideIdx + 1} OF ${totalSlides} — ${p.pptState.currentDeck?.fileName || 'PowerPoint Deck'}`, cardX + 20, cardY + bannerH * 0.38);
 
+    // Slide Title (Auto-wrapped if long)
+    const titleFontSize = Math.max(14, Math.min(21, cardW * 0.026));
     ctx.fillStyle = '#ffffff';
-    ctx.font = `bold ${Math.max(14, Math.min(20, cardW * 0.028))}px system-ui, sans-serif`;
-    ctx.fillText(titleText, cardX + 20, cardY + bannerH * 0.8);
+    ctx.font = `bold ${titleFontSize}px system-ui, sans-serif`;
 
-    // Content Bullet Cards
-    const bullets = (slide && slide.bullets) || [
-      '1. Key concept introduction & curriculum definitions',
-      '2. Mathematical derivations & visual board proofs',
-      '3. Step-by-step problem walkthroughs & practice'
+    const titleLines = wrapCanvasText(ctx, titleText, cardW - 44);
+    if (titleLines.length === 1) {
+      ctx.fillText(titleLines[0], cardX + 20, cardY + bannerH * 0.78);
+    } else {
+      ctx.fillText(titleLines[0], cardX + 20, cardY + bannerH * 0.68);
+      ctx.font = `bold ${Math.max(11, titleFontSize - 3)}px system-ui, sans-serif`;
+      ctx.fillText(titleLines[1] + (titleLines.length > 2 ? '...' : ''), cardX + 20, cardY + bannerH * 0.92);
+    }
+
+    // Body Content Area
+    const bullets = (slide && slide.bullets && slide.bullets.length > 0) ? slide.bullets : [
+      '• Key discussion concepts and theoretical foundation',
+      '• Mathematical equations, proofs, and system diagrams',
+      '• Practical classroom derivations and student exercise problems'
     ];
 
-    const contentTop = cardY + bannerH + 16;
-    const contentH = cardH - bannerH - 36;
-    const itemH = Math.max(34, contentH / bullets.length);
+    const contentTop = cardY + bannerH + 14;
+    const contentH = cardH - bannerH - 32;
+
+    // Check if slide has an embedded diagram image
+    const hasImage = !!(slide && slide.imageSrc);
+    const textWidth = hasImage ? (cardW - 40) * 0.58 : cardW - 40;
+    const imageWidth = (cardW - 40) * 0.38;
+    const imageX = cardX + 20 + textWidth + 14;
+
+    if (hasImage) {
+      const slideImg = new Image();
+      slideImg.onload = () => {
+        ctx.save();
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(imageX, contentTop, imageWidth, contentH, 8);
+        else ctx.rect(imageX, contentTop, imageWidth, contentH);
+        ctx.clip();
+        ctx.drawImage(slideImg, imageX, contentTop, imageWidth, contentH);
+        ctx.restore();
+      };
+      slideImg.src = slide.imageSrc;
+    }
+
+    const itemH = Math.max(28, Math.min(65, (contentH - (bullets.length * 6)) / bullets.length));
+    const bodyFontSize = Math.max(11, Math.min(14, cardW * 0.018));
+    ctx.font = `${bodyFontSize}px system-ui, sans-serif`;
 
     bullets.forEach((b, idx) => {
-      const by = contentTop + idx * itemH;
+      const by = contentTop + idx * (itemH + 6);
+      if (by + itemH > cardY + cardH - 8) return;
+
+      // Card row background
       ctx.fillStyle = 'rgba(255, 255, 255, 0.035)';
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.14)';
       ctx.lineWidth = 1;
       ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(cardX + 20, by, cardW - 40, itemH - 8, 8);
-      else ctx.rect(cardX + 20, by, cardW - 40, itemH - 8);
+      if (ctx.roundRect) ctx.roundRect(cardX + 20, by, textWidth, itemH, 7);
+      else ctx.rect(cardX + 20, by, textWidth, itemH);
       ctx.fill();
       ctx.stroke();
 
+      // Wrapped bullet text inside row
       ctx.fillStyle = '#e2e8f0';
-      ctx.font = `${Math.max(12, Math.min(14, cardW * 0.02))}px system-ui, sans-serif`;
-      ctx.textAlign = 'left';
-      ctx.fillText(b, cardX + 34, by + (itemH - 8) / 2 + 5);
+      const textWrapped = wrapCanvasText(ctx, b, textWidth - 28);
+      if (textWrapped.length === 1) {
+        ctx.fillText(textWrapped[0], cardX + 34, by + itemH / 2 + 4.5);
+      } else {
+        const lineStep = Math.min(16, itemH / textWrapped.length);
+        textWrapped.slice(0, 2).forEach((tw, lIdx) => {
+          ctx.fillText(tw, cardX + 34, by + 13 + (lIdx * lineStep));
+        });
+      }
     });
 
     // Bottom prompt
     ctx.fillStyle = '#64748b';
-    ctx.font = '11px system-ui, sans-serif';
+    ctx.font = '10.5px system-ui, sans-serif';
     ctx.textAlign = 'right';
-    ctx.fillText(`📂 Click "Open PPT from Folder" to load your own .pptx / pdf`, cardX + cardW - 20, cardY + cardH - 10);
+    ctx.fillText(`📂 Slide ${slideIdx + 1} of ${totalSlides} • Click "Open PPT from Folder" to change deck`, cardX + cardW - 20, cardY + cardH - 10);
   }
 
   function prevSlide(id) {
@@ -2311,7 +2423,7 @@ const WorkspaceSplit = (() => {
   function nextSlide(id) {
     const p = partitions.find(item => item.id === id);
     if (!p) return;
-    const total = (p.pptState.currentDeck && p.pptState.currentDeck.slides) ? p.pptState.currentDeck.slides.length : 3;
+    const total = (p.pptState.currentDeck && p.pptState.currentDeck.slides) ? p.pptState.currentDeck.slides.length : 1;
     if (p.pptState.slideIndex < total - 1) {
       p.pptState.slideIndex++;
       updateSlideDisplay(p);
@@ -2320,7 +2432,7 @@ const WorkspaceSplit = (() => {
 
   function updateSlideDisplay(p) {
     const lbl = containerEl ? containerEl.querySelector(`#wp-slide-lbl-${p.id}`) : document.getElementById(`wp-slide-lbl-${p.id}`);
-    const total = (p.pptState.currentDeck && p.pptState.currentDeck.slides) ? p.pptState.currentDeck.slides.length : 3;
+    const total = (p.pptState.currentDeck && p.pptState.currentDeck.slides) ? p.pptState.currentDeck.slides.length : 1;
     const current = (p.pptState.slideIndex || 0) + 1;
     if (lbl) lbl.textContent = `${current}/${total}`;
 
@@ -2334,6 +2446,11 @@ const WorkspaceSplit = (() => {
   async function openPptFilePicker(id) {
     const p = partitions.find(item => item.id === id);
     if (!p) return;
+
+    // Ensure global dock from main board is closed when working in split partition
+    if (typeof PptPresenter !== 'undefined' && PptPresenter.closeDock) {
+      PptPresenter.closeDock();
+    }
 
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
@@ -2350,7 +2467,7 @@ const WorkspaceSplit = (() => {
       }
 
       if (typeof App !== 'undefined' && App.showToast) {
-        App.showToast(`Loading presentation (${files.length} file${files.length > 1 ? 's' : ''})...`);
+        App.showToast(`Loading "${files[0].name}" into Partition ${id}...`);
       }
 
       try {
@@ -2378,14 +2495,12 @@ const WorkspaceSplit = (() => {
         p.pptState.slideIndex = 0;
         updateSlideDisplay(p);
 
-        // Sync with global presenter if present
-        if (typeof PptPresenter !== 'undefined' && PptPresenter.loadDeck) {
-          try {
-            PptPresenter.loadDeck(p.pptState.currentDeck);
-          } catch(err) {}
+        // Keep global presenter dock hidden in split partitions
+        if (typeof PptPresenter !== 'undefined' && PptPresenter.closeDock) {
+          PptPresenter.closeDock();
         }
 
-        // Re-render header controls to show slide count
+        // Re-render header controls to show updated slide count
         const pEl = containerEl ? containerEl.querySelector(`.workspace-partition[data-pid="${id}"]`) : null;
         if (pEl) {
           const centerHead = pEl.querySelector('.wp-header-center');
@@ -2393,7 +2508,7 @@ const WorkspaceSplit = (() => {
         }
 
         if (typeof App !== 'undefined' && App.showToast) {
-          App.showToast(`✓ Opened "${p.pptState.currentDeck.fileName}" (${p.pptState.currentDeck.slides.length} slides)`);
+          App.showToast(`✓ Loaded "${p.pptState.currentDeck.fileName}" (${p.pptState.currentDeck.slides.length} slides)`);
         }
       } catch (err) {
         console.error('Error opening presentation:', err);

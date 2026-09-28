@@ -1022,6 +1022,13 @@
 <script src="tools/smart-drawing.js"></script>
 <script src="tools/clipboard.js"></script>
 <script src="tools/ai-assistant.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  if (window.pdfjsLib) {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+</script>
 <script src="chapters/calculators.js"></script>
 <script src="chapters/science-calculators.js"></script>
 <script src="tools/ppt-presenter.js"></script>
