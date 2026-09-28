@@ -666,25 +666,43 @@ const App = (() => {
   // ─────────────────────────────────────────────
   // CLIENT-SIDE MULTI-PAGE PDF GENERATOR
   // ─────────────────────────────────────────────
-  function ensureJpegDataUrl(dataUrl, w, h) {
+    function ensureJpegDataUrl(dataUrl, fallbackW, fallbackH) {
     return new Promise((resolve) => {
-      if (dataUrl && typeof dataUrl === 'string' && dataUrl.startsWith('data:image/jpeg')) {
-        resolve(dataUrl);
-        return;
-      }
       const img = new Image();
       img.onload = () => {
+        const actualWidth = img.naturalWidth || fallbackW || 1920;
+        const actualHeight = img.naturalHeight || fallbackH || 1080;
+        
+        if (dataUrl && typeof dataUrl === 'string' && dataUrl.startsWith('data:image/jpeg')) {
+          resolve({
+            dataUrl,
+            pixelWidth: actualWidth,
+            pixelHeight: actualHeight
+          });
+          return;
+        }
+        
         const c = document.createElement('canvas');
-        c.width = w || img.naturalWidth || 1200;
-        c.height = h || img.naturalHeight || 800;
+        c.width = actualWidth;
+        c.height = actualHeight;
         const ctx = c.getContext('2d');
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, c.width, c.height);
         ctx.drawImage(img, 0, 0, c.width, c.height);
-        resolve(c.toDataURL('image/jpeg', 0.94));
+        resolve({
+          dataUrl: c.toDataURL('image/jpeg', 0.95),
+          pixelWidth: c.width,
+          pixelHeight: c.height
+        });
       };
-      img.onerror = () => resolve(dataUrl);
-      img.src = dataUrl;
+      img.onerror = () => {
+        resolve({
+          dataUrl,
+          pixelWidth: fallbackW || 1920,
+          pixelHeight: fallbackH || 1080
+        });
+      };
+      img.src = (typeof dataUrl === 'object' && dataUrl?.dataUrl) ? dataUrl.dataUrl : dataUrl;
     });
   }
 
@@ -757,29 +775,34 @@ const App = (() => {
     objCount = 2;
     for (let i = 0; i < numPages; i++) {
       const snap = snapshots[i];
-      const b64 = (snap.dataUrl || '').replace(/^data:image\/[a-z]+;base64,/, '');
+      const rawDataUrl = (typeof snap.dataUrl === 'string') ? snap.dataUrl : (snap.dataUrl?.dataUrl || '');
+      const b64 = rawDataUrl.replace(/^data:image\/[a-z]+;base64,/, '');
       const imgBytes = base64ToUint8Array(b64);
-      const imgW = snap.w || 1200;
-      const imgH = snap.h || 800;
 
-      // Convert pixels to 72 dpi PDF points
-      const ptW = Math.round(imgW * 72 / 96);
-      const ptH = Math.round(imgH * 72 / 96);
+      // Exact pixel dimensions of the encoded JPEG stream
+      const actualPixelW = snap.pixelWidth || snap.w || 1920;
+      const actualPixelH = snap.pixelHeight || snap.h || 1080;
 
-      // Image XObject
+      // Full-bleed logical page dimensions in PDF points (72 DPI)
+      const logicalW = snap.w || snap.pixelWidth || 1920;
+      const logicalH = snap.h || snap.pixelHeight || 1080;
+      const ptW = Math.round(logicalW * 72 / 96);
+      const ptH = Math.round(logicalH * 72 / 96);
+
+      // Image XObject: /Width and /Height MUST match the exact JPEG pixel dimensions!
       const imgObj = registerObj();
-      pushString(`<< /Type /XObject /Subtype /Image /Width ${imgW} /Height ${imgH} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${imgBytes.length} >>\nstream\n`);
+      pushString(`<< /Type /XObject /Subtype /Image /Width ${actualPixelW} /Height ${actualPixelH} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${imgBytes.length} >>\nstream\n`);
       pushBytes(imgBytes);
       pushString('\nendstream');
       endObj();
 
-      // Content stream
+      // Content stream: paints the full image at full 100% MediaBox page size
       const cs = `q ${ptW} 0 0 ${ptH} 0 0 cm /Im1 Do Q`;
       const csObj = registerObj();
       pushString(`<< /Length ${cs.length} >>\nstream\n${cs}\nendstream`);
       endObj();
 
-      // Page Object
+      // Page Object: MediaBox defines 100% of the page size (no 33% shrinkage, no top cropping)
       const pageObj = registerObj();
       pushString(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${ptW} ${ptH}] /Contents ${csObj} 0 R /Resources << /XObject << /Im1 ${imgObj} 0 R >> >> >>`);
       endObj();
@@ -862,7 +885,10 @@ const App = (() => {
       showToast(`Converting ${snapshots.length} page(s) into PDF…`);
       try {
         for (let i = 0; i < snapshots.length; i++) {
-          snapshots[i].dataUrl = await ensureJpegDataUrl(snapshots[i].dataUrl, snapshots[i].w, snapshots[i].h);
+          const processed = await ensureJpegDataUrl(snapshots[i].dataUrl, snapshots[i].w, snapshots[i].h);
+          snapshots[i].dataUrl = processed.dataUrl;
+          snapshots[i].pixelWidth = processed.pixelWidth;
+          snapshots[i].pixelHeight = processed.pixelHeight;
         }
         const pdfBlob = buildClientPdfBlob(snapshots);
         pendingPdfBlob = pdfBlob;

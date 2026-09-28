@@ -2897,15 +2897,14 @@ const Canvas = (() => {
   // Immune to zoom level, pan offset, window size, and Full Screen state.
   // ─────────────────────────────────────────────
 
-  function getLogicalBoardBounds() {
-    // Baseline document size (always 1920×1080 equivalent in board space)
-    const BASELINE_W = 1920;
-    const BASELINE_H = 1080;
-    const MARGIN = 24;
+    function getLogicalBoardBounds() {
+    // Current viewport size in board coordinates at zoom 1.0, pan 0
+    const viewW = (typeof W !== 'undefined' && W > 0) ? W : 1920;
+    const viewH = (typeof H !== 'undefined' && H > 0) ? H : 1080;
 
-    let minX = 0, minY = 0, maxX = BASELINE_W, maxY = BASELINE_H;
+    let minX = 0, minY = 0, maxX = viewW, maxY = viewH;
 
-    // Expand to include all shapes
+    // Expand if content extends beyond current view
     for (let i = 0; i < shapes.length; i++) {
       const s = shapes[i];
       let b;
@@ -2917,7 +2916,6 @@ const Canvas = (() => {
       if (b.y + b.h > maxY) maxY = b.y + b.h;
     }
 
-    // Expand to include all strokes
     for (let i = 0; i < strokes.length; i++) {
       const st = strokes[i];
       const bbox = st._bbox || null;
@@ -2936,15 +2934,13 @@ const Canvas = (() => {
       }
     }
 
-    minX -= MARGIN; minY -= MARGIN;
-    maxX += MARGIN; maxY += MARGIN;
     return { minX, minY, w: maxX - minX, h: maxY - minY };
   }
 
   function renderLogicalBoardToCanvas(isJpeg) {
     const bounds = getLogicalBoardBounds();
     const { minX, minY, w, h } = bounds;
-    const dpr = Math.max(1.5, currentDPR || window.devicePixelRatio || 1);
+    const dpr = Math.max(2, currentDPR || window.devicePixelRatio || 1);
 
     const out = document.createElement('canvas');
     out.width  = Math.round(w * dpr);
@@ -2958,8 +2954,6 @@ const Canvas = (() => {
     ctx.fillRect(0, 0, out.width, out.height);
 
     // ── 2. Grid / pattern drawn in logical board coords ──
-    // setTransform(dpr) + translate(-minX,-minY) maps board(minX,minY) → screen(0,0)
-    // so we draw width=w, height=h of board content
     ctx.save();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.translate(-minX, -minY);
@@ -2973,13 +2967,11 @@ const Canvas = (() => {
       ctx.translate(-minX, -minY);
       const imgW = bgImageObj.naturalWidth;
       const imgH = bgImageObj.naturalHeight;
-      // Fit baseline canvas
-      const bW = 1920, bH = 1080;
-      const scale = Math.min(bW / imgW, bH / imgH);
+      const scale = Math.min(w / imgW, h / imgH);
       const dw = imgW * scale;
       const dh = imgH * scale;
-      const dx = (bW - dw) / 2;
-      const dy = (bH - dh) / 2;
+      const dx = minX + (w - dw) / 2;
+      const dy = minY + (h - dh) / 2;
       ctx.drawImage(bgImageObj, dx, dy, dw, dh);
       ctx.restore();
     }
@@ -3006,7 +2998,7 @@ const Canvas = (() => {
     }
     ctx.restore();
 
-    return { canvas: out, w, h };
+    return { canvas: out, w, h, pixelWidth: out.width, pixelHeight: out.height };
   }
 
   function snapshot() {
