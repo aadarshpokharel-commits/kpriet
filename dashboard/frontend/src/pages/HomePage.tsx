@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '@/context/AuthContext';
 import { AuthService } from '@/services/auth.service';
@@ -301,6 +301,48 @@ export function HomePage() {
       .catch(() => {})
       .finally(() => setStatsLoading(false));
   }, []);
+
+  // Horizontal scroll state for Programme Category Filter Tabs
+  const categoryNavRef = useRef<HTMLDivElement>(null);
+  const [canScrollCategoryLeft, setCanScrollCategoryLeft] = useState(false);
+  const [canScrollCategoryRight, setCanScrollCategoryRight] = useState(false);
+
+  const checkCategoryScroll = useCallback(() => {
+    const el = categoryNavRef.current;
+    if (!el) return;
+    setCanScrollCategoryLeft(el.scrollLeft > 4);
+    setCanScrollCategoryRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+  }, []);
+
+  const scrollCategory = (direction: 'left' | 'right') => {
+    const el = categoryNavRef.current;
+    if (!el) return;
+    const distance = Math.max(200, el.clientWidth * 0.6);
+    el.scrollBy({ left: direction === 'left' ? -distance : distance, behavior: 'smooth' });
+    setTimeout(checkCategoryScroll, 200);
+  };
+
+  const handleCategoryWheel = (e: React.WheelEvent) => {
+    const el = categoryNavRef.current;
+    if (!el) return;
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && el.scrollWidth > el.clientWidth) {
+      el.scrollLeft += e.deltaY;
+      checkCategoryScroll();
+    }
+  };
+
+  useEffect(() => {
+    checkCategoryScroll();
+    const el = categoryNavRef.current;
+    if (el) {
+      el.addEventListener('scroll', checkCategoryScroll, { passive: true });
+    }
+    window.addEventListener('resize', checkCategoryScroll);
+    return () => {
+      if (el) el.removeEventListener('scroll', checkCategoryScroll);
+      window.removeEventListener('resize', checkCategoryScroll);
+    };
+  }, [checkCategoryScroll]);
 
   // B.E. programmes come from the central programme master (GET /programmes).
   const { programmes: programmeMaster } = useProgrammes();
@@ -1021,47 +1063,116 @@ export function HomePage() {
             </p>
           </div>
 
-          {/* Programme Category Filter Tabs */}
-          <div className="mt-10 flex flex-wrap justify-center gap-2.5">
+          {/* Programme Category Filter Tabs with Horizontal Scroll Controls */}
+          <div className="mt-10 max-w-2xl mx-auto relative flex items-center rounded-2xl border border-slate-200 bg-slate-50/90 p-1.5 shadow-sm">
+            {/* Scroll Left Button */}
             <button
-              onClick={() => setSelectedCategory('ALL')}
-              className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
-                selectedCategory === 'ALL'
-                  ? 'bg-[#247D4C] text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              type="button"
+              onClick={() => scrollCategory('left')}
+              disabled={!canScrollCategoryLeft}
+              aria-label="Scroll categories left"
+              title="Scroll left (‹)"
+              className={`shrink-0 z-20 flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition-all cursor-pointer ${
+                canScrollCategoryLeft
+                  ? 'opacity-100 hover:bg-slate-100 hover:text-emerald-700 hover:scale-105 active:scale-95 shadow-xs'
+                  : 'opacity-0 pointer-events-none'
               }`}
             >
-              All Programmes ({PROGRAMMES.length})
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+              </svg>
             </button>
+
+            {/* Left Fade Mask */}
+            {canScrollCategoryLeft && (
+              <div className="pointer-events-none absolute left-10 top-1.5 bottom-1.5 w-8 bg-gradient-to-r from-slate-50 to-transparent z-10" />
+            )}
+
+            {/* Horizontal Scrollable Categories Container */}
+            <div
+              ref={categoryNavRef}
+              onWheel={handleCategoryWheel}
+              className="flex-1 flex items-center justify-center sm:justify-start lg:justify-center gap-2 overflow-x-auto py-1 px-1.5 scroll-smooth scrollbar-none"
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategory('ALL');
+                  setTimeout(checkCategoryScroll, 100);
+                }}
+                className={`shrink-0 rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  selectedCategory === 'ALL'
+                    ? 'bg-[#247D4C] text-white shadow-sm ring-1 ring-emerald-600'
+                    : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+              >
+                All Programmes ({PROGRAMMES.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategory('UG');
+                  setTimeout(checkCategoryScroll, 100);
+                }}
+                className={`shrink-0 rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  selectedCategory === 'UG'
+                    ? 'bg-[#247D4C] text-white shadow-sm ring-1 ring-emerald-600'
+                    : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+              >
+                B.E. Undergraduate ({countBy('UG')})
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategory('PG');
+                  setTimeout(checkCategoryScroll, 100);
+                }}
+                className={`shrink-0 rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  selectedCategory === 'PG'
+                    ? 'bg-[#247D4C] text-white shadow-sm ring-1 ring-emerald-600'
+                    : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+              >
+                M.E. Postgraduate ({countBy('PG')})
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategory('MBA');
+                  setTimeout(checkCategoryScroll, 100);
+                }}
+                className={`shrink-0 rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  selectedCategory === 'MBA'
+                    ? 'bg-[#247D4C] text-white shadow-sm ring-1 ring-emerald-600'
+                    : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+              >
+                M.B.A. ({countBy('MBA')})
+              </button>
+            </div>
+
+            {/* Right Fade Mask */}
+            {canScrollCategoryRight && (
+              <div className="pointer-events-none absolute right-10 top-1.5 bottom-1.5 w-8 bg-gradient-to-l from-slate-50 to-transparent z-10" />
+            )}
+
+            {/* Scroll Right Button */}
             <button
-              onClick={() => setSelectedCategory('UG')}
-              className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
-                selectedCategory === 'UG'
-                  ? 'bg-[#247D4C] text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              type="button"
+              onClick={() => scrollCategory('right')}
+              disabled={!canScrollCategoryRight}
+              aria-label="Scroll categories right"
+              title="Scroll right (›)"
+              className={`shrink-0 z-20 flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition-all cursor-pointer ${
+                canScrollCategoryRight
+                  ? 'opacity-100 hover:bg-slate-100 hover:text-emerald-700 hover:scale-105 active:scale-95 shadow-xs'
+                  : 'opacity-0 pointer-events-none'
               }`}
             >
-              B.E. ({countBy('UG')})
-            </button>
-            <button
-              onClick={() => setSelectedCategory('PG')}
-              className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
-                selectedCategory === 'PG'
-                  ? 'bg-[#247D4C] text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              M.E. Postgraduate ({countBy('PG')})
-            </button>
-            <button
-              onClick={() => setSelectedCategory('MBA')}
-              className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
-                selectedCategory === 'MBA'
-                  ? 'bg-[#247D4C] text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              M.B.A. ({countBy('MBA')})
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+              </svg>
             </button>
           </div>
 

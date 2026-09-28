@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router';
 import {
   Eye,
@@ -28,6 +28,46 @@ export function CreateAccountPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [teacherSuccessMessage, setTeacherSuccessMessage] = useState<string | null>(null);
+
+  // Horizontal scroll states for Semester Selection ribbon
+  const semesterNavRef = useRef<HTMLDivElement>(null);
+  const [canScrollSemLeft, setCanScrollSemLeft] = useState(false);
+  const [canScrollSemRight, setCanScrollSemRight] = useState(false);
+
+  const checkSemScroll = useCallback(() => {
+    const el = semesterNavRef.current;
+    if (!el) return;
+    setCanScrollSemLeft(el.scrollLeft > 4);
+    setCanScrollSemRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+  }, []);
+
+  const scrollSem = (direction: 'left' | 'right') => {
+    const el = semesterNavRef.current;
+    if (!el) return;
+    const distance = Math.max(140, el.clientWidth * 0.5);
+    el.scrollBy({ left: direction === 'left' ? -distance : distance, behavior: 'smooth' });
+    setTimeout(checkSemScroll, 200);
+  };
+
+  const handleSemWheel = (e: React.WheelEvent) => {
+    const el = semesterNavRef.current;
+    if (!el) return;
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && el.scrollWidth > el.clientWidth) {
+      el.scrollLeft += e.deltaY;
+      checkSemScroll();
+    }
+  };
+
+  useEffect(() => {
+    checkSemScroll();
+    const el = semesterNavRef.current;
+    if (el) el.addEventListener('scroll', checkSemScroll, { passive: true });
+    window.addEventListener('resize', checkSemScroll);
+    return () => {
+      if (el) el.removeEventListener('scroll', checkSemScroll);
+      window.removeEventListener('resize', checkSemScroll);
+    };
+  }, [checkSemScroll, activeTab]);
 
   // Programme selection — list comes from the central programme master API.
   const [programmeId, setProgrammeId] = useState<string>('');
@@ -365,25 +405,93 @@ export function CreateAccountPage() {
                 {/* Additional Role Attributes: Semester for Student, Designation for Teacher */}
                 {activeTab === 'student' ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label
-                      htmlFor="semesterNumber"
-                      className="block text-xs font-bold uppercase tracking-wider text-foreground"
-                    >
-                      Current Semester
-                    </label>
-                    <select
-                      id="semesterNumber"
-                      value={semesterNumber}
-                      onChange={(e) => setSemesterNumber(Number(e.target.value))}
-                      className="block w-full px-3 py-2.5 rounded-xl border border-border bg-input text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    >
-                      {(registrationOptions?.semesterNumbers ?? [1, 2, 3, 4, 5, 6, 7, 8]).map((sem) => (
-                        <option key={sem} value={sem}>
-                          Semester {sem}
-                        </option>
-                      ))}
-                    </select>
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <div className="flex items-center justify-between">
+                      <label
+                        htmlFor="semesterNumber"
+                        className="block text-xs font-bold uppercase tracking-wider text-foreground"
+                      >
+                        Current Semester
+                      </label>
+                      <span className="text-[11px] font-semibold text-primary dark:text-accent-foreground font-mono">
+                        Semester {semesterNumber} Selected
+                      </span>
+                    </div>
+
+                    {/* Horizontal Scrollable Semester Pill Ribbon with Scroll Controls */}
+                    <div className="relative flex items-center rounded-xl bg-muted/60 border border-border p-1">
+                      {/* Left Scroll Button */}
+                      <button
+                        type="button"
+                        onClick={() => scrollSem('left')}
+                        disabled={!canScrollSemLeft}
+                        aria-label="Scroll semesters left"
+                        title="Scroll left (‹)"
+                        className={`shrink-0 z-20 flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card text-foreground transition-all cursor-pointer ${
+                          canScrollSemLeft
+                            ? 'opacity-100 hover:bg-muted hover:text-primary hover:scale-105 active:scale-95 shadow-2xs'
+                            : 'opacity-0 pointer-events-none'
+                        }`}
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+
+                      {/* Left Fade Mask */}
+                      {canScrollSemLeft && (
+                        <div className="pointer-events-none absolute left-8 top-1 bottom-1 w-6 bg-gradient-to-r from-muted/80 to-transparent z-10" />
+                      )}
+
+                      {/* Horizontal Semester Pills */}
+                      <div
+                        ref={semesterNavRef}
+                        onWheel={handleSemWheel}
+                        className="flex-1 flex items-center gap-1.5 overflow-x-auto py-0.5 px-1 scroll-smooth scrollbar-none"
+                      >
+                        {(registrationOptions?.semesterNumbers ?? [1, 2, 3, 4, 5, 6, 7, 8]).map((sem) => (
+                          <button
+                            key={sem}
+                            type="button"
+                            onClick={() => {
+                              setSemesterNumber(sem);
+                              setTimeout(checkSemScroll, 100);
+                            }}
+                            className={`shrink-0 min-w-[76px] rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center justify-center gap-1 ${
+                              semesterNumber === sem
+                                ? 'bg-primary text-primary-foreground shadow-xs'
+                                : 'bg-card border border-border text-foreground hover:border-primary/50'
+                            }`}
+                          >
+                            <span>Sem</span>
+                            <span className="font-mono">{sem}</span>
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Right Fade Mask */}
+                      {canScrollSemRight && (
+                        <div className="pointer-events-none absolute right-8 top-1 bottom-1 w-6 bg-gradient-to-l from-muted/80 to-transparent z-10" />
+                      )}
+
+                      {/* Right Scroll Button */}
+                      <button
+                        type="button"
+                        onClick={() => scrollSem('right')}
+                        disabled={!canScrollSemRight}
+                        aria-label="Scroll semesters right"
+                        title="Scroll right (›)"
+                        className={`shrink-0 z-20 flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card text-foreground transition-all cursor-pointer ${
+                          canScrollSemRight
+                            ? 'opacity-100 hover:bg-muted hover:text-primary hover:scale-105 active:scale-95 shadow-2xs'
+                            : 'opacity-0 pointer-events-none'
+                        }`}
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                   <div className="space-y-1.5">
                     <label
