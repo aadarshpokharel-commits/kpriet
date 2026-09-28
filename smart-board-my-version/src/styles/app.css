@@ -10267,18 +10267,48 @@ body.controls-collapsed #tool-palette.floating-left-palette {
 .gos-workspace-header .bbm-title { font-size: 16px; }
 .gos-workspace-header .bbm-subtitle { font-size: 11.5px; }
 .gos-control-panel .gos-tab-strip {
-  flex-wrap: wrap;
-  overflow-x: visible;
-  padding: 8px 12px;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  padding: 8px 10px;
+  gap: 5px;
+  background: rgba(11, 19, 41, 0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
 }
 .gos-control-panel .gos-tab {
-  font-size: 12.5px;
-  padding: 7px 11px;
-  min-height: 36px;
-  white-space: normal;
-  flex: 1 1 auto;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 8px;
+  min-height: 32px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
   justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.14s ease;
+  user-select: none;
+}
+.gos-control-panel .gos-tab:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.gos-control-panel .gos-tab.active {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(14, 165, 233, 0.2));
+  border: 1.5px solid #38bdf8;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+}
+.gos-control-panel .gos-tab:nth-child(5) {
+  grid-column: span 2;
 }
 .gos-control-panel #gos-body {
   flex: 1;
@@ -10393,14 +10423,54 @@ body.controls-collapsed #tool-palette.floating-left-palette {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 16px;
+  padding: 8px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(6, 11, 25, 0.9);
+  background: rgba(6, 11, 25, 0.95);
   flex-shrink: 0;
+  min-height: 48px;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
-.gos-graph-toolbar-copy { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.gos-graph-toolbar-copy span:first-child { font-size: 11px; font-weight: 800; letter-spacing: .1em; color: #22c55e; }
-.gos-graph-toolbar-copy span:last-child { font-size: 12px; color: #94a3b8; }
+.gos-graph-toolbar::-webkit-scrollbar {
+  display: none;
+}
+.gos-graph-toolbar-copy {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.gos-graph-toolbar-copy .gos-live-badge,
+.gos-graph-toolbar-copy span:first-child {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  color: #4ade80;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.gos-graph-toolbar-copy .gos-live-sub,
+.gos-graph-toolbar-copy span:last-child {
+  font-size: 11.5px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
+}
+@media (max-width: 1350px) {
+  .gos-graph-toolbar-copy .gos-live-sub,
+  .gos-graph-toolbar-copy span:last-child {
+    display: none;
+  }
+}
 .gos-graph-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .gos-fullscreen-toggle {
   background: rgba(56,189,248,.12); color: #38bdf8; border: 1px solid rgba(56,189,248,.4);

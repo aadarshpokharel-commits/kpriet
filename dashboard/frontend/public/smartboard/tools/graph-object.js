@@ -3388,10 +3388,10 @@ const GraphObject = (() => {
             <button class="bbm-close" onclick="GraphObject.closeEditor()" title="Close graph workspace">✕</button>
           </div>
           <div class="gos-tab-strip">
-            <button class="gos-tab active" id="gos-tab-library" onclick="GraphObject.switchStudioTab('library')">📚 Function Library</button>
-            <button class="gos-tab" id="gos-tab-sliders" onclick="GraphObject.switchStudioTab('sliders')">🎛️ Transformations (a, b, h, k)</button>
-            <button class="gos-tab" id="gos-tab-properties" onclick="GraphObject.switchStudioTab('properties')">🔬 Properties &amp; Analysis</button>
-            <button class="gos-tab" id="gos-tab-functions" onclick="GraphObject.switchStudioTab('functions')">📝 Function List</button>
+            <button class="gos-tab active" id="gos-tab-library" onclick="GraphObject.switchStudioTab('library')">📚 Library</button>
+            <button class="gos-tab" id="gos-tab-sliders" onclick="GraphObject.switchStudioTab('sliders')">🎛️ Transform (a,b,h,k)</button>
+            <button class="gos-tab" id="gos-tab-properties" onclick="GraphObject.switchStudioTab('properties')">🔬 Analysis</button>
+            <button class="gos-tab" id="gos-tab-functions" onclick="GraphObject.switchStudioTab('functions')">📝 Equations</button>
             <button class="gos-tab" id="gos-tab-settings" onclick="GraphObject.switchStudioTab('settings')">⚙️ Axes &amp; Grid</button>
           </div>
           <div id="gos-current-summary" aria-live="polite"></div>
@@ -3404,8 +3404,8 @@ const GraphObject = (() => {
         <section class="gos-graph-panel" aria-label="Interactive graph preview">
           <div class="gos-graph-toolbar">
             <div class="gos-graph-toolbar-copy">
-              <span>LIVE GRAPH</span>
-              <span>Drag to pan · Scroll to zoom · Hover a curve to inspect</span>
+              <span class="gos-live-badge">🟢 LIVE GRAPH</span>
+              <span class="gos-live-sub">Drag to pan · Scroll to zoom · Hover curve to inspect</span>
             </div>
             <div class="gos-graph-actions">
               <!-- Drawing & Stylus Controls -->
