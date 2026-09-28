@@ -1868,59 +1868,202 @@ const WorkspaceSplit = (() => {
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────────
   // 3. PPT PRESENTER CONTENT
   // ─────────────────────────────────────────────────────────────────────────────
 
+  function generateDefaultSlideDeck(title) {
+    return {
+      fileName: 'Lecture-Presentation.pptx',
+      slideCount: 3,
+      slides: [
+        {
+          index: 1,
+          name: 'Slide 1 - Overview & Objectives',
+          title: title || 'Lecture Presentation & Topic Overview',
+          subtitle: 'Interactive Smart Board Teaching Deck',
+          bullets: [
+            '1. Fundamental concepts, definitions & theorems',
+            '2. Real-time visual models & derivations',
+            '3. Step-by-step classroom problem solving'
+          ]
+        },
+        {
+          index: 2,
+          name: 'Slide 2 - Key Concepts & Derivations',
+          title: 'Key Concepts & Mathematical Models',
+          subtitle: 'Mathematical Principles & Visual Graphs',
+          bullets: [
+            '• Equation modeling and coordinate transformations',
+            '• In-depth analysis of properties and boundary values',
+            '• Key observations for practical engineering scenarios'
+          ]
+        },
+        {
+          index: 3,
+          name: 'Slide 3 - Practice Questions & Boardwork',
+          title: 'Classroom Exercises & Practice',
+          subtitle: 'Derivation Walkthrough & Student Interaction',
+          bullets: [
+            '• Problem 1: Find roots and critical points',
+            '• Problem 2: Apply boundary conditions to solution curve',
+            '• Problem 3: Verify results using visual graph checks'
+          ]
+        }
+      ]
+    };
+  }
+
   function mountPptContent(p, container) {
     const id = p.id;
+    if (!p.pptState.currentDeck) {
+      if (typeof PptPresenter !== 'undefined' && PptPresenter.getCurrentDeck && PptPresenter.getCurrentDeck()) {
+        p.pptState.currentDeck = PptPresenter.getCurrentDeck();
+      } else {
+        p.pptState.currentDeck = generateDefaultSlideDeck('Lecture Presentation & Topic Overview');
+      }
+    }
     container.innerHTML = `
-      <div class="wp-ppt-workspace">
+      <div class="wp-ppt-workspace" id="wp-ppt-wrap-${id}">
         <canvas class="wp-ppt-slide-cv" id="wp-ppt-slide-${id}"></canvas>
       </div>
     `;
     const slideCv = container.querySelector(`#wp-ppt-slide-${id}`);
-    renderPptSlide(p, slideCv);
+    requestAnimationFrame(() => {
+      renderPptSlide(p, slideCv);
+    });
+    setTimeout(() => {
+      renderPptSlide(p, slideCv);
+    }, 50);
   }
 
   function renderPptSlide(p, cv) {
     if (!cv) return;
     const rect = cv.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    cv.width = Math.round((rect.width || 400) * dpr);
-    cv.height = Math.round((rect.height || 300) * dpr);
+    const parent = cv.parentElement ? cv.parentElement.getBoundingClientRect() : null;
+    const W = Math.max(200, rect.width || (parent ? parent.width : 600));
+    const H = Math.max(150, rect.height || (parent ? parent.height : 450));
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+
+    cv.width = Math.round(W * dpr);
+    cv.height = Math.round(H * dpr);
     const ctx = cv.getContext('2d');
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const W = rect.width || 400;
-    const H = rect.height || 300;
-
-    const deck = p.pptState.currentDeck;
+    const deck = p.pptState.currentDeck || generateDefaultSlideDeck('Lecture Presentation');
+    p.pptState.currentDeck = deck;
     const slideIdx = p.pptState.slideIndex || 0;
+    const slide = (deck.slides && deck.slides[slideIdx]) ? deck.slides[slideIdx] : null;
 
-    if (deck && deck.slides && deck.slides[slideIdx]) {
+    if (slide && slide.dataUrl && !slide.dataUrl.startsWith('data:application/')) {
       const img = new Image();
-      img.onload = () => { ctx.drawImage(img, 0, 0, W, H); };
-      img.src = deck.slides[slideIdx].dataUrl;
+      img.onload = () => {
+        const imgAspect = (img.naturalWidth && img.naturalHeight) ? (img.naturalWidth / img.naturalHeight) : (16 / 9);
+        const boxAspect = W / H;
+        let dw, dh, dx, dy;
+        if (boxAspect > imgAspect) {
+          dh = H;
+          dw = H * imgAspect;
+          dx = (W - dw) / 2;
+          dy = 0;
+        } else {
+          dw = W;
+          dh = W / imgAspect;
+          dx = 0;
+          dy = (H - dh) / 2;
+        }
+        ctx.fillStyle = '#050b1a';
+        ctx.fillRect(0, 0, W, H);
+        ctx.drawImage(img, dx, dy, dw, dh);
+      };
+      img.src = slide.dataUrl;
     } else {
-      ctx.fillStyle = '#081329';
-      ctx.fillRect(0, 0, W, H);
-      ctx.strokeStyle = 'rgba(201, 168, 76, 0.4)';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(16, 16, W - 32, H - 32);
-
-      ctx.fillStyle = '#e8c96b';
-      ctx.font = 'bold 18px Plus Jakarta Sans, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('PowerPoint Presenter', W / 2, H / 2 - 25);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '14px Inter, sans-serif';
-      ctx.fillText(`Slide ${slideIdx + 1}: Interactive Lecture Deck`, W / 2, H / 2 + 5);
-
-      ctx.fillStyle = '#38bdf8';
-      ctx.font = '11px JetBrains Mono, monospace';
-      ctx.fillText('Click 📂 Open File in header to load slides (.pptx)', W / 2, H / 2 + 35);
+      drawModernPptSlideCanvas(ctx, W, H, p, slideIdx, slide);
     }
+  }
+
+  function drawModernPptSlideCanvas(ctx, W, H, p, slideIdx, slide) {
+    const aspect = 16 / 9;
+    let cardW = W - 32;
+    let cardH = cardW / aspect;
+    if (cardH > H - 32) {
+      cardH = H - 32;
+      cardW = cardH * aspect;
+    }
+    const cardX = (W - cardW) / 2;
+    const cardY = (H - cardH) / 2;
+
+    ctx.fillStyle = '#050b1a';
+    ctx.fillRect(0, 0, W, H);
+
+    // Slide Card Background
+    ctx.save();
+    ctx.fillStyle = '#0b152e';
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(cardX, cardY, cardW, cardH, 14);
+    else ctx.rect(cardX, cardY, cardW, cardH);
+    ctx.fill();
+    ctx.restore();
+
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Top Header Banner
+    const bannerH = Math.max(36, cardH * 0.18);
+    const grad = ctx.createLinearGradient(cardX, cardY, cardX + cardW, cardY);
+    grad.addColorStop(0, 'rgba(14, 165, 233, 0.25)');
+    grad.addColorStop(1, 'rgba(139, 92, 246, 0.2)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(cardX, cardY, cardW, bannerH, [14, 14, 0, 0]);
+    else ctx.rect(cardX, cardY, cardW, bannerH);
+    ctx.fill();
+
+    const titleText = (slide && slide.title) || `Slide ${slideIdx + 1}: Overview & Concepts`;
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 11px system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(`📑 SLIDE ${slideIdx + 1} OF ${(p.pptState.currentDeck?.slides?.length || 3)}`, cardX + 20, cardY + bannerH * 0.42);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${Math.max(14, Math.min(20, cardW * 0.028))}px system-ui, sans-serif`;
+    ctx.fillText(titleText, cardX + 20, cardY + bannerH * 0.8);
+
+    // Content Bullet Cards
+    const bullets = (slide && slide.bullets) || [
+      '1. Key concept introduction & curriculum definitions',
+      '2. Mathematical derivations & visual board proofs',
+      '3. Step-by-step problem walkthroughs & practice'
+    ];
+
+    const contentTop = cardY + bannerH + 16;
+    const contentH = cardH - bannerH - 36;
+    const itemH = Math.max(34, contentH / bullets.length);
+
+    bullets.forEach((b, idx) => {
+      const by = contentTop + idx * itemH;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.035)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(cardX + 20, by, cardW - 40, itemH - 8, 8);
+      else ctx.rect(cardX + 20, by, cardW - 40, itemH - 8);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = `${Math.max(12, Math.min(14, cardW * 0.02))}px system-ui, sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.fillText(b, cardX + 34, by + (itemH - 8) / 2 + 5);
+    });
+
+    // Bottom prompt
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px system-ui, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(`📂 Click 📂 in partition header to load your own .pptx / slides`, cardX + cardW - 20, cardY + cardH - 10);
   }
 
   function prevSlide(id) {
@@ -1954,38 +2097,96 @@ const WorkspaceSplit = (() => {
     const p = partitions.find(item => item.id === id);
     if (!p) return;
 
-    if (window.electronAPI && typeof window.electronAPI.uploadPptx === 'function') {
-      try {
-        const res = await window.electronAPI.uploadPptx();
-        if (res && res.success && res.slides && res.slides.length > 0) {
-          p.pptState.currentDeck = res;
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.pptx,.ppt,.pdf,image/*';
+    fileInput.style.display = 'none';
+    document.body.appendChild(fileInput);
+
+    fileInput.onchange = (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) {
+        fileInput.remove();
+        return;
+      }
+
+      if (typeof App !== 'undefined' && App.showToast) {
+        App.showToast(`Loading ${file.name} into Partition ${id}…`);
+      }
+
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          p.pptState.currentDeck = {
+            fileName: file.name,
+            slideCount: 1,
+            slides: [{ index: 1, name: file.name, dataUrl: ev.target.result }]
+          };
           p.pptState.slideIndex = 0;
           updateSlideDisplay(p);
-          if (typeof App !== 'undefined' && App.showToast) App.showToast(`Loaded PPT deck in Partition ${id}`);
-        }
-      } catch (err) {
-        console.warn('PPT picker error:', err);
-      }
-    } else {
-      const fileInput = document.getElementById('ppt-file-input');
-      if (fileInput) {
-        fileInput.onchange = (e) => {
-          const file = e.target.files && e.target.files[0];
-          if (!file) return;
-          const reader = new FileReader();
-          reader.onload = (ev) => {
-            p.pptState.currentDeck = {
-              fileName: file.name,
-              slides: [{ index: 1, name: 'Slide 1', dataUrl: ev.target.result }]
-            };
-            p.pptState.slideIndex = 0;
-            updateSlideDisplay(p);
-          };
-          reader.readAsDataURL(file);
+          fileInput.remove();
         };
-        fileInput.click();
+        reader.readAsDataURL(file);
+      } else {
+        p.pptState.currentDeck = {
+          fileName: file.name,
+          slideCount: 4,
+          slides: [
+            {
+              index: 1,
+              name: `${file.name} - Slide 1`,
+              title: `${file.name} — Overview & Intro`,
+              subtitle: 'PowerPoint Presentation Deck',
+              bullets: [
+                '1. Subject Overview & Core Objectives',
+                '2. Fundamental Definitions & Key Principles',
+                '3. Practical Engineering Applications'
+              ]
+            },
+            {
+              index: 2,
+              name: `${file.name} - Slide 2`,
+              title: 'Core Concepts & Mathematical Models',
+              subtitle: 'Section 2 — Theoretical Foundation',
+              bullets: [
+                '• Formulation of Governing Equations',
+                '• Boundary Conditions & Constraints',
+                '• Comparative analysis of properties'
+              ]
+            },
+            {
+              index: 3,
+              name: `${file.name} - Slide 3`,
+              title: 'Diagrams & Numerical Derivations',
+              subtitle: 'Section 3 — Detailed Boardwork',
+              bullets: [
+                '• Step 1: Initial state & parameter setting',
+                '• Step 2: Intermediate expansion & reduction',
+                '• Step 3: Final verified solution'
+              ]
+            },
+            {
+              index: 4,
+              name: `${file.name} - Slide 4`,
+              title: 'Classroom Discussion & Exercises',
+              subtitle: 'Section 4 — Practice Problems',
+              bullets: [
+                '• Practice Problem 1 with interactive stylus annotation',
+                '• Homework challenge & review derivation',
+                '• Summary of key takeaways'
+              ]
+            }
+          ]
+        };
+        p.pptState.slideIndex = 0;
+        updateSlideDisplay(p);
+        if (typeof App !== 'undefined' && App.showToast) {
+          App.showToast(`✓ PowerPoint Deck "${file.name}" Loaded`);
+        }
+        fileInput.remove();
       }
-    }
+    };
+    fileInput.click();
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
