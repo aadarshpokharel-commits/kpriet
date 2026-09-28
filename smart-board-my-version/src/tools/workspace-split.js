@@ -1915,6 +1915,27 @@ const WorkspaceSplit = (() => {
     return defaultColor;
   }
 
+  function wrapCanvasText(ctx, text, maxWidth) {
+    if (!text) return [];
+    const words = String(text).split(' ');
+    const lines = [];
+    let currentLine = '';
+
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > maxWidth && currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    }
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  }
+
   function generateDefaultSlideDeck(title) {
     return {
       fileName: 'Lecture-Presentation.pptx',
