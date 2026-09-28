@@ -220,19 +220,19 @@ export function CreateAccountPage() {
       </header>
 
       {/* ─── Main Registration Card Container ─── */}
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex-1 flex items-center justify-center w-full">
-        <div className="w-full space-y-6">
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-5 pb-6 sm:pb-8 flex-1 flex flex-col justify-start sm:justify-center w-full">
+        <div className="w-full space-y-3.5">
           
           {/* Header Title */}
-          <div className="text-center space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-soft border border-primary-border text-primary dark:text-accent-foreground text-xs font-bold">
-              <Sparkles className="w-3.5 h-3.5 text-primary" />
+          <div className="text-center space-y-1">
+            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-primary-soft border border-primary-border text-primary dark:text-accent-foreground text-[11px] font-bold">
+              <Sparkles className="w-3 h-3 text-primary" />
               KPRIET Institutional Onboarding
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
               Create Your Academic Account
             </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
+            <p className="text-xs text-muted-foreground max-w-md mx-auto">
               Please register using your official college roll email address (e.g.{' '}
               <span className="font-mono text-primary dark:text-accent-foreground font-bold">23IT040@kpriet.ac.in</span>).
             </p>
@@ -240,29 +240,29 @@ export function CreateAccountPage() {
 
           {/* Teacher Success Confirmation Screen */}
           {teacherSuccessMessage ? (
-            <div className="rounded-3xl border border-success-border bg-card text-card-foreground p-8 shadow-xl text-center space-y-5 animate-in zoom-in-95 duration-200">
-              <div className="h-16 w-16 bg-success-soft text-success rounded-full flex items-center justify-center mx-auto border border-success-border">
-                <CheckCircle2 className="w-9 h-9" />
+            <div className="rounded-3xl border border-success-border bg-card text-card-foreground p-6 sm:p-8 shadow-xl text-center space-y-4 animate-in zoom-in-95 duration-200">
+              <div className="h-14 w-14 bg-success-soft text-success rounded-full flex items-center justify-center mx-auto border border-success-border">
+                <CheckCircle2 className="w-8 h-8" />
               </div>
-              <div className="space-y-2">
-                <h3 className="text-xl font-bold text-card-foreground">
+              <div className="space-y-1.5">
+                <h3 className="text-lg font-bold text-card-foreground">
                   Registration Submitted for Review
                 </h3>
                 <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
                   {teacherSuccessMessage}
                 </p>
               </div>
-              <div className="pt-2">
+              <div className="pt-1">
                 <Link
                   to={paths.signin}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary hover:bg-primary-hover text-primary-foreground font-bold text-xs shadow-md transition-all"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-primary-foreground font-bold text-xs shadow-md transition-all"
                 >
                   Return to Sign In →
                 </Link>
               </div>
             </div>
           ) : (
-            <div className="rounded-3xl border border-border bg-card text-card-foreground p-6 sm:p-8 shadow-xl space-y-6">
+            <div className="rounded-3xl border border-border bg-card text-card-foreground p-5 sm:p-6 shadow-xl space-y-4">
               
               {/* Role Switcher Tabs */}
               <div className="grid grid-cols-2 p-1 rounded-2xl bg-muted border border-border">
@@ -272,7 +272,7 @@ export function CreateAccountPage() {
                     setActiveTab('student');
                     setError(null);
                   }}
-                  className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     activeTab === 'student'
                       ? 'bg-card text-primary dark:text-accent-foreground shadow-xs border border-border'
                       : 'text-muted-foreground hover:text-foreground'
@@ -287,7 +287,7 @@ export function CreateAccountPage() {
                     setActiveTab('teacher');
                     setError(null);
                   }}
-                  className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     activeTab === 'teacher'
                       ? 'bg-card text-primary dark:text-accent-foreground shadow-xs border border-border'
                       : 'text-muted-foreground hover:text-foreground'
@@ -307,12 +307,12 @@ export function CreateAccountPage() {
               )}
 
               {/* Registration Form */}
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-3">
                 
                 {/* Full Name & Institutional Email Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* Full Name */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-1">
                     <label
                       htmlFor="name"
                       className="block text-xs font-bold uppercase tracking-wider text-foreground"
@@ -330,13 +330,13 @@ export function CreateAccountPage() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="e.g. Piyush Sharma"
-                        className="block w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-input text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        className="block w-full pl-10 pr-4 py-2 rounded-xl border border-border bg-input text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                       />
                     </div>
                   </div>
 
                   {/* College Email */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-1">
                     <label
                       htmlFor="collegeEmail"
                       className="block text-xs font-bold uppercase tracking-wider text-foreground"
@@ -354,16 +354,16 @@ export function CreateAccountPage() {
                         value={collegeEmail}
                         onChange={(e) => setCollegeEmail(e.target.value)}
                         placeholder={activeTab === 'student' ? '23IT040@kpriet.ac.in' : 'faculty@kpriet.ac.in'}
-                        className="block w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-input text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        className="block w-full pl-10 pr-4 py-2 rounded-xl border border-border bg-input text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Role Specific Identifier */}
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 gap-3">
                   {/* Student Roll / Faculty ID */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-1">
                     <label
                       htmlFor="identifier"
                       className="block text-xs font-bold uppercase tracking-wider text-foreground"
@@ -379,7 +379,7 @@ export function CreateAccountPage() {
                         activeTab === 'student' ? setStudentRoll(e.target.value) : setEmployeeId(e.target.value)
                       }
                       placeholder={activeTab === 'student' ? 'e.g. 7376231IT040' : 'e.g. KPR_FAC_104'}
-                      className="block w-full px-4 py-2.5 rounded-xl border border-border bg-input text-sm text-foreground placeholder:text-muted-foreground uppercase focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      className="block w-full px-4 py-2 rounded-xl border border-border bg-input text-sm text-foreground placeholder:text-muted-foreground uppercase focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
 
@@ -404,8 +404,8 @@ export function CreateAccountPage() {
 
                 {/* Additional Role Attributes: Semester for Student, Designation for Teacher */}
                 {activeTab === 'student' ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5 sm:col-span-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1 sm:col-span-2">
                     <div className="flex items-center justify-between">
                       <label
                         htmlFor="semesterNumber"
@@ -457,7 +457,7 @@ export function CreateAccountPage() {
                               setSemesterNumber(sem);
                               setTimeout(checkSemScroll, 100);
                             }}
-                            className={`shrink-0 min-w-[76px] rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center justify-center gap-1 ${
+                            className={`shrink-0 min-w-[70px] rounded-lg px-2 py-1 text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center justify-center gap-1 ${
                               semesterNumber === sem
                                 ? 'bg-primary text-primary-foreground shadow-xs'
                                 : 'bg-card border border-border text-foreground hover:border-primary/50'
@@ -493,7 +493,7 @@ export function CreateAccountPage() {
                       </button>
                     </div>
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-1">
                     <label
                       htmlFor="academicYear"
                       className="block text-xs font-bold uppercase tracking-wider text-foreground"
@@ -505,7 +505,7 @@ export function CreateAccountPage() {
                       value={academicYear}
                       onChange={(e) => setAcademicYear(e.target.value)}
                       disabled={!programmeId || (registrationOptions?.academicYears.length ?? 0) === 0}
-                      className="block w-full px-3 py-2.5 rounded-xl border border-border bg-input text-sm text-foreground disabled:opacity-60 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      className="block w-full px-3 py-2 rounded-xl border border-border bg-input text-sm text-foreground disabled:opacity-60 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                     >
                       {!programmeId && <option value="">Select a programme first</option>}
                       {programmeId && (registrationOptions?.academicYears.length ?? 0) === 0 && (
@@ -520,7 +520,7 @@ export function CreateAccountPage() {
                   </div>
                   </div>
                 ) : (
-                  <div className="space-y-1.5">
+                  <div className="space-y-1">
                     <label
                       htmlFor="designation"
                       className="block text-xs font-bold uppercase tracking-wider text-foreground"
@@ -531,7 +531,7 @@ export function CreateAccountPage() {
                       id="designation"
                       value={designation}
                       onChange={(e) => setDesignation(e.target.value)}
-                      className="block w-full px-3 py-2.5 rounded-xl border border-border bg-input text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      className="block w-full px-3 py-2 rounded-xl border border-border bg-input text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                     >
                       <option value="Assistant Professor">Assistant Professor</option>
                       <option value="Associate Professor">Associate Professor</option>
@@ -543,9 +543,9 @@ export function CreateAccountPage() {
                 )}
 
                 {/* Password and Confirm Password Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-0.5">
                   {/* Password */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-1">
                     <label
                       htmlFor="password"
                       className="block text-xs font-bold uppercase tracking-wider text-foreground"
@@ -563,7 +563,7 @@ export function CreateAccountPage() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••••••"
-                        className="block w-full pl-10 pr-11 py-2.5 rounded-xl border border-border bg-input text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        className="block w-full pl-10 pr-11 py-2 rounded-xl border border-border bg-input text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                       />
                       <button
                         type="button"
@@ -576,7 +576,7 @@ export function CreateAccountPage() {
 
                     {/* Password Strength Meter */}
                     {password.length > 0 && (
-                      <div className="space-y-1 pt-1">
+                      <div className="space-y-0.5 pt-0.5">
                         <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                           <div
                             className={`h-full ${passwordStrength.color} transition-all duration-300`}
@@ -592,7 +592,7 @@ export function CreateAccountPage() {
                   </div>
 
                   {/* Confirm Password */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-1">
                     <label
                       htmlFor="confirmPassword"
                       className="block text-xs font-bold uppercase tracking-wider text-foreground"
@@ -610,7 +610,7 @@ export function CreateAccountPage() {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="••••••••••••"
-                        className={`block w-full pl-10 pr-10 py-2.5 rounded-xl border bg-input text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 ${
+                        className={`block w-full pl-10 pr-10 py-2 rounded-xl border bg-input text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 ${
                           passwordMismatch
                             ? 'border-error focus:border-error focus:ring-error/20'
                             : passwordsMatch
@@ -634,7 +634,7 @@ export function CreateAccountPage() {
 
                 {/* Faculty Approval Notice */}
                 {activeTab === 'teacher' && (
-                  <div className="rounded-2xl border border-warning-border bg-warning-soft p-3.5 text-xs text-warning-text flex items-start gap-2.5">
+                  <div className="rounded-2xl border border-warning-border bg-warning-soft p-3 text-xs text-warning-text flex items-start gap-2.5">
                     <ShieldAlert className="w-4 h-4 text-warning shrink-0 mt-0.5" />
                     <p className="leading-relaxed">
                       Faculty accounts require institutional verification by the respective department Head of Department (HOD) before full course creation and grading features are activated.
@@ -646,7 +646,7 @@ export function CreateAccountPage() {
                 <button
                   type="submit"
                   disabled={loading || passwordMismatch}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-primary hover:bg-primary-hover text-primary-foreground font-bold text-sm shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-60 transition-all cursor-pointer transform active:scale-[0.99] mt-2"
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-primary hover:bg-primary-hover text-primary-foreground font-bold text-sm shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-60 transition-all cursor-pointer transform active:scale-[0.99] mt-1"
                 >
                   {loading ? (
                     <div className="flex items-center gap-2">
@@ -662,7 +662,7 @@ export function CreateAccountPage() {
                 </button>
 
                 {/* Already have account */}
-                <div className="pt-3 text-center text-xs text-muted-foreground border-t border-border">
+                <div className="pt-2 text-center text-xs text-muted-foreground border-t border-border">
                   Already have an active institutional account?{' '}
                   <Link
                     to={paths.signin}

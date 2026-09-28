@@ -28,6 +28,7 @@ export function SignInPage() {
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [demoTab, setDemoTab] = useState<'roles' | 'semesters'>('roles');
 
   // Horizontal scroll states for IT Department Semester Teachers ribbon
   const semesterNavRef = useRef<HTMLDivElement>(null);
@@ -155,17 +156,17 @@ export function SignInPage() {
       </header>
 
       {/* ─── Main Auth Hero & Split Layout ─── */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex-1 flex items-center justify-center w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 w-full items-center">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-5 pb-6 sm:pb-8 flex-1 flex flex-col justify-start lg:justify-center w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 w-full items-start lg:items-center">
           
           {/* Left Column: Platform Branding & Features (Desktop) */}
-          <div className="lg:col-span-7 space-y-6 hidden lg:block">
+          <div className="lg:col-span-7 space-y-4 hidden lg:block">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-soft border border-primary-border text-primary dark:text-accent-foreground text-xs font-bold tracking-wide">
               <Sparkles className="w-3.5 h-3.5 text-primary" />
               Autonomous Academic Hub • R2021 & R2025
             </div>
 
-            <h1 className="text-4xl xl:text-5xl font-extrabold tracking-tight text-foreground leading-tight">
+            <h1 className="text-3xl xl:text-4xl font-extrabold tracking-tight text-foreground leading-tight">
               Next-Generation <br />
               <span className="text-primary dark:text-accent-foreground">
                 Autonomous Learning
@@ -173,48 +174,48 @@ export function SignInPage() {
               Portal
             </h1>
 
-            <p className="text-sm xl:text-base text-muted-foreground max-w-xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-muted-foreground max-w-xl leading-relaxed">
               Seamlessly unify curriculum intelligence, interactive simulations, proctored assessments, and Smart Board classroom collaboration for KPRIET engineering students and faculty.
             </p>
 
             {/* Benefit Badges */}
-            <div className="grid grid-cols-2 gap-4 max-w-lg pt-2">
-              <div className="p-4 rounded-2xl border border-border bg-card space-y-1.5 shadow-2xs">
+            <div className="grid grid-cols-2 gap-3 max-w-lg pt-1">
+              <div className="p-3 rounded-xl border border-border bg-card space-y-1 shadow-2xs">
                 <div className="flex items-center gap-2 text-primary dark:text-accent-foreground font-bold text-xs">
-                  <BookOpen className="w-4 h-4" />
+                  <BookOpen className="w-3.5 h-3.5" />
                   12 Curriculum Tabs
                 </div>
-                <p className="text-xs text-muted-foreground leading-normal">
+                <p className="text-[11px] text-muted-foreground leading-normal">
                   Notes, materials, recordings, and slide decks grounded per subject unit.
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl border border-border bg-card space-y-1.5 shadow-2xs">
+              <div className="p-3 rounded-xl border border-border bg-card space-y-1 shadow-2xs">
                 <div className="flex items-center gap-2 text-primary dark:text-accent-foreground font-bold text-xs">
-                  <Cpu className="w-4 h-4" />
+                  <Cpu className="w-3.5 h-3.5" />
                   Subject AI Doubt Solver
                 </div>
-                <p className="text-xs text-muted-foreground leading-normal">
+                <p className="text-[11px] text-muted-foreground leading-normal">
                   Domain-isolated RAG assistant calibrated strictly to course syllabi.
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl border border-border bg-card space-y-1.5 shadow-2xs">
+              <div className="p-3 rounded-xl border border-border bg-card space-y-1 shadow-2xs">
                 <div className="flex items-center gap-2 text-primary dark:text-accent-foreground font-bold text-xs">
-                  <Layers className="w-4 h-4" />
+                  <Layers className="w-3.5 h-3.5" />
                   Smart Board Sync
                 </div>
-                <p className="text-xs text-muted-foreground leading-normal">
+                <p className="text-[11px] text-muted-foreground leading-normal">
                   Interactive real-time canvas with 2D/3D physics and chemistry simulations.
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl border border-border bg-card space-y-1.5 shadow-2xs">
+              <div className="p-3 rounded-xl border border-border bg-card space-y-1 shadow-2xs">
                 <div className="flex items-center gap-2 text-primary dark:text-accent-foreground font-bold text-xs">
-                  <GraduationCap className="w-4 h-4" />
+                  <GraduationCap className="w-3.5 h-3.5" />
                   Continuous Proctoring
                 </div>
-                <p className="text-xs text-muted-foreground leading-normal">
+                <p className="text-[11px] text-muted-foreground leading-normal">
                   Fullscreen integrity assessment engine with instant auto-grading.
                 </p>
               </div>
@@ -222,157 +223,168 @@ export function SignInPage() {
           </div>
 
           {/* Right Column: Sign In Card */}
-          <div className="lg:col-span-5 w-full max-w-md mx-auto space-y-4">
+          <div className="lg:col-span-5 w-full max-w-md mx-auto space-y-3">
             
-            {/* 1-Click Test Credential Helper Bar */}
-            <div className="p-4 rounded-2xl border border-border bg-card text-card-foreground shadow-xs space-y-2">
+            {/* Unified 1-Click Demo Login Card (Roles + Semesters with Horizontal Scroll) */}
+            <div className="p-3 sm:p-3.5 rounded-2xl border border-primary/20 bg-card text-card-foreground shadow-xs space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-foreground flex items-center gap-1.5">
-                  <span>⚡</span> Quick 1-Click Role Login:
-                </span>
-                <span className="text-[10px] text-muted-foreground font-mono">Dev Test Accounts</span>
-              </div>
-              <div className="grid grid-cols-4 gap-1.5 pt-1">
-                <button
-                  type="button"
-                  onClick={() => setQuickDemo('student@kpriet.ac.in')}
-                  className="rounded-xl border border-border bg-muted px-2 py-1.5 text-xs font-semibold text-foreground hover:border-primary hover:text-primary transition-all cursor-pointer shadow-2xs flex items-center justify-center gap-1"
-                >
-                  <span>🎓</span>
-                  Student
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setQuickDemo('teacher@kpriet.ac.in')}
-                  className="rounded-xl border border-border bg-muted px-2 py-1.5 text-xs font-semibold text-foreground hover:border-primary hover:text-primary transition-all cursor-pointer shadow-2xs flex items-center justify-center gap-1"
-                >
-                  <span>👨‍🏫</span>
-                  Teacher
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setQuickDemo('hod.it@kpriet.ac.in')}
-                  className="rounded-xl border border-border bg-muted px-2 py-1.5 text-xs font-semibold text-foreground hover:border-primary hover:text-primary transition-all cursor-pointer shadow-2xs flex items-center justify-center gap-1"
-                >
-                  <span>🏛️</span>
-                  HOD
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setQuickDemo('admin@kpriet.ac.in')}
-                  className="rounded-xl border border-border bg-muted px-2 py-1.5 text-xs font-semibold text-foreground hover:border-primary hover:text-primary transition-all cursor-pointer shadow-2xs flex items-center justify-center gap-1"
-                >
-                  <span>⚡</span>
-                  Admin
-                </button>
-              </div>
-            </div>
-
-            {/* IT Department Semester-Wise Demo Teachers (1-Click Login with Horizontal Scroll) */}
-            <div className="p-4 rounded-2xl border border-primary/25 bg-primary/5 text-card-foreground shadow-xs space-y-2.5">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-primary dark:text-accent-foreground flex items-center gap-1.5">
-                  <span>💻</span> IT Department Semester Teachers:
-                </span>
-                <span className="text-[10px] bg-primary/10 text-primary dark:text-accent-foreground px-2 py-0.5 rounded-full font-mono font-semibold">
-                  1-Click Login
-                </span>
-              </div>
-
-              {/* Scrollable Semester Ribbon Container */}
-              <div className="relative flex items-center rounded-xl bg-card/60 border border-primary/15 p-1">
-                {/* Scroll Left Button */}
-                <button
-                  type="button"
-                  onClick={() => scrollSem('left')}
-                  disabled={!canScrollSemLeft}
-                  aria-label="Scroll semesters left"
-                  title="Scroll left (‹)"
-                  className={`shrink-0 z-20 flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card text-foreground transition-all cursor-pointer ${
-                    canScrollSemLeft
-                      ? 'opacity-100 hover:bg-muted hover:text-primary hover:scale-105 active:scale-95 shadow-2xs'
-                      : 'opacity-0 pointer-events-none'
-                  }`}
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-
-                {/* Left Fade Mask */}
-                {canScrollSemLeft && (
-                  <div className="pointer-events-none absolute left-8 top-1 bottom-1 w-6 bg-gradient-to-r from-card to-transparent z-10" />
-                )}
-
-                {/* Horizontal Scroll Ribbon */}
-                <div
-                  ref={semesterNavRef}
-                  onWheel={handleSemWheel}
-                  className="flex-1 flex items-center gap-1.5 overflow-x-auto py-1 px-1 scroll-smooth scrollbar-none"
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => {
-                    const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][sem - 1];
-                    return (
-                      <button
-                        key={sem}
-                        type="button"
-                        disabled={loading}
-                        onClick={() => handleQuickLogin(`it.sem${sem}.teacher@kpriet.ac.in`, 'Demo@IT12345')}
-                        className="shrink-0 min-w-[70px] rounded-xl border border-primary/25 bg-card hover:bg-primary hover:text-primary-foreground hover:border-primary p-2 text-xs font-bold text-foreground transition-all cursor-pointer shadow-2xs flex flex-col items-center justify-center gap-0.5 active:scale-95 group disabled:opacity-50"
-                        title={`Click to login as IT Semester ${sem} Teacher (${roman})`}
-                      >
-                        <span className="text-[9px] text-muted-foreground group-hover:text-primary-foreground/80 font-mono font-semibold uppercase">
-                          Sem {sem}
-                        </span>
-                        <span className="text-xs font-black tracking-wide">
-                          {roman}
-                        </span>
-                      </button>
-                    );
-                  })}
+                <div className="flex items-center gap-1.5 font-bold text-foreground">
+                  <span className="text-amber-500">⚡</span>
+                  <span>1-Click Demo Login:</span>
                 </div>
-
-                {/* Right Fade Mask */}
-                {canScrollSemRight && (
-                  <div className="pointer-events-none absolute right-8 top-1 bottom-1 w-6 bg-gradient-to-l from-card to-transparent z-10" />
-                )}
-
-                {/* Scroll Right Button */}
-                <button
-                  type="button"
-                  onClick={() => scrollSem('right')}
-                  disabled={!canScrollSemRight}
-                  aria-label="Scroll semesters right"
-                  title="Scroll right (›)"
-                  className={`shrink-0 z-20 flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card text-foreground transition-all cursor-pointer ${
-                    canScrollSemRight
-                      ? 'opacity-100 hover:bg-muted hover:text-primary hover:scale-105 active:scale-95 shadow-2xs'
-                      : 'opacity-0 pointer-events-none'
-                  }`}
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
+                <div className="inline-flex p-0.5 rounded-lg bg-muted border border-border text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => setDemoTab('roles')}
+                    className={`px-2 py-0.5 rounded-md font-semibold transition-all cursor-pointer ${
+                      demoTab === 'roles'
+                        ? 'bg-card text-primary dark:text-accent-foreground shadow-2xs font-bold'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Roles (4)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDemoTab('semesters')}
+                    className={`px-2 py-0.5 rounded-md font-semibold transition-all cursor-pointer ${
+                      demoTab === 'semesters'
+                        ? 'bg-card text-primary dark:text-accent-foreground shadow-2xs font-bold'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Semesters (1–8) ›
+                  </button>
+                </div>
               </div>
 
-              <div className="text-[10px] text-muted-foreground text-center">
-                Usernames: <span className="font-mono text-foreground">it.sem1.teacher</span> – <span className="font-mono text-foreground">it.sem8.teacher</span> • Pass: <span className="font-mono text-foreground">Demo@IT12345</span>
-              </div>
+              {demoTab === 'roles' ? (
+                <div className="grid grid-cols-4 gap-1.5 pt-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setQuickDemo('student@kpriet.ac.in')}
+                    className="rounded-xl border border-border bg-muted/70 px-2 py-1.5 text-xs font-semibold text-foreground hover:border-primary hover:text-primary transition-all cursor-pointer shadow-2xs flex items-center justify-center gap-1"
+                  >
+                    <span>🎓</span>
+                    Student
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setQuickDemo('teacher@kpriet.ac.in')}
+                    className="rounded-xl border border-border bg-muted/70 px-2 py-1.5 text-xs font-semibold text-foreground hover:border-primary hover:text-primary transition-all cursor-pointer shadow-2xs flex items-center justify-center gap-1"
+                  >
+                    <span>👨‍🏫</span>
+                    Teacher
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setQuickDemo('hod.it@kpriet.ac.in')}
+                    className="rounded-xl border border-border bg-muted/70 px-2 py-1.5 text-xs font-semibold text-foreground hover:border-primary hover:text-primary transition-all cursor-pointer shadow-2xs flex items-center justify-center gap-1"
+                  >
+                    <span>🏛️</span>
+                    HOD
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setQuickDemo('admin@kpriet.ac.in')}
+                    className="rounded-xl border border-border bg-muted/70 px-2 py-1.5 text-xs font-semibold text-foreground hover:border-primary hover:text-primary transition-all cursor-pointer shadow-2xs flex items-center justify-center gap-1"
+                  >
+                    <span>⚡</span>
+                    Admin
+                  </button>
+                </div>
+              ) : (
+                /* Scrollable Semester Ribbon Container */
+                <div className="relative flex items-center rounded-xl bg-card/60 border border-primary/15 p-1">
+                  {/* Scroll Left Button */}
+                  <button
+                    type="button"
+                    onClick={() => scrollSem('left')}
+                    disabled={!canScrollSemLeft}
+                    aria-label="Scroll semesters left"
+                    title="Scroll left (‹)"
+                    className={`shrink-0 z-20 flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card text-foreground transition-all cursor-pointer ${
+                      canScrollSemLeft
+                        ? 'opacity-100 hover:bg-muted hover:text-primary hover:scale-105 active:scale-95 shadow-2xs'
+                        : 'opacity-0 pointer-events-none'
+                    }`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+
+                  {/* Left Fade Mask */}
+                  {canScrollSemLeft && (
+                    <div className="pointer-events-none absolute left-8 top-1 bottom-1 w-6 bg-gradient-to-r from-card to-transparent z-10" />
+                  )}
+
+                  {/* Horizontal Scroll Ribbon */}
+                  <div
+                    ref={semesterNavRef}
+                    onWheel={handleSemWheel}
+                    className="flex-1 flex items-center gap-1.5 overflow-x-auto py-0.5 px-1 scroll-smooth scrollbar-none"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => {
+                      const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][sem - 1];
+                      return (
+                        <button
+                          key={sem}
+                          type="button"
+                          disabled={loading}
+                          onClick={() => handleQuickLogin(`it.sem${sem}.teacher@kpriet.ac.in`, 'Demo@IT12345')}
+                          className="shrink-0 min-w-[65px] rounded-lg border border-primary/25 bg-card hover:bg-primary hover:text-primary-foreground hover:border-primary py-1 px-2 text-xs font-bold text-foreground transition-all cursor-pointer shadow-2xs flex flex-col items-center justify-center gap-0.5 active:scale-95 group disabled:opacity-50"
+                          title={`Click to login as IT Semester ${sem} Teacher (${roman})`}
+                        >
+                          <span className="text-[9px] text-muted-foreground group-hover:text-primary-foreground/80 font-mono font-semibold uppercase">
+                            Sem {sem}
+                          </span>
+                          <span className="text-xs font-black tracking-wide">
+                            {roman}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Right Fade Mask */}
+                  {canScrollSemRight && (
+                    <div className="pointer-events-none absolute right-8 top-1 bottom-1 w-6 bg-gradient-to-l from-card to-transparent z-10" />
+                  )}
+
+                  {/* Scroll Right Button */}
+                  <button
+                    type="button"
+                    onClick={() => scrollSem('right')}
+                    disabled={!canScrollSemRight}
+                    aria-label="Scroll semesters right"
+                    title="Scroll right (›)"
+                    className={`shrink-0 z-20 flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card text-foreground transition-all cursor-pointer ${
+                      canScrollSemRight
+                        ? 'opacity-100 hover:bg-muted hover:text-primary hover:scale-105 active:scale-95 shadow-2xs'
+                        : 'opacity-0 pointer-events-none'
+                    }`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Error Alert */}
             {error && (
-              <div className="rounded-2xl border border-error-border bg-error-soft p-4 text-xs font-medium text-error-text flex items-start gap-2.5 animate-in fade-in duration-150">
+              <div className="rounded-2xl border border-error-border bg-error-soft p-3.5 text-xs font-medium text-error-text flex items-start gap-2.5 animate-in fade-in duration-150">
                 <span className="text-error text-base">⚠️</span>
                 <div className="flex-1 leading-relaxed">{error}</div>
               </div>
             )}
 
             {/* Sign In Form Card */}
-            <div className="rounded-3xl border border-border bg-card text-card-foreground p-6 sm:p-8 shadow-xl space-y-6">
-              <div className="space-y-1">
-                <h2 className="text-xl font-black text-card-foreground tracking-tight">
+            <div className="rounded-3xl border border-border bg-card text-card-foreground p-5 sm:p-6 shadow-xl space-y-4">
+              <div className="space-y-0.5">
+                <h2 className="text-lg sm:text-xl font-black text-card-foreground tracking-tight">
                   Sign In to Your Workspace
                 </h2>
                 <p className="text-xs text-muted-foreground">
@@ -380,9 +392,9 @@ export function SignInPage() {
                 </p>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-3.5">
                 {/* College Email Input */}
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <label
                     htmlFor="collegeEmail"
                     className="block text-xs font-bold uppercase tracking-wider text-foreground"
@@ -400,16 +412,16 @@ export function SignInPage() {
                       value={collegeEmail}
                       onChange={(e) => setCollegeEmail(e.target.value)}
                       placeholder="e.g. math.teacher or 23it040@kpriet.ac.in"
-                      className="block w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-input text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                      className="block w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-input text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                     />
                   </div>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-[10.5px] text-muted-foreground">
                     Sign in with username (e.g. <span className="font-semibold text-primary dark:text-accent-foreground">math.teacher</span>) or institutional email.
                   </p>
                 </div>
 
                 {/* Password Input */}
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <div className="flex items-center justify-between">
                     <label
                       htmlFor="password"
@@ -432,7 +444,7 @@ export function SignInPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••••••"
-                      className="block w-full pl-10 pr-11 py-3 rounded-xl border border-border bg-input text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                      className="block w-full pl-10 pr-11 py-2.5 rounded-xl border border-border bg-input text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                     />
                     <button
                       type="button"
@@ -446,7 +458,7 @@ export function SignInPage() {
                 </div>
 
                 {/* Remember Session Checkbox */}
-                <div className="flex items-center justify-between pt-1">
+                <div className="flex items-center justify-between pt-0.5">
                   <label className="flex items-center gap-2 cursor-pointer select-none">
                     <input
                       type="checkbox"
@@ -468,7 +480,7 @@ export function SignInPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-primary hover:bg-primary-hover text-primary-foreground font-bold text-sm shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-60 transition-all cursor-pointer transform active:scale-[0.99]"
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-primary hover:bg-primary-hover text-primary-foreground font-bold text-sm shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-60 transition-all cursor-pointer transform active:scale-[0.99]"
                 >
                   {loading ? (
                     <div className="flex items-center gap-2">
@@ -484,7 +496,7 @@ export function SignInPage() {
                 </button>
 
                 {/* Register Link */}
-                <div className="pt-3 text-center text-xs text-muted-foreground border-t border-border">
+                <div className="pt-2 text-center text-xs text-muted-foreground border-t border-border">
                   New student or faculty member?{' '}
                   <Link
                     to={paths.createAccount}
@@ -497,7 +509,7 @@ export function SignInPage() {
             </div>
 
             {/* Footer Institutional Note */}
-            <p className="text-center text-[11px] text-muted-foreground">
+            <p className="text-center text-[10.5px] text-muted-foreground">
               KPR Institute of Engineering and Technology • Learn Beyond
             </p>
           </div>
