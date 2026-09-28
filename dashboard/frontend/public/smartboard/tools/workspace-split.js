@@ -1886,16 +1886,61 @@ const WorkspaceSplit = (() => {
       .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
   }
 
+  function getNodeLocalName(el) {
+    if (!el) return '';
+    return (el.localName || el.nodeName.split(':').pop() || '').toLowerCase();
+  }
+
+  function findDescendantsByLocalNames(parent, localNames) {
+    if (!parent) return [];
+    const names = (Array.isArray(localNames) ? localNames : [localNames]).map(n => n.toLowerCase());
+    const list = [];
+    function walk(curr) {
+      if (!curr || !curr.childNodes) return;
+      for (let i = 0; i < curr.childNodes.length; i++) {
+        const n = curr.childNodes[i];
+        if (n.nodeType === 1) { // Element node
+          if (names.includes(getNodeLocalName(n))) {
+            list.push(n);
+          }
+          walk(n);
+        }
+      }
+    }
+    walk(parent);
+    return list;
+  }
+
+  function findFirstDescendantByLocalNames(parent, localNames) {
+    if (!parent) return null;
+    const names = (Array.isArray(localNames) ? localNames : [localNames]).map(n => n.toLowerCase());
+    function walk(curr) {
+      if (!curr || !curr.childNodes) return null;
+      for (let i = 0; i < curr.childNodes.length; i++) {
+        const n = curr.childNodes[i];
+        if (n.nodeType === 1) {
+          if (names.includes(getNodeLocalName(n))) {
+            return n;
+          }
+          const found = walk(n);
+          if (found) return found;
+        }
+      }
+      return null;
+    }
+    return walk(parent);
+  }
+
   function parseXmlColor(node, defaultColor = '#ffffff') {
     if (!node) return defaultColor;
-    const srgb = node.querySelector('srgbClr, a\\:srgbClr');
+    const srgb = findFirstDescendantByLocalNames(node, ['srgbclr']);
     if (srgb && srgb.getAttribute('val')) {
       const val = srgb.getAttribute('val').trim();
       return val.startsWith('#') ? val : `#${val}`;
     }
-    const scheme = node.querySelector('schemeClr, a\\:schemeClr');
+    const scheme = findFirstDescendantByLocalNames(node, ['schemeclr']);
     if (scheme && scheme.getAttribute('val')) {
-      const val = scheme.getAttribute('val');
+      const val = scheme.getAttribute('val').trim();
       const schemeColors = {
         'accent1': '#38bdf8',
         'accent2': '#f43f5e',
@@ -2038,7 +2083,7 @@ const WorkspaceSplit = (() => {
     }
 
     // 3. PPTX (PowerPoint OpenXML File) — Full XML Shape & Layout Parsing
-    if (ext === 'pptx') {
+    if (ext === 'pptx' || ext === 'ppt') {
       try {
         if (typeof window.JSZip === 'undefined') {
           await new Promise((resolve, reject) => {
@@ -2055,7 +2100,7 @@ const WorkspaceSplit = (() => {
         // Slide dimensions from presentation.xml
         let slideW = 12192000;
         let slideH = 6858000;
-        const presFile = zip.file('ppt/presentation.xml') || zip.file('ppt/Presentation.xml');
+        const presFile = zip.file('ppt/presentation.xml') || zip.file('ppt/Presentation.xml') || zip.file(/^ppt[\/\\]presentation\.xml$/i)[0];
         if (presFile) {
           const presXml = await presFile.async('string');
           const szMatch = presXml.match(/<p:sldSz[^>]*cx="(\d+)"[^>]*cy="(\d+)"/i) || presXml.match(/cx="(\d+)"[^>]*cy="(\d+)"/i);
@@ -2069,30 +2114,36 @@ const WorkspaceSplit = (() => {
         const mediaMap = {};
         const mediaFiles = [];
         zip.forEach((path) => {
-          if (/^ppt\/media\//i.test(path)) mediaFiles.push(path);
+          const cleanPath = path.replace(/^\//, '').replace(/\\/g, '/');
+          if (/^ppt\/media\//i.test(cleanPath)) {
+            mediaFiles.push(path);
+          }
         });
         for (const mPath of mediaFiles) {
           try {
             const b64 = await zip.file(mPath).async('base64');
             const mExt = mPath.split('.').pop().toLowerCase();
-            const mime = (mExt === 'png') ? 'image/png' : (mExt === 'svg' ? 'image/svg+xml' : 'image/jpeg');
-            const cleanKey = mPath.replace(/^ppt\//i, '').replace(/^media\//i, '');
-            mediaMap[mPath] = `data:${mime};base64,${b64}`;
+            const mime = (mExt === 'png') ? 'image/png' : (mExt === 'svg' ? 'image/svg+xml' : (mExt === 'gif' ? 'image/gif' : 'image/jpeg'));
+            const cleanKey = mPath.replace(/^\//, '').replace(/\\/g, '/');
+            const shortKey = cleanKey.replace(/^ppt\//i, '').replace(/^media\//i, '');
             mediaMap[cleanKey] = `data:${mime};base64,${b64}`;
+            mediaMap[shortKey] = `data:${mime};base64,${b64}`;
+            mediaMap[mPath] = `data:${mime};base64,${b64}`;
           } catch(e) {}
         }
 
         // Find and sort slides numerically
         const slideFileEntries = [];
-        zip.forEach((relativePath) => {
-          if (/^ppt\/slides\/slide\d+\.xml$/i.test(relativePath)) {
-            slideFileEntries.push(relativePath);
+        zip.forEach((path) => {
+          const cleanPath = path.replace(/^\//, '').replace(/\\/g, '/');
+          if (/^ppt\/slides\/slide\d+\.xml$/i.test(cleanPath)) {
+            slideFileEntries.push(cleanPath);
           }
         });
 
         slideFileEntries.sort((a, b) => {
-          const numA = parseInt(a.match(/slide(\d+)\.xml/i)[1], 10);
-          const numB = parseInt(b.match(/slide(\d+)\.xml/i)[1], 10);
+          const numA = parseInt((a.match(/slide(\d+)\.xml/i) || [0, 0])[1], 10);
+          const numB = parseInt((b.match(/slide(\d+)\.xml/i) || [0, 0])[1], 10);
           return numA - numB;
         });
 
@@ -2102,34 +2153,47 @@ const WorkspaceSplit = (() => {
 
           for (let i = 0; i < slideFileEntries.length; i++) {
             const slidePath = slideFileEntries[i];
-            const xmlStr = await zip.file(slidePath).async('string');
-            const doc = parser.parseFromString(xmlStr, 'text/xml');
+            const slideZipFile = zip.file(slidePath) || zip.file(slidePath.replace(/\//g, '\\'));
+            if (!slideZipFile) continue;
+
+            const xmlStr = await slideZipFile.async('string');
+            let doc;
+            try {
+              doc = parser.parseFromString(xmlStr, 'text/xml');
+            } catch (pErr) {
+              doc = null;
+            }
 
             // Slide relationships (links to images)
             const slideBaseName = slidePath.split('/').pop();
             const relsPath = `ppt/slides/_rels/${slideBaseName}.rels`;
             const relMap = {};
-            const relsFile = zip.file(relsPath);
+            const relsFile = zip.file(relsPath) || zip.file(relsPath.replace(/\//g, '\\'));
             if (relsFile) {
-              const relsXml = await relsFile.async('string');
-              const relMatches = relsXml.match(/<Relationship[^>]*Id="([^"]+)"[^>]*Target="([^"]+)"/gi) || [];
-              relMatches.forEach((rm) => {
-                const idMatch = rm.match(/Id="([^"]+)"/i);
-                const targetMatch = rm.match(/Target="([^"]+)"/i);
-                if (idMatch && targetMatch) {
-                  const rId = idMatch[1];
-                  const rawTarget = targetMatch[1].replace('../', 'ppt/').replace('ppt/ppt/', 'ppt/');
-                  relMap[rId] = mediaMap[rawTarget] || mediaMap[rawTarget.replace(/^ppt\//i, '')] || mediaMap[rawTarget.replace(/^ppt\/media\//i, '')];
-                }
-              });
+              try {
+                const relsXml = await relsFile.async('string');
+                const relMatches = relsXml.match(/<Relationship[^>]*Id="([^"]+)"[^>]*Target="([^"]+)"/gi) || [];
+                relMatches.forEach((rm) => {
+                  const idMatch = rm.match(/Id="([^"]+)"/i);
+                  const targetMatch = rm.match(/Target="([^"]+)"/i);
+                  if (idMatch && targetMatch) {
+                    const rId = idMatch[1];
+                    const rawTarget = targetMatch[1].replace('../', 'ppt/').replace('ppt/ppt/', 'ppt/').replace(/\\/g, '/');
+                    const cleanTarget = rawTarget.replace(/^\//, '');
+                    relMap[rId] = mediaMap[cleanTarget] || mediaMap[cleanTarget.replace(/^ppt\//i, '')] || mediaMap[cleanTarget.replace(/^ppt\/media\//i, '')];
+                  }
+                });
+              } catch(rErr) {}
             }
 
-            // Extract background color/image
+            // Extract background color
             let slideBg = '#081226';
-            const bgEl = doc.querySelector('p\\:bg, bg');
-            if (bgEl) {
-              const bgClr = parseXmlColor(bgEl, null);
-              if (bgClr) slideBg = bgClr;
+            if (doc) {
+              const bgEl = findFirstDescendantByLocalNames(doc, ['bg']);
+              if (bgEl) {
+                const bgClr = parseXmlColor(bgEl, null);
+                if (bgClr) slideBg = bgClr;
+              }
             }
 
             // Extract Shapes, Text Boxes, Pictures, Tables
@@ -2137,133 +2201,162 @@ const WorkspaceSplit = (() => {
             const textLinesAll = [];
             let primaryTitle = '';
 
-            // 1. Pictures (<p:pic>)
-            const picNodes = doc.querySelectorAll('p\\:pic, pic');
-            picNodes.forEach((pic) => {
-              const blip = pic.querySelector('a\\:blip, blip');
-              const embedId = blip ? (blip.getAttribute('r:embed') || blip.getAttribute('embed')) : null;
-              const imgSrc = embedId ? relMap[embedId] : null;
+            if (doc) {
+              // 1. Pictures (<p:pic>)
+              const picNodes = findDescendantsByLocalNames(doc, ['pic']);
+              picNodes.forEach((pic) => {
+                const blip = findFirstDescendantByLocalNames(pic, ['blip']);
+                const embedId = blip ? (blip.getAttribute('r:embed') || blip.getAttribute('embed')) : null;
+                const imgSrc = embedId ? relMap[embedId] : null;
 
-              const off = pic.querySelector('a\\:off, off');
-              const ext = pic.querySelector('a\\:ext, ext');
-              if (imgSrc && off && ext) {
+                const off = findFirstDescendantByLocalNames(pic, ['off']);
+                const ext = findFirstDescendantByLocalNames(pic, ['ext']);
+                if (imgSrc && off && ext) {
+                  const x = (parseInt(off.getAttribute('x') || '0', 10) / slideW) * 100;
+                  const y = (parseInt(off.getAttribute('y') || '0', 10) / slideH) * 100;
+                  const w = (parseInt(ext.getAttribute('cx') || '0', 10) / slideW) * 100;
+                  const h = (parseInt(ext.getAttribute('cy') || '0', 10) / slideH) * 100;
+
+                  shapeElementsHtml.push(`
+                    <img src="${imgSrc}" style="position:absolute;left:${x.toFixed(2)}%;top:${y.toFixed(2)}%;width:${w.toFixed(2)}%;height:${h.toFixed(2)}%;object-fit:contain;border-radius:6px;z-index:2;" />
+                  `);
+                }
+              });
+
+              // 2. Shapes & Text Boxes (<p:sp>)
+              const spNodes = findDescendantsByLocalNames(doc, ['sp']);
+              spNodes.forEach((sp) => {
+                const off = findFirstDescendantByLocalNames(sp, ['off']);
+                const ext = findFirstDescendantByLocalNames(sp, ['ext']);
+                if (!off || !ext) return;
+
                 const x = (parseInt(off.getAttribute('x') || '0', 10) / slideW) * 100;
                 const y = (parseInt(off.getAttribute('y') || '0', 10) / slideH) * 100;
                 const w = (parseInt(ext.getAttribute('cx') || '0', 10) / slideW) * 100;
                 const h = (parseInt(ext.getAttribute('cy') || '0', 10) / slideH) * 100;
 
-                shapeElementsHtml.push(`
-                  <img src="${imgSrc}" style="position:absolute;left:${x.toFixed(2)}%;top:${y.toFixed(2)}%;width:${w.toFixed(2)}%;height:${h.toFixed(2)}%;object-fit:contain;border-radius:4px;z-index:2;" />
-                `);
-              }
-            });
+                // Check title placeholder
+                const ph = findFirstDescendantByLocalNames(sp, ['ph']);
+                const isTitlePh = ph && (ph.getAttribute('type') === 'title' || ph.getAttribute('type') === 'ctrTitle');
 
-            // 2. Shapes & Text Boxes (<p:sp>)
-            const spNodes = doc.querySelectorAll('p\\:sp, sp');
-            spNodes.forEach((sp) => {
-              const off = sp.querySelector('a\\:off, off');
-              const ext = sp.querySelector('a\\:ext, ext');
-              if (!off || !ext) return;
-
-              const x = (parseInt(off.getAttribute('x') || '0', 10) / slideW) * 100;
-              const y = (parseInt(off.getAttribute('y') || '0', 10) / slideH) * 100;
-              const w = (parseInt(ext.getAttribute('cx') || '0', 10) / slideW) * 100;
-              const h = (parseInt(ext.getAttribute('cy') || '0', 10) / slideH) * 100;
-
-              // Shape background fill
-              const spPr = sp.querySelector('p\\:spPr, spPr');
-              let spBg = 'transparent';
-              let spBorder = 'none';
-              if (spPr) {
-                const solidFill = spPr.querySelector('a\\:solidFill, solidFill');
-                if (solidFill) {
-                  spBg = parseXmlColor(solidFill, 'transparent');
+                // Shape background fill
+                const spPr = findFirstDescendantByLocalNames(sp, ['sppr']);
+                let spBg = 'transparent';
+                let spBorder = 'none';
+                if (spPr) {
+                  const solidFill = findFirstDescendantByLocalNames(spPr, ['solidfill']);
+                  if (solidFill) {
+                    spBg = parseXmlColor(solidFill, 'transparent');
+                  }
+                  const ln = findFirstDescendantByLocalNames(spPr, ['ln']);
+                  if (ln) {
+                    const lnColor = parseXmlColor(ln, 'rgba(56,189,248,0.25)');
+                    spBorder = `1px solid ${lnColor}`;
+                  }
                 }
-                const ln = spPr.querySelector('a\\:ln, ln');
-                if (ln) {
-                  const lnColor = parseXmlColor(ln, 'rgba(56,189,248,0.3)');
-                  spBorder = `1px solid ${lnColor}`;
-                }
-              }
 
-              // Text in shape
-              const paragraphs = sp.querySelectorAll('a\\:p, p');
-              const pTagsHtml = [];
+                // Text paragraphs
+                const paragraphs = findDescendantsByLocalNames(sp, ['p']);
+                const pTagsHtml = [];
 
-              paragraphs.forEach((pEl) => {
-                const pPr = pEl.querySelector('a\\:pPr, pPr');
-                const alignVal = pPr ? pPr.getAttribute('algn') : 'l';
-                const textAlign = (alignVal === 'ctr') ? 'center' : (alignVal === 'r') ? 'right' : (alignVal === 'just') ? 'justify' : 'left';
+                paragraphs.forEach((pEl) => {
+                  const pPr = findFirstDescendantByLocalNames(pEl, ['ppr']);
+                  const alignVal = pPr ? (pPr.getAttribute('algn') || 'l') : 'l';
+                  const textAlign = (alignVal === 'ctr') ? 'center' : (alignVal === 'r') ? 'right' : (alignVal === 'just') ? 'justify' : 'left';
 
-                const runs = pEl.querySelectorAll('a\\:r, r');
-                const runSpans = [];
+                  const runs = findDescendantsByLocalNames(pEl, ['r']);
+                  const runSpans = [];
 
-                runs.forEach((r) => {
-                  const tEl = r.querySelector('a\\:t, t');
-                  if (!tEl || !tEl.textContent) return;
-                  const text = decodeXmlEntities(tEl.textContent);
-                  if (!text.trim()) return;
+                  runs.forEach((r) => {
+                    const tEl = findFirstDescendantByLocalNames(r, ['t']);
+                    if (!tEl || !tEl.textContent) return;
+                    const text = decodeXmlEntities(tEl.textContent);
+                    if (!text.trim()) return;
 
-                  textLinesAll.push(text.trim());
-                  if (!primaryTitle && y < 35 && (sp.querySelector('p\\:nvSpPr ph[type="title"], p\\:nvSpPr ph[type="ctrTitle"]') || text.length < 80)) {
-                    primaryTitle = text.trim();
+                    textLinesAll.push(text.trim());
+                    if (!primaryTitle && (isTitlePh || (y < 35 && text.length < 90))) {
+                      primaryTitle = text.trim();
+                    }
+
+                    const rPr = findFirstDescendantByLocalNames(r, ['rpr']);
+                    let fontSz = 16;
+                    let isBold = false;
+                    let isItalic = false;
+                    let textColor = '#ffffff';
+
+                    if (rPr) {
+                      const sz = parseInt(rPr.getAttribute('sz') || '1600', 10);
+                      fontSz = Math.max(11, Math.min(38, Math.round(sz / 100)));
+                      isBold = rPr.getAttribute('b') === '1';
+                      isItalic = rPr.getAttribute('i') === '1';
+                      textColor = parseXmlColor(rPr, '#ffffff');
+                    }
+
+                    runSpans.push(`<span style="font-size:${fontSz}px;font-weight:${isBold ? '700' : '500'};font-style:${isItalic ? 'italic' : 'normal'};color:${textColor};line-height:1.35;">${text}</span>`);
+                  });
+
+                  // If no run tags, look directly for <a:t>
+                  if (runSpans.length === 0) {
+                    const directTs = findDescendantsByLocalNames(pEl, ['t']);
+                    directTs.forEach(tEl => {
+                      if (!tEl || !tEl.textContent) return;
+                      const text = decodeXmlEntities(tEl.textContent);
+                      if (text.trim()) {
+                        textLinesAll.push(text.trim());
+                        if (!primaryTitle && (isTitlePh || (y < 35 && text.length < 90))) primaryTitle = text.trim();
+                        runSpans.push(`<span style="font-size:15px;font-weight:500;color:#ffffff;line-height:1.35;">${text}</span>`);
+                      }
+                    });
                   }
 
-                  const rPr = r.querySelector('a\\:rPr, rPr');
-                  let fontSz = 16;
-                  let isBold = false;
-                  let isItalic = false;
-                  let textColor = '#ffffff';
-
-                  if (rPr) {
-                    const sz = parseInt(rPr.getAttribute('sz') || '1600', 10);
-                    fontSz = Math.max(10, Math.min(36, sz / 100));
-                    isBold = rPr.getAttribute('b') === '1';
-                    isItalic = rPr.getAttribute('i') === '1';
-                    textColor = parseXmlColor(rPr, '#ffffff');
+                  if (runSpans.length > 0) {
+                    pTagsHtml.push(`<div style="text-align:${textAlign};margin-bottom:5px;word-break:break-word;">${runSpans.join('')}</div>`);
                   }
-
-                  runSpans.push(`<span style="font-size:${fontSz}px;font-weight:${isBold ? '700' : '500'};font-style:${isItalic ? 'italic' : 'normal'};color:${textColor};line-height:1.35;">${text}</span>`);
                 });
 
-                if (runSpans.length > 0) {
-                  pTagsHtml.push(`<div style="text-align:${textAlign};margin-bottom:4px;word-break:break-word;">${runSpans.join('')}</div>`);
+                if (pTagsHtml.length > 0 || (spBg !== 'transparent' && w > 4 && h > 4)) {
+                  shapeElementsHtml.push(`
+                    <div style="position:absolute;left:${x.toFixed(2)}%;top:${y.toFixed(2)}%;width:${w.toFixed(2)}%;height:${h.toFixed(2)}%;background:${spBg};border:${spBorder};border-radius:6px;padding:8px;box-sizing:border-box;overflow:hidden;z-index:3;display:flex;flex-direction:column;justify-content:center;">
+                      ${pTagsHtml.join('')}
+                    </div>
+                  `);
                 }
               });
 
-              if (pTagsHtml.length > 0 || (spBg !== 'transparent' && w > 3 && h > 3)) {
-                shapeElementsHtml.push(`
-                  <div style="position:absolute;left:${x.toFixed(2)}%;top:${y.toFixed(2)}%;width:${w.toFixed(2)}%;height:${h.toFixed(2)}%;background:${spBg};border:${spBorder};border-radius:6px;padding:6px;box-sizing:border-box;overflow:hidden;z-index:3;display:flex;flex-direction:column;justify-content:center;">
-                    ${pTagsHtml.join('')}
-                  </div>
-                `);
-              }
-            });
-
-            // 3. Tables (<a:tbl>)
-            const tblNodes = doc.querySelectorAll('a\\:tbl, tbl');
-            tblNodes.forEach((tbl) => {
-              const trNodes = tbl.querySelectorAll('a\\:tr, tr');
-              const rowsHtml = [];
-              trNodes.forEach((tr) => {
-                const tcNodes = tr.querySelectorAll('a\\:tc, tc');
-                const cellsHtml = [];
-                tcNodes.forEach((tc) => {
-                  const tTexts = Array.from(tc.querySelectorAll('a\\:t, t')).map(t => decodeXmlEntities(t.textContent)).join(' ');
-                  cellsHtml.push(`<td style="border:1px solid rgba(255,255,255,0.18);padding:6px 8px;color:#e2e8f0;font-size:12px;">${tTexts || '&nbsp;'}</td>`);
+              // 3. Tables (<a:tbl>)
+              const tblNodes = findDescendantsByLocalNames(doc, ['tbl']);
+              tblNodes.forEach((tbl) => {
+                const trNodes = findDescendantsByLocalNames(tbl, ['tr']);
+                const rowsHtml = [];
+                trNodes.forEach((tr) => {
+                  const tcNodes = findDescendantsByLocalNames(tr, ['tc']);
+                  const cellsHtml = [];
+                  tcNodes.forEach((tc) => {
+                    const tNodes = findDescendantsByLocalNames(tc, ['t']);
+                    const cellText = tNodes.map(t => decodeXmlEntities(t.textContent)).join(' ').trim();
+                    cellsHtml.push(`<td style="border:1px solid rgba(255,255,255,0.22);padding:7px 10px;color:#e2e8f0;font-size:12.5px;">${cellText || '&nbsp;'}</td>`);
+                  });
+                  rowsHtml.push(`<tr>${cellsHtml.join('')}</tr>`);
                 });
-                rowsHtml.push(`<tr>${cellsHtml.join('')}</tr>`);
+                if (rowsHtml.length > 0) {
+                  shapeElementsHtml.push(`
+                    <div style="position:absolute;left:6%;top:24%;width:88%;max-height:65%;overflow:auto;z-index:4;background:rgba(15,23,42,0.92);border-radius:8px;border:1px solid rgba(56,189,248,0.35);padding:10px;">
+                      <table style="width:100%;border-collapse:collapse;text-align:left;">${rowsHtml.join('')}</table>
+                    </div>
+                  `);
+                }
               });
-              if (rowsHtml.length > 0) {
-                shapeElementsHtml.push(`
-                  <div style="position:absolute;left:8%;top:28%;width:84%;max-height:60%;overflow:auto;z-index:4;background:rgba(15,23,42,0.85);border-radius:8px;border:1px solid rgba(56,189,248,0.3);padding:8px;">
-                    <table style="width:100%;border-collapse:collapse;text-align:left;">${rowsHtml.join('')}</table>
-                  </div>
-                `);
-              }
-            });
+            }
 
-            // Slide Title & Structured Layout
+            // Fallback text extraction via regex if DOM found no text
+            if (textLinesAll.length === 0) {
+              const rawTMatches = xmlStr.match(/<a:t[^>]*>([\s\S]*?)<\/a:t>/gi) || [];
+              rawTMatches.forEach(m => {
+                const clean = decodeXmlEntities(m.replace(/<[^>]+>/g, '').trim());
+                if (clean) textLinesAll.push(clean);
+              });
+            }
+
             const slideTitle = primaryTitle || textLinesAll[0] || `Slide ${i + 1}`;
             const bullets = textLinesAll.filter(t => t !== slideTitle);
 
@@ -2271,17 +2364,17 @@ const WorkspaceSplit = (() => {
             const slideHtml = `
               <div class="wp-pptx-slide-canvas" style="position:relative;width:100%;height:100%;background:${slideBg};overflow:hidden;user-select:none;font-family:'Segoe UI',Inter,system-ui,sans-serif;">
                 <!-- Slide Header Banner Tag -->
-                <div style="position:absolute;top:0;left:0;right:0;height:40px;background:linear-gradient(135deg, rgba(14,165,233,0.35) 0%, rgba(139,92,246,0.25) 100%);border-bottom:1px solid rgba(56,189,248,0.3);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:10;">
-                  <span style="color:#38bdf8;font-size:11.5px;font-weight:700;">📑 SLIDE ${i + 1} OF ${slideFileEntries.length} — ${file.name}</span>
-                  <span style="color:#94a3b8;font-size:10.5px;">PowerPoint Presentation</span>
+                <div style="position:absolute;top:0;left:0;right:0;height:42px;background:linear-gradient(135deg, rgba(14,165,233,0.35) 0%, rgba(139,92,246,0.25) 100%);border-bottom:1px solid rgba(56,189,248,0.3);display:flex;align-items:center;justify-content:space-between;padding:0 18px;z-index:10;">
+                  <span style="color:#38bdf8;font-size:12px;font-weight:700;letter-spacing:0.3px;">📑 SLIDE ${i + 1} OF ${slideFileEntries.length} — ${file.name}</span>
+                  <span style="color:#94a3b8;font-size:11px;font-weight:500;">PowerPoint Slide</span>
                 </div>
                 <!-- Real OpenXML Slide Shapes & Media Elements -->
-                <div style="position:absolute;inset:40px 0 0 0;overflow:hidden;">
+                <div style="position:absolute;inset:42px 0 0 0;overflow:hidden;">
                   ${shapeElementsHtml.length > 0 ? shapeElementsHtml.join('') : `
-                    <div style="padding:24px;color:#fff;">
-                      <h2 style="color:#38bdf8;margin:0 0 16px 0;font-size:22px;">${slideTitle}</h2>
-                      <div style="display:flex;flex-direction:column;gap:10px;">
-                        ${bullets.map(b => `<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 14px;font-size:13.5px;color:#e2e8f0;">• ${b}</div>`).join('')}
+                    <div style="padding:28px 32px;color:#fff;display:flex;flex-direction:column;gap:16px;">
+                      <h2 style="color:#38bdf8;margin:0;font-size:22px;line-height:1.3;font-weight:700;">${slideTitle}</h2>
+                      <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px;">
+                        ${bullets.map(b => `<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px 16px;font-size:14px;color:#e2e8f0;line-height:1.4;">• ${b}</div>`).join('')}
                       </div>
                     </div>
                   `}
@@ -2300,18 +2393,20 @@ const WorkspaceSplit = (() => {
             });
           }
 
-          return {
-            fileName: file.name,
-            slideCount: slides.length,
-            slides: slides
-          };
+          if (slides.length > 0) {
+            return {
+              fileName: file.name,
+              slideCount: slides.length,
+              slides: slides
+            };
+          }
         }
       } catch (err) {
         console.warn('PPTX OpenXML layout parsing error:', err);
       }
     }
 
-    // Fallback structured presentation deck for legacy .ppt
+    // Fallback structured presentation deck for legacy files
     return {
       fileName: file.name,
       slideCount: 4,
@@ -2370,7 +2465,7 @@ const WorkspaceSplit = (() => {
       if (typeof PptPresenter !== 'undefined' && PptPresenter.getCurrentDeck && PptPresenter.getCurrentDeck()) {
         p.pptState.currentDeck = PptPresenter.getCurrentDeck();
       } else {
-        p.pptState.currentDeck = generateDefaultSlideDeck('Lecture Presentation & Topic Overview');
+        p.pptState.currentDeck = generateDefaultSlideDeck('Interactive Lecture Presentation');
       }
     }
 
@@ -2385,20 +2480,20 @@ const WorkspaceSplit = (() => {
         </div>
 
         <!-- On-Stage Touch & Hover Navigation Arrows -->
-        <button type="button" class="wp-ppt-stage-nav prev" onclick="WorkspaceSplit.prevSlide(${id})" title="Previous Slide (◀ / PageUp)" aria-label="Previous Slide">
+        <button type="button" class="wp-ppt-stage-nav prev" onclick="event.stopPropagation(); WorkspaceSplit.prevSlide(${id})" title="Previous Slide (◀ / PageUp)" aria-label="Previous Slide">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
         </button>
-        <button type="button" class="wp-ppt-stage-nav next" onclick="WorkspaceSplit.nextSlide(${id})" title="Next Slide (▶ / PageDown)" aria-label="Next Slide">
+        <button type="button" class="wp-ppt-stage-nav next" onclick="event.stopPropagation(); WorkspaceSplit.nextSlide(${id})" title="Next Slide (▶ / PageDown)" aria-label="Next Slide">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
         </button>
 
         <!-- On-Stage Floating Slide Dock -->
         <div class="wp-ppt-stage-dock" id="wp-ppt-dock-${id}">
-          <button type="button" class="wp-ppt-dock-btn" onclick="WorkspaceSplit.prevSlide(${id})" title="Previous Slide">◀ Prev</button>
+          <button type="button" class="wp-ppt-dock-btn" onclick="event.stopPropagation(); WorkspaceSplit.prevSlide(${id})" title="Previous Slide">◀ Prev</button>
           <span class="wp-ppt-dock-counter" id="wp-dock-info-${id}">Slide <b>${current}</b> of ${total}</span>
-          <button type="button" class="wp-ppt-dock-btn" onclick="WorkspaceSplit.nextSlide(${id})" title="Next Slide">Next ▶</button>
+          <button type="button" class="wp-ppt-dock-btn" onclick="event.stopPropagation(); WorkspaceSplit.nextSlide(${id})" title="Next Slide">Next ▶</button>
           <div class="wp-ppt-dock-sep"></div>
-          <button type="button" class="wp-ppt-dock-btn highlight" onclick="WorkspaceSplit.openPptFilePicker(${id})" title="Open PowerPoint / PDF from your folder">
+          <button type="button" class="wp-ppt-dock-btn highlight" onclick="event.stopPropagation(); WorkspaceSplit.openPptFilePicker(${id})" title="Open PowerPoint / PDF from your folder">
             📂 Open PPT from Folder
           </button>
         </div>
@@ -2638,8 +2733,7 @@ const WorkspaceSplit = (() => {
     const dockInfo = containerEl ? containerEl.querySelector(`#wp-dock-info-${p.id}`) : document.getElementById(`wp-dock-info-${p.id}`);
     if (dockInfo) dockInfo.innerHTML = `Slide <b>${current}</b> of ${total}`;
 
-    const cv = containerEl ? containerEl.querySelector(`#wp-ppt-slide-${p.id}`) : document.getElementById(`wp-ppt-slide-${p.id}`);
-    if (cv) renderPptSlide(p, cv);
+    renderPptSlide(p);
   }
 
   async function openPptFilePicker(id) {

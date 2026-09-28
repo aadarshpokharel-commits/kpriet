@@ -11570,19 +11570,20 @@ body.gos-show-sidebar #tool-palette {
 
 .wp-ppt-stage-dock {
   position: absolute;
-  bottom: 12px;
+  bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(11, 19, 41, 0.88);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(56, 189, 248, 0.28);
+  background: rgba(11, 19, 41, 0.94);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(56, 189, 248, 0.4);
   border-radius: 30px;
-  padding: 4px 12px;
+  padding: 5px 14px;
   display: flex;
   align-items: center;
   gap: 8px;
-  z-index: 16;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  z-index: 40;
+  pointer-events: auto;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.75);
   white-space: nowrap;
 }
 .wp-ppt-dock-counter {
