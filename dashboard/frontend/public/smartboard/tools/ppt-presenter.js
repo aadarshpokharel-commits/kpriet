@@ -211,6 +211,88 @@ const PptPresenter = (() => {
     if (typeof WorkspaceSplit !== 'undefined' && typeof WorkspaceSplit.parsePresentationFile === 'function') {
       return await WorkspaceSplit.parsePresentationFile(file);
     }
+    const ext = (file.name || '').split('.').pop().toLowerCase();
+    if (ext === 'pdf' || file.type === 'application/pdf') {
+      if (typeof window.pdfjsLib === 'undefined') {
+        await new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+          s.onload = () => {
+            if (window.pdfjsLib) {
+              window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            }
+            resolve();
+          };
+          s.onerror = () => reject(new Error('PDF engine not reachable'));
+          document.head.appendChild(s);
+        });
+      }
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const slides = [];
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 1.8 });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d');
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        slides.push({
+          index: i,
+          name: `Slide ${i}`,
+          title: `${file.name} — Page ${i}`,
+          dataUrl: canvas.toDataURL('image/jpeg', 0.92)
+        });
+      }
+      return { fileName: file.name, slideCount: slides.length, slides };
+    }
+
+    if (ext === 'pptx' || ext === 'ppt') {
+      if (typeof window.JSZip === 'undefined') {
+        await new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+          s.onload = () => resolve();
+          s.onerror = () => reject(new Error('JSZip failed to load'));
+          document.head.appendChild(s);
+        });
+      }
+      const arrayBuffer = await file.arrayBuffer();
+      const zip = await window.JSZip.loadAsync(arrayBuffer);
+      const slideEntries = [];
+      zip.forEach((path) => {
+        const clean = path.replace(/^\//, '').replace(/\\/g, '/');
+        if (/^ppt\/slides\/slide\d+\.xml$/i.test(clean)) slideEntries.push(clean);
+      });
+      slideEntries.sort((a, b) => {
+        const numA = parseInt((a.match(/slide(\d+)\.xml/i) || [0, 0])[1], 10);
+        const numB = parseInt((b.match(/slide(\d+)\.xml/i) || [0, 0])[1], 10);
+        return numA - numB;
+      });
+
+      const slides = [];
+      for (let i = 0; i < slideEntries.length; i++) {
+        const sFile = zip.file(slideEntries[i]) || zip.file(slideEntries[i].replace(/\//g, '\\'));
+        if (!sFile) continue;
+        const xmlStr = await sFile.async('string');
+        const rawTMatches = xmlStr.match(/<a:t[^>]*>([\s\S]*?)<\/a:t>/gi) || [];
+        const textLines = rawTMatches.map(m => m.replace(/<[^>]+>/g, '').trim()).filter(Boolean);
+        const title = textLines[0] || `Slide ${i + 1}`;
+        const bullets = textLines.filter(t => t !== title);
+        slides.push({
+          index: i + 1,
+          name: `Slide ${i + 1}`,
+          title: title,
+          bullets: bullets.length > 0 ? bullets : ['Slide topic & key discussion notes']
+        });
+      }
+
+      if (slides.length > 0) {
+        return { fileName: file.name, slideCount: slides.length, slides };
+      }
+    }
+
     return {
       fileName: file.name,
       slideCount: 1,

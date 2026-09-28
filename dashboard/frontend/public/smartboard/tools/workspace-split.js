@@ -3291,6 +3291,7 @@ const WorkspaceSplit = (() => {
     prevSlide,
     nextSlide,
     openPptFilePicker,
+    parsePresentationFile,
     setPartitionBg,
     setSimType,
     resizeAllPartitions,
