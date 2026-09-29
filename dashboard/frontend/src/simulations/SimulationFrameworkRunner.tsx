@@ -1,6 +1,13 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import type { ISimulationDefinition, IAssignedSimulation, ISimulationLaunchContext } from './types';
 import { getDomainColor } from './types';
+import {
+  askSimulationAi,
+  getDefaultQuestions,
+  getContextualQuestions,
+  normalizeSimulationContext,
+  type ISimulationAiResponse,
+} from './simulation-ai-context';
 
 interface SimulationFrameworkRunnerProps {
   definition: ISimulationDefinition;
@@ -38,8 +45,15 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
 
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1.0);
-  const [activeTab, setActiveTab] = useState<'controls' | 'theory'>('controls');
+  const [activeTab, setActiveTab] = useState<'controls' | 'theory' | 'ai'>('controls');
   const [metricsValues, setMetricsValues] = useState<Record<string, string>>({});
+
+  // AI Assistant Tab State
+  const [aiLoading, setAiLoading] = useState<boolean>(false);
+  const [aiResponse, setAiResponse] = useState<ISimulationAiResponse | null>(null);
+  const [aiQuestion, setAiQuestion] = useState<string>('');
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [copiedAnswer, setCopiedAnswer] = useState<boolean>(false);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const simStateRef = useRef<any>(null);
@@ -64,6 +78,41 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
       const next = { ...prev, [key]: value };
       return next;
     });
+  };
+
+  const simContext = useMemo(() => {
+    return normalizeSimulationContext({
+      subject: subject?.subjectName,
+      subjectCode: subject?.subjectCode,
+      unit: definition.unit || 1,
+      unitTitle: definition.unitTitle || (definition.unit ? `Unit ${definition.unit}` : 'Unit 1'),
+      topic: definition.topic || definition.title,
+      simulation: assignedSimulation?.title || definition.title,
+      simulationId: definition.id,
+      parameters: params,
+      outputs: metricsValues,
+      formulas: definition.formulaOverview,
+      curriculumContext: definition.detailedDescription,
+    });
+  }, [subject, definition, assignedSimulation, params, metricsValues]);
+
+  const defaultQuestions = useMemo(() => getDefaultQuestions(simContext), [simContext]);
+  const contextualQuestions = useMemo(() => getContextualQuestions(simContext), [simContext]);
+
+  const handleAskAi = async (q: string) => {
+    const trimmed = q.trim();
+    if (!trimmed) return;
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const res = await askSimulationAi(trimmed, simContext);
+      setAiResponse(res);
+      setAiQuestion('');
+    } catch (err: any) {
+      setAiError(err?.message || 'Failed to fetch AI answer.');
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   // Re-init when definition changes
@@ -353,7 +402,17 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
                   : 'border-transparent text-slate-400 hover:text-slate-200'
               }`}
             >
-              📖 Theory & Notes
+              📖 Theory
+            </button>
+            <button
+              onClick={() => setActiveTab('ai')}
+              className={`flex-1 py-2.5 text-xs font-bold transition cursor-pointer border-b-2 ${
+                activeTab === 'ai'
+                  ? 'border-indigo-500 text-indigo-400 bg-slate-900/50'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              🤖 Understand AI
             </button>
           </div>
 
@@ -460,7 +519,7 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
                   </span>
                 </div>
               </>
-            ) : (
+            ) : activeTab === 'theory' ? (
               <div className="space-y-4 text-xs">
                 <div>
                   <h4 className="font-bold text-slate-200 text-sm mb-1.5">
@@ -503,6 +562,166 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
                         </span>
                       ))}
                     </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-4 text-xs">
+                {/* Active Simulation Status Banner */}
+                <div className="p-3 rounded-xl bg-slate-950/80 border border-indigo-500/30 shadow-lg">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[11px] font-bold text-indigo-300 flex items-center gap-1.5">
+                      <span>🔬</span> Active Lab Analysis
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 font-mono text-[10px] font-bold border border-indigo-800/40">
+                      {subject?.subjectCode || 'Module'} · Unit {definition.unit || 1}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    Ask AI about theoretical foundations, why & where it is used in engineering, formulas, and real-time parameters.
+                  </p>
+                </div>
+
+                {/* Level 1 Default Questions */}
+                <div>
+                  <h4 className="font-bold text-slate-200 text-xs mb-2 flex items-center gap-1.5">
+                    <span>💡</span> Core Conceptual Questions
+                  </h4>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {defaultQuestions.map((q) => (
+                      <button
+                        key={q.id}
+                        type="button"
+                        onClick={() => handleAskAi(q.question)}
+                        disabled={aiLoading}
+                        className="p-2 rounded-lg bg-slate-800/80 hover:bg-indigo-950/60 border border-slate-700 hover:border-indigo-500/60 transition text-left text-[11px] font-medium text-slate-200 flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                        title={q.question}
+                      >
+                        <span>{q.icon}</span>
+                        <span className="truncate">{q.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Level 2 Contextual Questions */}
+                {contextualQuestions.length > 0 && (
+                  <div>
+                    <h4 className="font-bold text-slate-200 text-xs mb-2 flex items-center gap-1.5">
+                      <span>🎯</span> Contextual Questions
+                    </h4>
+                    <div className="space-y-1.5">
+                      {contextualQuestions.map((q) => (
+                        <button
+                          key={q.id}
+                          type="button"
+                          onClick={() => handleAskAi(q.question)}
+                          disabled={aiLoading}
+                          className="w-full p-2 rounded-lg bg-indigo-950/40 hover:bg-indigo-900/50 border border-indigo-800/50 hover:border-indigo-500/70 transition text-left text-[11px] font-medium text-indigo-200 flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                        >
+                          <span>{q.icon}</span>
+                          <span className="line-clamp-2">{q.question}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Level 3 Custom Free Query */}
+                <div>
+                  <h4 className="font-bold text-slate-200 text-xs mb-2 flex items-center gap-1.5">
+                    <span>💬</span> Ask a Specific Question
+                  </h4>
+                  <div className="flex gap-1.5">
+                    <input
+                      type="text"
+                      value={aiQuestion}
+                      onChange={(e) => setAiQuestion(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleAskAi(aiQuestion);
+                      }}
+                      placeholder="Ask about this simulation..."
+                      disabled={aiLoading}
+                      className="flex-1 px-3 py-1.5 text-xs rounded-lg bg-slate-950 border border-slate-700 text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 disabled:opacity-50"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleAskAi(aiQuestion)}
+                      disabled={aiLoading || !aiQuestion.trim()}
+                      className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs disabled:opacity-50 transition cursor-pointer"
+                    >
+                      Ask
+                    </button>
+                  </div>
+                </div>
+
+                {/* Live Loading Indicator */}
+                {aiLoading && (
+                  <div className="p-4 rounded-xl bg-slate-950/90 border border-indigo-500/40 flex items-center gap-3">
+                    <div className="h-5 w-5 rounded-full border-2 border-indigo-400 border-t-transparent animate-spin flex-shrink-0" />
+                    <div>
+                      <div className="text-xs font-bold text-indigo-300">
+                        Analyzing Simulation & Grounding in Curriculum...
+                      </div>
+                      <div className="text-[10px] text-slate-400">
+                        Extracting real-time parameters, formulas & course notes
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Error Notice */}
+                {aiError && (
+                  <div className="p-3 rounded-lg bg-rose-950/60 border border-rose-800 text-xs text-rose-300">
+                    ⚠️ {aiError}
+                  </div>
+                )}
+
+                {/* AI Response Display */}
+                {aiResponse && (
+                  <div className="p-3.5 rounded-xl bg-slate-950/90 border border-slate-700/80 shadow-lg space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                      <span className="text-[11px] font-bold text-emerald-400 flex items-center gap-1">
+                        <span>✅</span> Grounded Simulation Answer
+                      </span>
+                      <button
+                        onClick={() => {
+                          const text = [aiResponse.directAnswer, aiResponse.explanation, aiResponse.additionalExplanation].filter(Boolean).join('\n\n');
+                          navigator.clipboard.writeText(text);
+                          setCopiedAnswer(true);
+                          setTimeout(() => setCopiedAnswer(false), 2000);
+                        }}
+                        className="text-[10px] text-slate-400 hover:text-white underline cursor-pointer"
+                      >
+                        {copiedAnswer ? '✓ Copied' : 'Copy'}
+                      </button>
+                    </div>
+
+                    <div>
+                      <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">
+                        Direct Answer
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-100 text-xs leading-relaxed whitespace-pre-wrap font-medium">
+                        {aiResponse.directAnswer}
+                      </div>
+                    </div>
+
+                    {aiResponse.explanation && (
+                      <div>
+                        <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">
+                          Pedagogical Breakdown
+                        </div>
+                        <div className="text-slate-300 text-[11px] leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto pr-1">
+                          {aiResponse.explanation}
+                        </div>
+                      </div>
+                    )}
+
+                    {aiResponse.additionalExplanation && (
+                      <div className="text-[10px] text-slate-400 italic pt-1 border-t border-slate-800/80">
+                        {aiResponse.additionalExplanation}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

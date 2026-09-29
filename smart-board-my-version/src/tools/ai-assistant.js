@@ -131,10 +131,13 @@ const AIAssistant = (() => {
     else if (activeMode === 'concept') question = `Explain this simply for engineering students, with an intuitive example when supported. ${question}`;
     else if (activeMode === 'quiz') question = `Create a short classroom practice quiz using the approved course material. ${question}`;
 
-    const focus = context.focus || {};
-    const simulationContext = context.simulationContext || null;
-    const activeSimulationContent = simulationContext
-      ? `Active Smart Board simulation state:\n${JSON.stringify(simulationContext).slice(0, 7200)}`
+    const rawSimCtx = context.simulationContext || (window.EduverseSubjectContext && window.EduverseSubjectContext.simulationContext) || null;
+    const normSimCtx = rawSimCtx && window.UniversalSimulationAI
+      ? window.UniversalSimulationAI.normalizeSimulationContext(rawSimCtx)
+      : rawSimCtx;
+
+    const activeSimulationContent = normSimCtx
+      ? `Active Smart Board simulation state:\n${JSON.stringify(normSimCtx).slice(0, 7500)}`
       : '';
     const selectedContent = [selection?.content || '', activeSimulationContent]
       .filter(Boolean)
@@ -148,20 +151,22 @@ const AIAssistant = (() => {
         ? (context.teacherId || context.userId || context.user?.id || '')
         : '',
       sectionId: context.sectionId || context.section || '',
-      currentTopic: simulationContext?.topic || focus.topic || '',
-      currentLesson: simulationContext?.simulation || context.initialResource?.title || focus.unitTitle || '',
+      currentTopic: normSimCtx?.topic || focus.topic || '',
+      currentLesson: normSimCtx?.simulation || context.initialResource?.title || focus.unitTitle || '',
       currentBoardPage: Number(document.getElementById('sb-page')?.textContent) || 1,
-      selectedObjectType: selection?.type || (simulationContext ? 'DSA simulation state' : ''),
+      selectedObjectType: selection?.type || (normSimCtx ? `${normSimCtx.simulation || normSimCtx.topic || 'Simulation'} State` : ''),
       selectedObjectContent: selectedContent,
+      simulationContext: normSimCtx || undefined,
     };
     if (selection?.imageSrc) boardContext.selectedObjectImage = await compressImageDataUrl(selection.imageSrc);
 
     const body = {
       subjectId,
       question,
-      chapter: focus.unitNumber || focus.unitTitle || undefined,
-      topic: focus.topic || undefined,
+      chapter: focus.unitNumber || focus.unitTitle || (normSimCtx ? normSimCtx.unit : undefined),
+      topic: focus.topic || (normSimCtx ? normSimCtx.topic : undefined),
       boardContext,
+      simulationContext: normSimCtx || undefined,
     };
     let response;
     let refreshed = false;
@@ -380,6 +385,7 @@ const AIAssistant = (() => {
       <div class="ai-stream-container" id="ai-stream-container">
 
         <!-- Welcome Banner & Quick Prompts (visible when empty) -->
+        <div id="ai-sim-shelf" class="ai-sim-shelf hidden"></div>
         <div id="ai-empty-state" class="ai-empty-state">
           <div class="ai-hero-illustration">
             <div class="ai-hero-circle">
@@ -503,6 +509,76 @@ const AIAssistant = (() => {
     status.textContent = subject
       ? `${subject}${department ? ` · ${department}` : ''} · AI with course context`
       : 'Open from a subject workspace to add course context to AI answers';
+    renderSimulationAiShelf();
+  }
+
+  function renderSimulationAiShelf() {
+    const shelf = document.getElementById('ai-sim-shelf');
+    if (!shelf) return;
+    const context = currentSubjectContext();
+    const rawSim = context.simulationContext || (window.EduverseSubjectContext && window.EduverseSubjectContext.simulationContext) || null;
+    if (!rawSim || !window.UniversalSimulationAI) {
+      shelf.classList.add('hidden');
+      shelf.innerHTML = '';
+      return;
+    }
+
+    const simCtx = window.UniversalSimulationAI.normalizeSimulationContext(rawSim);
+    const defaultQs = window.UniversalSimulationAI.getDefaultQuestions(simCtx);
+    const contextualQs = window.UniversalSimulationAI.getContextualQuestions(simCtx);
+
+    const selObj = simCtx.selectedObject || pendingSelection;
+    const selHtml = selObj
+      ? `<div style="margin-bottom:8px;padding:6px 10px;background:rgba(99,102,241,0.18);border:1px solid rgba(99,102,241,0.35);border-radius:8px;font-size:11px;color:#c7d2fe;display:flex;align-items:center;gap:6px;">
+          <span>🎯 Focused Object:</span>
+          <strong style="color:#ffffff;">${escapeHtml(selObj.name || selObj.type || 'Selected Component')}</strong>
+          ${selObj.state || selObj.value ? `<span style="opacity:0.8;font-family:monospace;font-size:10px;">${escapeHtml(String(typeof (selObj.state || selObj.value) === 'object' ? JSON.stringify(selObj.state || selObj.value) : (selObj.state || selObj.value)))}</span>` : ''}
+         </div>`
+      : '';
+
+    shelf.classList.remove('hidden');
+    shelf.innerHTML = `
+      <div style="margin:6px 0 14px;padding:12px;background:linear-gradient(135deg,rgba(30,41,59,0.9),rgba(15,23,42,0.95));border:1px solid rgba(99,102,241,0.35);border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.35);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:16px;">🔬</span>
+            <span style="font-size:12px;font-weight:700;color:#e2e8f0;letter-spacing:0.3px;">UNDERSTAND THIS SIMULATION</span>
+          </div>
+          <span style="font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:6px;background:rgba(99,102,241,0.25);color:#a5b4fc;border:1px solid rgba(99,102,241,0.35);">
+            ${escapeHtml(simCtx.simulation || simCtx.topic)}
+          </span>
+        </div>
+        ${selHtml}
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:8px;">
+          Explore theoretical foundations, engineering purpose, and real-time state breakdown:
+        </div>
+        
+        <!-- Level 1 Default Questions Grid -->
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:10px;">
+          ${defaultQs.map(q => `
+            <button type="button" onclick="AIAssistant.askQuestion('${escapeHtml(q.question).replace(/'/g, "\\'")}')" style="display:flex;align-items:center;gap:6px;padding:6px 9px;background:rgba(15,23,42,0.75);border:1px solid rgba(148,163,184,0.25);border-radius:8px;font-size:11px;font-weight:600;color:#cbd5e1;cursor:pointer;text-align:left;transition:all 0.15s ease;" onmouseover="this.style.borderColor='rgba(99,102,241,0.6)';this.style.background='rgba(99,102,241,0.15)';" onmouseout="this.style.borderColor='rgba(148,163,184,0.25)';this.style.background='rgba(15,23,42,0.75)';">
+              <span>${q.icon}</span>
+              <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(q.label)}</span>
+            </button>
+          `).join('')}
+        </div>
+
+        ${contextualQs.length > 0 ? `
+          <!-- Level 2 Contextual Questions -->
+          <div style="margin-top:6px;padding-top:8px;border-top:1px dashed rgba(148,163,184,0.25);">
+            <div style="font-size:10px;font-weight:700;color:#818cf8;text-transform:uppercase;margin-bottom:6px;letter-spacing:0.5px;">Contextual Questions</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              ${contextualQs.map(q => `
+                <button type="button" onclick="AIAssistant.askQuestion('${escapeHtml(q.question).replace(/'/g, "\\'")}')" style="display:inline-flex;align-items:center;gap:5px;padding:4px 9px;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);border-radius:16px;font-size:10.5px;color:#e0e7ff;cursor:pointer;transition:all 0.15s ease;" onmouseover="this.style.background='rgba(99,102,241,0.25)';" onmouseout="this.style.background='rgba(99,102,241,0.12)';">
+                  <span>${q.icon}</span>
+                  <span>${escapeHtml(q.label)}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
   }
 
   function mountSelectionAssistant() {
@@ -1396,6 +1472,7 @@ const AIAssistant = (() => {
   function openPanel() {
     ensureDrawerMounted();
     updateSubjectLabel();
+    renderSimulationAiShelf();
     const d = document.getElementById('ai-drawer');
     if (d) {
       d.classList.remove('hidden');
@@ -1449,6 +1526,10 @@ const AIAssistant = (() => {
   function initializeAssistantUi() {
     mountSelectionAssistant();
     ensureDrawerMounted();
+    window.addEventListener('smartboard:simulation-context-updated', () => {
+      renderSimulationAiShelf();
+      updateSubjectLabel();
+    });
   }
 
   if (document.readyState === 'loading') {

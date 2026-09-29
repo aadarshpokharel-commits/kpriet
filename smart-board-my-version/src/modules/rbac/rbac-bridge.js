@@ -2604,6 +2604,7 @@
           session.focus = { ...(session.focus || {}), topic: message.context.topic || '' };
           window.CurrentSubjectContext = session;
           window.EduverseSubjectContext = session;
+          window.dispatchEvent(new CustomEvent('smartboard:simulation-context-updated', { detail: session.simulationContext }));
           return;
         }
         if (message.type === 'EDUVERSE_SIM_ASK_AI') {
@@ -2611,9 +2612,10 @@
           session.focus = { ...(session.focus || {}), topic: (message.context && message.context.topic) || session.focus?.topic || '' };
           window.CurrentSubjectContext = session;
           window.EduverseSubjectContext = session;
+          window.dispatchEvent(new CustomEvent('smartboard:simulation-context-updated', { detail: session.simulationContext }));
           if (window.AIAssistant && typeof window.AIAssistant.openPanel === 'function') {
             window.AIAssistant.openPanel();
-            window.AIAssistant.askQuestion(String(message.question || 'Explain the current simulation step.'), message.selection || { type: 'Simulation state', content: JSON.stringify(session.simulationContext).slice(0, 7500), source: isEeLab ? 'ee-simulation' : isMaLab ? 'ma-simulation' : isEgLab ? 'eg-simulation' : isEpLab ? 'ep-simulation' : 'cn-simulation' });
+            window.AIAssistant.askQuestion(String(message.question || 'Explain the current simulation step.'), message.selection || { type: 'Simulation state', content: JSON.stringify(session.simulationContext).slice(0, 7500), source: isEeLab ? 'ee-simulation' : isMaLab ? 'ma-simulation' : isEgLab ? 'eg-simulation' : isEpLab ? 'ep-simulation' : isPdcLab ? 'pdc-simulation' : isEcgLab ? 'ecg-simulation' : 'cn-simulation' });
           }
           return;
         }
@@ -2631,6 +2633,7 @@
           session.focus = { ...(session.focus || {}), topic: message.context.topic || '' };
           window.CurrentSubjectContext = session;
           window.EduverseSubjectContext = session;
+          window.dispatchEvent(new CustomEvent('smartboard:simulation-context-updated', { detail: session.simulationContext }));
           drawDsaWidgetSnapshot(snapshotCanvas, message.context.state || {}, title);
           return;
         }
@@ -2643,10 +2646,14 @@
             simulation: isCLab ? 'Problem Solving & C Programming' : isOsLab ? 'Operating Systems' : 'Data Structures & Algorithms',
             topic: message.context?.topic || state.topic || session.focus?.topic || '',
             state,
+            parameters: message.context?.parameters || message.context?.params || {},
+            currentStep: message.context?.currentStep || message.context?.step || 1,
+            selectedObject: message.context?.selectedObject || null,
           };
           session.focus = { ...(session.focus || {}), topic: session.simulationContext.topic };
           window.CurrentSubjectContext = session;
           window.EduverseSubjectContext = session;
+          window.dispatchEvent(new CustomEvent('smartboard:simulation-context-updated', { detail: session.simulationContext }));
           if (window.AIAssistant && typeof window.AIAssistant.openPanel === 'function') {
             window.AIAssistant.openPanel();
             window.AIAssistant.askQuestion(
@@ -3104,6 +3111,16 @@
 
   window.EduverseSmartBoardSimulation = {
     launch: (key, title, context) => launchSimulation(key, title, context),
+  };
+
+  window.updateSmartBoardSimContext = function (simCtx) {
+    if (!simCtx) return;
+    const session = window.CurrentSubjectContext || window.EduverseSubjectContext || {};
+    session.simulationContext = simCtx;
+    session.focus = { ...(session.focus || {}), topic: simCtx.topic || session.focus?.topic || '' };
+    window.CurrentSubjectContext = session;
+    window.EduverseSubjectContext = session;
+    window.dispatchEvent(new CustomEvent('smartboard:simulation-context-updated', { detail: simCtx }));
   };
 
   if (document.readyState === 'loading') {

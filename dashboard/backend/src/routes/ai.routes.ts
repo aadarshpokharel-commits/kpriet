@@ -19,14 +19,16 @@ aiRouter.post(
     const userId = String(req.user!._id);
     const role = req.user!.role;
     const department = req.user!.department ?? undefined;
-    const { subjectId, question, query, chapter, topic, boardContext } = req.body;
+    const { subjectId, question, query, chapter, topic, boardContext, simulationContext } = req.body;
     const questionText = typeof question === 'string' ? question : typeof query === 'string' ? query : '';
+    const simCtx = simulationContext || (boardContext && typeof boardContext === 'object' ? (boardContext as any).simulationContext : undefined);
 
     const result = await AiRagService.queryKnowledge(userId, role, department, {
       subjectId,
       question: questionText.slice(0, 2000),
       chapter,
       topic: typeof topic === 'string' ? topic.slice(0, 200) : undefined,
+      ...(simCtx && typeof simCtx === 'object' ? { simulationContext: simCtx } : {}),
       ...(boardContext && typeof boardContext === 'object' ? {
         boardContext: {
           departmentId: typeof boardContext.departmentId === 'string' ? boardContext.departmentId.slice(0, 100) : undefined,
@@ -36,9 +38,10 @@ aiRouter.post(
           currentTopic: typeof boardContext.currentTopic === 'string' ? boardContext.currentTopic.slice(0, 200) : undefined,
           currentLesson: typeof boardContext.currentLesson === 'string' ? boardContext.currentLesson.slice(0, 200) : undefined,
           currentBoardPage: Number.isFinite(Number(boardContext.currentBoardPage)) ? Number(boardContext.currentBoardPage) : undefined,
-          selectedObjectType: typeof boardContext.selectedObjectType === 'string' ? boardContext.selectedObjectType.slice(0, 60) : undefined,
+          selectedObjectType: typeof boardContext.selectedObjectType === 'string' ? boardContext.selectedObjectType.slice(0, 80) : undefined,
           selectedObjectContent: typeof boardContext.selectedObjectContent === 'string' ? boardContext.selectedObjectContent.slice(0, 8000) : undefined,
           selectedObjectImage: typeof boardContext.selectedObjectImage === 'string' ? boardContext.selectedObjectImage : undefined,
+          ...(simCtx && typeof simCtx === 'object' ? { simulationContext: simCtx } : {}),
         },
       } : {}),
     });
