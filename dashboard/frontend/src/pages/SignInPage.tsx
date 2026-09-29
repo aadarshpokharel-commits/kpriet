@@ -28,9 +28,9 @@ export function SignInPage() {
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [demoTab, setDemoTab] = useState<'roles' | 'semesters'>('roles');
+  const [demoTab, setDemoTab] = useState<'roles' | 'teachers' | 'students'>('roles');
 
-  // Horizontal scroll states for IT Department Semester Teachers ribbon
+  // Horizontal scroll states for IT Department Semester Teachers/Students ribbon
   const semesterNavRef = useRef<HTMLDivElement>(null);
   const [canScrollSemLeft, setCanScrollSemLeft] = useState(false);
   const [canScrollSemRight, setCanScrollSemRight] = useState(false);
@@ -68,7 +68,7 @@ export function SignInPage() {
       if (el) el.removeEventListener('scroll', checkSemScroll);
       window.removeEventListener('resize', checkSemScroll);
     };
-  }, [checkSemScroll]);
+  }, [checkSemScroll, demoTab]);
 
   // Quick preset fills for fast testing
   const setQuickDemo = (email: string, pass = 'Eduverse@Dev2026!') => {
@@ -225,9 +225,9 @@ export function SignInPage() {
           {/* Right Column: Sign In Card */}
           <div className="lg:col-span-5 w-full max-w-md mx-auto space-y-3">
             
-            {/* Unified 1-Click Demo Login Card (Roles + Semesters with Horizontal Scroll) */}
+            {/* Unified 1-Click Demo Login Card (Roles + Teachers + Students with Horizontal Scroll) */}
             <div className="p-3 sm:p-3.5 rounded-2xl border border-primary/20 bg-card text-card-foreground shadow-xs space-y-2">
-              <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center justify-between text-xs flex-wrap gap-1">
                 <div className="flex items-center gap-1.5 font-bold text-foreground">
                   <span className="text-amber-500">⚡</span>
                   <span>1-Click Demo Login:</span>
@@ -242,18 +242,29 @@ export function SignInPage() {
                         : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    Roles (4)
+                    Roles
                   </button>
                   <button
                     type="button"
-                    onClick={() => setDemoTab('semesters')}
+                    onClick={() => setDemoTab('teachers')}
                     className={`px-2 py-0.5 rounded-md font-semibold transition-all cursor-pointer ${
-                      demoTab === 'semesters'
+                      demoTab === 'teachers'
                         ? 'bg-card text-primary dark:text-accent-foreground shadow-2xs font-bold'
                         : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    Semesters (1–8) ›
+                    👨‍🏫 Teachers
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDemoTab('students')}
+                    className={`px-2 py-0.5 rounded-md font-semibold transition-all cursor-pointer ${
+                      demoTab === 'students'
+                        ? 'bg-card text-primary dark:text-accent-foreground shadow-2xs font-bold'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    🎓 Students
                   </button>
                 </div>
               </div>
@@ -294,81 +305,98 @@ export function SignInPage() {
                   </button>
                 </div>
               ) : (
-                /* Scrollable Semester Ribbon Container */
-                <div className="relative flex items-center rounded-xl bg-card/60 border border-primary/15 p-1">
-                  {/* Scroll Left Button */}
-                  <button
-                    type="button"
-                    onClick={() => scrollSem('left')}
-                    disabled={!canScrollSemLeft}
-                    aria-label="Scroll semesters left"
-                    title="Scroll left (‹)"
-                    className={`shrink-0 z-20 flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card text-foreground transition-all cursor-pointer ${
-                      canScrollSemLeft
-                        ? 'opacity-100 hover:bg-muted hover:text-primary hover:scale-105 active:scale-95 shadow-2xs'
-                        : 'opacity-0 pointer-events-none'
-                    }`}
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-
-                  {/* Left Fade Mask */}
-                  {canScrollSemLeft && (
-                    <div className="pointer-events-none absolute left-8 top-1 bottom-1 w-6 bg-gradient-to-r from-card to-transparent z-10" />
-                  )}
-
-                  {/* Horizontal Scroll Ribbon */}
-                  <div
-                    ref={semesterNavRef}
-                    onWheel={handleSemWheel}
-                    className="flex-1 flex items-center gap-1.5 overflow-x-auto py-0.5 px-1 scroll-smooth scrollbar-none"
-                  >
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => {
-                      const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][sem - 1];
-                      return (
-                        <button
-                          key={sem}
-                          type="button"
-                          disabled={loading}
-                          onClick={() => handleQuickLogin(`it.sem${sem}.teacher@kpriet.ac.in`, 'Demo@IT12345')}
-                          className="shrink-0 min-w-[65px] rounded-lg border border-primary/25 bg-card hover:bg-primary hover:text-primary-foreground hover:border-primary py-1 px-2 text-xs font-bold text-foreground transition-all cursor-pointer shadow-2xs flex flex-col items-center justify-center gap-0.5 active:scale-95 group disabled:opacity-50"
-                          title={`Click to login as IT Semester ${sem} Teacher (${roman})`}
-                        >
-                          <span className="text-[9px] text-muted-foreground group-hover:text-primary-foreground/80 font-mono font-semibold uppercase">
-                            Sem {sem}
-                          </span>
-                          <span className="text-xs font-black tracking-wide">
-                            {roman}
-                          </span>
-                        </button>
-                      );
-                    })}
+                /* Scrollable Semester Ribbon Container (Teachers or Students) */
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-1.5 px-1">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                      IT Dept • Sem 1–8 •
+                    </span>
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${
+                      demoTab === 'teachers' ? 'text-blue-600 dark:text-blue-400' : 'text-emerald-600 dark:text-emerald-400'
+                    }`}>
+                      {demoTab === 'teachers' ? '👨‍🏫 Teacher Accounts' : '🎓 Student Accounts'}
+                    </span>
                   </div>
+                  <div className="relative flex items-center rounded-xl bg-card/60 border border-primary/15 p-1">
+                    {/* Scroll Left Button */}
+                    <button
+                      type="button"
+                      onClick={() => scrollSem('left')}
+                      disabled={!canScrollSemLeft}
+                      aria-label="Scroll semesters left"
+                      title="Scroll left (‹)"
+                      className={`shrink-0 z-20 flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card text-foreground transition-all cursor-pointer ${
+                        canScrollSemLeft
+                          ? 'opacity-100 hover:bg-muted hover:text-primary hover:scale-105 active:scale-95 shadow-2xs'
+                          : 'opacity-0 pointer-events-none'
+                      }`}
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
 
-                  {/* Right Fade Mask */}
-                  {canScrollSemRight && (
-                    <div className="pointer-events-none absolute right-8 top-1 bottom-1 w-6 bg-gradient-to-l from-card to-transparent z-10" />
-                  )}
+                    {/* Left Fade Mask */}
+                    {canScrollSemLeft && (
+                      <div className="pointer-events-none absolute left-8 top-1 bottom-1 w-6 bg-gradient-to-r from-card to-transparent z-10" />
+                    )}
 
-                  {/* Scroll Right Button */}
-                  <button
-                    type="button"
-                    onClick={() => scrollSem('right')}
-                    disabled={!canScrollSemRight}
-                    aria-label="Scroll semesters right"
-                    title="Scroll right (›)"
-                    className={`shrink-0 z-20 flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card text-foreground transition-all cursor-pointer ${
-                      canScrollSemRight
-                        ? 'opacity-100 hover:bg-muted hover:text-primary hover:scale-105 active:scale-95 shadow-2xs'
-                        : 'opacity-0 pointer-events-none'
-                    }`}
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
+                    {/* Horizontal Scroll Ribbon */}
+                    <div
+                      ref={semesterNavRef}
+                      onWheel={handleSemWheel}
+                      className="flex-1 flex items-center gap-1.5 overflow-x-auto py-0.5 px-1 scroll-smooth scrollbar-none"
+                    >
+                      {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => {
+                        const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][sem - 1];
+                        const accountType = demoTab === 'teachers' ? 'teacher' : 'student';
+                        const email = `it.sem${sem}.${accountType}@kpriet.ac.in`;
+                        const borderColor = demoTab === 'teachers'
+                          ? 'border-blue-500/25 hover:bg-blue-600 hover:border-blue-600'
+                          : 'border-emerald-500/25 hover:bg-emerald-600 hover:border-emerald-600';
+                        return (
+                          <button
+                            key={`${demoTab}-${sem}`}
+                            type="button"
+                            disabled={loading}
+                            onClick={() => handleQuickLogin(email, 'Demo@IT12345')}
+                            className={`shrink-0 min-w-[65px] rounded-lg border ${borderColor} bg-card hover:text-white py-1 px-2 text-xs font-bold text-foreground transition-all cursor-pointer shadow-2xs flex flex-col items-center justify-center gap-0.5 active:scale-95 group disabled:opacity-50`}
+                            title={`Click to login as IT Semester ${sem} ${demoTab === 'teachers' ? 'Teacher' : 'Student'} (${roman})`}
+                          >
+                            <span className="text-[9px] text-muted-foreground group-hover:text-white/80 font-mono font-semibold uppercase">
+                              Sem {sem}
+                            </span>
+                            <span className="text-xs font-black tracking-wide">
+                              {roman}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Right Fade Mask */}
+                    {canScrollSemRight && (
+                      <div className="pointer-events-none absolute right-8 top-1 bottom-1 w-6 bg-gradient-to-l from-card to-transparent z-10" />
+                    )}
+
+                    {/* Scroll Right Button */}
+                    <button
+                      type="button"
+                      onClick={() => scrollSem('right')}
+                      disabled={!canScrollSemRight}
+                      aria-label="Scroll semesters right"
+                      title="Scroll right (›)"
+                      className={`shrink-0 z-20 flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card text-foreground transition-all cursor-pointer ${
+                        canScrollSemRight
+                          ? 'opacity-100 hover:bg-muted hover:text-primary hover:scale-105 active:scale-95 shadow-2xs'
+                          : 'opacity-0 pointer-events-none'
+                      }`}
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { ISimulationDefinition, IAssignedSimulation, ISimulationLaunchContext, SimulationDomain } from './types';
-import { getDomainColor, resolveSubjectDomain, isSmartBoardDsaSimulation, isSmartBoardOsSimulation, isSmartBoardCSimulation, isSmartBoardEpSimulation, isSmartBoardEgSimulation, isSmartBoardMaSimulation, isSmartBoardPdcSimulation, isSmartBoardEeSimulation, isSmartBoardEcgSimulation } from './types';
+import { getDomainColor, resolveSubjectDomain, isSmartBoardDsaSimulation, isSmartBoardOsSimulation, isSmartBoardCSimulation, isSmartBoardEpSimulation, isSmartBoardChemSimulation, isSmartBoardEgSimulation, isSmartBoardMaSimulation, isSmartBoardPdcSimulation, isSmartBoardEeSimulation, isSmartBoardEcgSimulation } from './types';
 import type { ISimulationChallengeAttempt } from './types';
 import { AcademicService } from '../services/academic.service';
 import type { IEpPublishedConfig } from './types';
@@ -160,7 +160,7 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
   const contextFor = (sim: ISimulationDefinition, extra: Partial<ISimulationLaunchContext> = {}): ISimulationLaunchContext => {
     if (isSmartBoardDsaSimulation(sim)) return { topic: sim.title, category: sim.dsaCategory, config: { category: sim.dsaCategory, topic: sim.title }, ...extra };
     if (sim.boardEngine === 'cn') return { topic: sim.topic, category: sim.id, config: {}, ...extra };
-    if (isSmartBoardEpSimulation(sim) || isSmartBoardEgSimulation(sim) || isSmartBoardMaSimulation(sim) || isSmartBoardEeSimulation(sim)) return { topic: sim.topic, category: sim.id, config: (publishedConfig.get(sim.id) as Record<string, unknown>) || {}, ...extra };
+    if (isSmartBoardEpSimulation(sim) || isSmartBoardChemSimulation(sim) || isSmartBoardEgSimulation(sim) || isSmartBoardMaSimulation(sim) || isSmartBoardEeSimulation(sim)) return { topic: sim.topic, category: sim.id, config: (publishedConfig.get(sim.id) as Record<string, unknown>) || {}, ...extra };
     if (isSmartBoardOsSimulation(sim)) return { topic: sim.title, category: sim.osCategory, config: { simulationId: sim.id, osCategory: sim.osCategory, topic: sim.title }, ...extra };
     if (isSmartBoardCSimulation(sim)) return { topic: sim.title, category: sim.cCategory, config: { simulationId: sim.id, cCategory: sim.cCategory, topic: sim.title }, ...extra };
     if (isSmartBoardPdcSimulation(sim)) return { topic: sim.title, category: sim.id, unit: sim.unit, config: { simulationId: sim.id, unit: sim.unit, topic: sim.title }, ...extra };
@@ -236,11 +236,12 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
 
   const previewUrl = (sim: ISimulationDefinition): string | null => {
     if (isSmartBoardEcgSimulation(sim)) return `/smartboard/ecg-simulation.html?${subjectQuery({ sim: sim.id, unit: String(sim.unit || 1), title: sim.title, topic: sim.title })}`;
+    if (isSmartBoardChemSimulation(sim)) return `/smartboard/chem-simulation.html?${subjectQuery({ sim: sim.id, unit: String(sim.unit || 1), title: sim.title, topic: sim.title })}`;
     if (isSmartBoardPdcSimulation(sim)) return `/smartboard/pdc-simulation.html?${subjectQuery({ sim: sim.id, unit: String(sim.unit || 1), title: sim.title, topic: sim.title })}`;
     if (sim.boardEngine === 'cn') return `/smartboard/cn-simulation.html?${subjectQuery({ sim: sim.id, preview: '1' })}`;
     if (isSmartBoardEpSimulation(sim) || isSmartBoardEgSimulation(sim) || isSmartBoardMaSimulation(sim) || isSmartBoardEeSimulation(sim)) {
       const cfg = publishedConfig.get(sim.id);
-      const page = isSmartBoardEeSimulation(sim) ? 'ee-simulation.html' : isSmartBoardMaSimulation(sim) ? 'ma-simulation.html' : isSmartBoardEgSimulation(sim) ? 'eg-simulation.html' : 'ep-simulation.html';
+      const page = isSmartBoardChemSimulation(sim) ? 'chem-simulation.html' : isSmartBoardEeSimulation(sim) ? 'ee-simulation.html' : isSmartBoardMaSimulation(sim) ? 'ma-simulation.html' : isSmartBoardEgSimulation(sim) ? 'eg-simulation.html' : 'ep-simulation.html';
       return `/smartboard/${page}?${subjectQuery({ sim: sim.id, preview: '1', ...(cfg ? { config: JSON.stringify(cfg) } : {}) })}`;
     }
     if (isSmartBoardOsSimulation(sim)) return `/smartboard/os-simulation.html?${subjectQuery({ simulationId: sim.id, category: String(sim.osCategory || ''), title: sim.title, topic: sim.title })}`;
@@ -450,40 +451,14 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
         </div>
       )}
 
-      {/* Preview */}
-      {preview && previewUrl(preview) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-0 sm:p-2" role="dialog" aria-modal="true" aria-label={`${preview.title} preview`}>
-          {/* Single-screen simulation workspace: thin context bar + the simulation (the engine page has its own responsive shell) */}
-          <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-surface shadow-2xl sm:h-[calc(100dvh-1rem)] sm:rounded-2xl sm:border sm:border-line">
-            <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line px-2 py-1 sm:px-3">
-              <div className="flex min-w-0 items-center gap-2">
-                <button type="button" onClick={() => setPreview(null)} aria-label="Back to simulations" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-line text-base font-bold text-ink hover:border-primary/50">←</button>
-                <p className="min-w-0 truncate text-[11px] text-muted sm:text-xs">
-                  <span className="font-semibold text-ink">{subject.subjectCode}</span> · {preview.unit ? `Unit ${preview.unit} · ${preview.topic}` : categoryLabel(preview.category)} · Preview
-                </p>
-              </div>
-              <div className="flex shrink-0 gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => { const sim = preview; setPreview(null); launchOnSmartBoard(sim); }}
-                  className="h-9 rounded-lg bg-primary px-3 text-xs font-bold text-white hover:bg-primary/90"
-                  aria-label="Launch Smart Board"
-                >
-                  🖥<span className="hidden sm:inline"> Launch Smart Board</span>
-                </button>
-                <button type="button" onClick={() => setPreview(null)} className="hidden h-9 rounded-lg border border-line px-3 text-xs font-semibold text-muted hover:text-ink sm:inline-block">
-                  Close
-                </button>
-              </div>
-            </div>
-            <iframe title={`${preview.title} preview`} src={previewUrl(preview) as string} className="min-h-0 w-full flex-1 border-0 bg-white" allow="fullscreen" />
-          </div>
-        </div>
-      )}
+      {/* Unified Simulation Workspace Modal with Standard SimulationShell & Dark/Light Mode */}
       <SimulationModal
-        isOpen={Boolean(preview && !previewUrl(preview))}
-        definition={preview && !previewUrl(preview) ? preview : null}
+        isOpen={Boolean(preview)}
+        definition={preview}
         subject={subject}
+        siblingSimulations={simulations}
+        iframeUrl={preview ? previewUrl(preview) : null}
+        onSelectSimulation={(sim) => setPreview(sim)}
         onClose={() => setPreview(null)}
         onLaunchSmartBoard={(key, title, ctx) => { setPreview(null); if (onLaunchSmartBoard) onLaunchSmartBoard(key, title, ctx); else if (preview) launchOnSmartBoard(preview); }}
         userRole={isTeacher ? 'teacher' : 'student'}

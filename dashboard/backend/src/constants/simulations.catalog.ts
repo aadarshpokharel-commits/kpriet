@@ -1,4 +1,6 @@
-export type SimulationDomain = 'MATHEMATICS' | 'PHYSICS' | 'COMPUTER_SCIENCE' | 'CIVIL';
+import { CHEM_SIMULATION_TEMPLATES } from './chemistry.simulations.catalog.js';
+
+export type SimulationDomain = 'MATHEMATICS' | 'PHYSICS' | 'CHEMISTRY' | 'COMPUTER_SCIENCE' | 'CIVIL';
 
 export interface ISimulationCatalogItem {
   id: string;
@@ -12,7 +14,7 @@ export interface ISimulationCatalogItem {
   tags: string[];
   /**
    * When set, the template belongs only to subjects whose name or code contains one of these
-   * words (e.g. Engineering Physics simulations are not offered to other physics subjects).
+   * words (e.g. Engineering Physics or Engineering Chemistry simulations are not offered to other subjects).
    */
   subjectKeywords?: string[];
   /** Syllabus unit / topic for subject-specific libraries. */
@@ -962,7 +964,7 @@ export const ECG_SIMULATION_TEMPLATES: ISimulationCatalogItem[] = [
   ecgTemplate("de-hazard-free", 5, "Hazard-Free Circuits", "Hazard-Free Circuit Designer", "Modify logic circuits to remove hazards: Hazardous Circuit → Identify Hazard → Add Redundant Logic (consensus term) → Hazard-Free Circuit → Verify."),
 ];
 
-SIMULATION_CATALOG.push(...ECG_SIMULATION_TEMPLATES, ...PDC_SIMULATION_TEMPLATES, ...EP_SIMULATION_TEMPLATES, ...EG_SIMULATION_TEMPLATES, ...MA_SIMULATION_TEMPLATES, ...RMA_SIMULATION_TEMPLATES, ...EE_SIMULATION_TEMPLATES);
+SIMULATION_CATALOG.push(...ECG_SIMULATION_TEMPLATES, ...PDC_SIMULATION_TEMPLATES, ...EP_SIMULATION_TEMPLATES, ...EG_SIMULATION_TEMPLATES, ...MA_SIMULATION_TEMPLATES, ...RMA_SIMULATION_TEMPLATES, ...EE_SIMULATION_TEMPLATES, ...CHEM_SIMULATION_TEMPLATES);
 
 export function resolveSubjectDomain(subject: {
   subjectCode?: string;
@@ -996,7 +998,20 @@ export function resolveSubjectDomain(subject: {
     return 'MATHEMATICS';
   }
 
-  // 2. Physics
+  // 2. Engineering Chemistry
+  if (
+    code.startsWith('CY') ||
+    code.startsWith('CHEM') ||
+    name.includes('chemistry') ||
+    name.includes('polymer') ||
+    name.includes('corrosion') ||
+    name.includes('electrochem') ||
+    deptName.includes('chemistry')
+  ) {
+    return 'CHEMISTRY';
+  }
+
+  // 3. Physics
   if (
     code.startsWith('PH') ||
     code.startsWith('PHY') ||

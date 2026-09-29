@@ -48,6 +48,7 @@ import { ProgrammeService } from './programme.service.js';
 import { AiRagService } from './ai-rag.service.js';
 import { NotificationService } from './notification.service.js';
 import { SIMULATION_CATALOG, resolveSubjectDomain, isTemplateForSubject } from '../constants/simulations.catalog.js';
+import { CHEM_SIMULATION_TEMPLATES } from '../constants/chemistry.simulations.catalog.js';
 import { evaluateSimulationChallenge } from '../constants/ee-challenge.evaluator.js';
 import type {
   assignTeacherSchema,
@@ -3028,6 +3029,14 @@ export class AcademicService {
       subCodeUpper.startsWith('PH') ||
       subCodeUpper.startsWith('PHY');
 
+    const isChemistry =
+      subNameLower.includes('chemistry') ||
+      subNameLower.includes('polymer') ||
+      subNameLower.includes('corrosion') ||
+      subNameLower.includes('electrochem') ||
+      subCodeUpper.startsWith('CY') ||
+      subCodeUpper.startsWith('CHEM');
+
     const isCivil =
       subNameLower.includes('civil') ||
       subNameLower.includes('mechanics') ||
@@ -3092,6 +3101,20 @@ export class AcademicService {
         { title: 'Open Channel Fluid Flow & Reynolds Regimes', key: 'fluid-mechanics', type: 'CIVIL_LAB', category: 'Fluid Mechanics' },
         { title: 'Concrete Mix Proportioning & Strength Curve', key: 'concrete-mix', type: 'CIVIL_LAB', category: 'Construction Materials' },
       ];
+    } else if (isChemistry) {
+      formulas = [
+        { title: 'EDTA hardness calculation', latex: 'Hardness\\,(as\\ CaCO_3) = \\frac{V_{EDTA} \\times M_{EDTA} \\times 100000}{V_{sample}}', category: 'Unit 1 · Water Treatment', description: 'Complexometric titration uses EDTA volume and sample volume to calculate total hardness.' },
+        { title: 'Nernst equation', latex: 'E = E^\\circ - \\frac{0.0591}{n}\\log Q', category: 'Unit 2 · Electrochemistry', description: 'Relates electrode potential to concentration and reaction quotient at 25 °C.' },
+        { title: 'Faraday law of electrolysis', latex: 'm = \\frac{MIt}{nF}', category: 'Unit 3 · Corrosion and Protection', description: 'Connects deposited mass with current, time, molar mass and electron number.' },
+        { title: 'Calorific value', latex: 'HCV = \\frac{(W+w)\\Delta T - corrections}{m}', category: 'Unit 4 · Fuels and Combustion', description: 'Bomb calorimeter relation for heat released per unit mass of fuel.' },
+        { title: 'Degree of polymerization', latex: 'DP = \\frac{M_{polymer}}{M_{repeat\\ unit}}', category: 'Unit 5 · Polymers', description: 'Average number of repeat units in a polymer chain.' },
+      ];
+      defaultSimulations = CHEM_SIMULATION_TEMPLATES.map((s) => ({
+        title: s.title,
+        key: s.id,
+        type: 'CHEM_BOARD_SIM',
+        category: `Unit ${s.unit} · ${s.topic}`,
+      }));
     } else if (isDataStructures) {
       formulas = [
         {

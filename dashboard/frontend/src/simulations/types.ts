@@ -1,11 +1,12 @@
-export type SimulationDomain = 'MATHEMATICS' | 'PHYSICS' | 'COMPUTER_SCIENCE' | 'CIVIL';
+export type SimulationDomain = 'MATHEMATICS' | 'PHYSICS' | 'CHEMISTRY' | 'COMPUTER_SCIENCE' | 'CIVIL';
 
 export type MathCategory = 'graphs' | 'calculus visualization' | 'geometry' | 'matrices' | 'engineering mathematics' | 'higher mathematics';
 export type PhysicsCategory = 'projectile motion' | 'circular motion' | 'mechanics' | 'waves' | 'engineering physics';
 export type CSCategory = 'sorting' | 'data structures' | 'algorithms' | 'networking' | 'data structures & algorithms' | 'operating systems' | 'engineering graphics' | 'electrical & electronics' | 'c programming' | 'problem solving';
 export type CivilCategory = 'structural analysis' | 'surveying' | 'construction simulations';
+export type ChemistryCategory = 'engineering chemistry';
 
-export type SimulationCategory = MathCategory | PhysicsCategory | CSCategory | CivilCategory;
+export type SimulationCategory = MathCategory | PhysicsCategory | ChemistryCategory | CSCategory | CivilCategory;
 
 export interface ISimulationParam {
   key: string;
@@ -70,8 +71,8 @@ export interface ISimulationDefinition {
    * simulations only in Computer Networks, DSA simulations only in Data Structures, OS simulations only in Operating Systems, C simulations only in C Programming, PDC in Principles of Data Communication.
    */
   subjectKeywords?: string[];
-  /** Engine that runs this simulation inside the Smart Board ('dsa', 'cn', 'ep', 'eg', 'ma', 'pdc', 'ee', 'ecg'). */
-  boardEngine?: 'dsa' | 'cn' | 'ep' | 'eg' | 'ma' | 'pdc' | 'ee' | 'ecg';
+  /** Engine that runs this simulation inside the Smart Board ('dsa', 'cn', 'ep', 'eg', 'ma', 'pdc', 'ee', 'ecg', 'chem'). */
+  boardEngine?: 'dsa' | 'cn' | 'ep' | 'eg' | 'ma' | 'pdc' | 'ee' | 'ecg' | 'chem' | 'os';
   /** Engineering Physics: syllabus area of the simulation (laser, fiber-optics, ultrasonics, thermal-fluids, crystal-physics). */
   simulationSubtype?: string;
   /** Syllabus unit / topic (used to organise the subject's simulation library). */
@@ -150,6 +151,8 @@ export function getDomainLabel(domain: SimulationDomain): string {
       return 'Mathematics & Discrete Science';
     case 'PHYSICS':
       return 'Engineering Physics & Dynamics';
+    case 'CHEMISTRY':
+      return 'Engineering Chemistry';
     case 'COMPUTER_SCIENCE':
       return 'Computing, Algorithms & Data Structures';
     case 'CIVIL':
@@ -179,6 +182,13 @@ export function getDomainColor(domain: SimulationDomain): {
         badgeBg: 'bg-sky-50 dark:bg-sky-950/40',
         badgeText: 'text-sky-600 dark:text-sky-400',
         border: 'border-sky-200 dark:border-sky-800/40',
+      };
+    case 'CHEMISTRY':
+      return {
+        primary: '#b45309',
+        badgeBg: 'bg-amber-50 dark:bg-amber-950/40',
+        badgeText: 'text-amber-700 dark:text-amber-400',
+        border: 'border-amber-200 dark:border-amber-800/40',
       };
     case 'COMPUTER_SCIENCE':
       return {
@@ -236,7 +246,20 @@ export function resolveSubjectDomain(subject: {
     return 'MATHEMATICS';
   }
 
-  // 2. Physics
+  // 2. Engineering Chemistry
+  if (
+    code.startsWith('CY') ||
+    code.startsWith('CHEM') ||
+    name.includes('chemistry') ||
+    name.includes('polymer') ||
+    name.includes('corrosion') ||
+    name.includes('electrochem') ||
+    deptName.includes('chemistry')
+  ) {
+    return 'CHEMISTRY';
+  }
+
+  // 3. Physics
   if (
     code.startsWith('PH') ||
     code.startsWith('PHY') ||
@@ -248,7 +271,7 @@ export function resolveSubjectDomain(subject: {
     return 'PHYSICS';
   }
 
-  // 3. Civil
+  // 4. Civil
   if (
     code.startsWith('CE') ||
     code.startsWith('CIVIL') ||
@@ -267,13 +290,18 @@ export function resolveSubjectDomain(subject: {
     return 'CIVIL';
   }
 
-  // 4. Computer Science
+  // 5. Computer Science
   return 'COMPUTER_SCIENCE';
 }
 
 /** True when the simulation is one of the Engineering Physics simulations that open on the Smart Board. */
 export function isSmartBoardEpSimulation(def?: { boardEngine?: string } | null): boolean {
   return Boolean(def && def.boardEngine === 'ep');
+}
+
+/** True when the simulation is one of the Engineering Chemistry simulations that open on the Smart Board. */
+export function isSmartBoardChemSimulation(def?: { boardEngine?: string; id?: string } | null): boolean {
+  return Boolean(def && (def.boardEngine === 'chem' || (def.id && def.id.startsWith('chem-'))));
 }
 
 /** Teacher's published configuration of an Engineering Physics simulation (stored in Content.simulationConfig.initialParams). */

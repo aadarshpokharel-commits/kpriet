@@ -9,6 +9,114 @@ import {
   type ISimulationAiResponse,
 } from './simulation-ai-context';
 
+/* ─────────────────────────── theme system ──────────────────────── */
+
+type RunnerTheme = 'dark' | 'light';
+
+/**
+ * Semantic colour tokens resolved per theme.
+ * Every UI element reads from `t` — never from hardcoded slate-xxx.
+ */
+function themeTokens(theme: RunnerTheme) {
+  const dark = theme === 'dark';
+  return {
+    // ── root ──
+    rootBg:        dark ? 'bg-slate-950'         : 'bg-white',
+    rootText:      dark ? 'text-slate-100'        : 'text-slate-800',
+    rootBorder:    dark ? 'border-slate-800'      : 'border-slate-200',
+    // ── header ──
+    headerBg:      dark ? 'bg-slate-900/90'       : 'bg-slate-50/95',
+    headerBorder:  dark ? 'border-slate-800'      : 'border-slate-200',
+    // ── surfaces ──
+    surfaceBg:     dark ? 'bg-slate-800'          : 'bg-slate-100',
+    surfaceBorder: dark ? 'border-slate-700'      : 'border-slate-300',
+    surfaceHover:  dark ? 'hover:bg-slate-700'    : 'hover:bg-slate-200',
+    surfaceDeep:   dark ? 'bg-slate-950'          : 'bg-slate-50',
+    surfaceDeepBg: dark ? 'bg-slate-950/80'       : 'bg-slate-50/80',
+    // ── canvas ──
+    canvasBg:      dark ? 'bg-black'              : 'bg-slate-100',
+    // ── text ──
+    textPrimary:   dark ? 'text-slate-100'        : 'text-slate-900',
+    textSecondary: dark ? 'text-slate-200'        : 'text-slate-700',
+    textMuted:     dark ? 'text-slate-400'        : 'text-slate-500',
+    textDimmed:    dark ? 'text-slate-500'        : 'text-slate-400',
+    textAccent:    dark ? 'text-indigo-400'        : 'text-indigo-600',
+    textAccent2:   dark ? 'text-indigo-300'        : 'text-indigo-700',
+    // ── sidebar ──
+    sidebarBg:     dark ? 'bg-slate-900/95'       : 'bg-white',
+    sidebarBorder: dark ? 'border-slate-800'      : 'border-slate-200',
+    tabBarBg:      dark ? 'bg-slate-950/60'       : 'bg-slate-50',
+    tabActive:     dark ? 'border-indigo-500 text-indigo-400 bg-slate-900/50' : 'border-indigo-600 text-indigo-600 bg-indigo-50/60',
+    tabInactive:   dark ? 'border-transparent text-slate-400 hover:text-slate-200' : 'border-transparent text-slate-500 hover:text-slate-700',
+    // ── inputs ──
+    inputBg:       dark ? 'bg-slate-800'          : 'bg-white',
+    inputBorder:   dark ? 'border-slate-700'      : 'border-slate-300',
+    inputText:     dark ? 'text-slate-200'        : 'text-slate-800',
+    inputDeepBg:   dark ? 'bg-slate-950'          : 'bg-slate-50',
+    // ── buttons ──
+    btnSecondary:  dark ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+                       : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300',
+    btnClose:      dark ? 'text-slate-400 hover:text-white hover:bg-slate-800'
+                       : 'text-slate-400 hover:text-slate-900 hover:bg-slate-100',
+    // ── dividers ──
+    divider:       dark ? 'border-slate-800'      : 'border-slate-200',
+    // ── metrics HUD ──
+    hudBg:         dark ? 'bg-slate-900/85 backdrop-blur-md border-slate-700/80'
+                       : 'bg-white/90 backdrop-blur-md border-slate-200 shadow-md',
+    hudLabel:      dark ? 'text-slate-400'        : 'text-slate-500',
+    hudBadge:      dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600',
+    // ── formula bar ──
+    formulaBg:     dark ? 'bg-slate-900/60'       : 'bg-slate-50/80',
+    formulaBorder: dark ? 'border-slate-800/80'   : 'border-slate-200',
+    formulaText:   dark ? 'text-slate-300'        : 'text-slate-600',
+    // ── param cards ──
+    boolCard:      dark ? 'bg-slate-800/60 border-slate-700/60 hover:bg-slate-800'
+                       : 'bg-slate-50 border-slate-200 hover:bg-slate-100',
+    sliderTrack:   dark ? 'bg-slate-800'          : 'bg-slate-200',
+    // ── category badge ──
+    catBadge:      dark ? 'bg-slate-800 text-slate-300 border-slate-700'
+                       : 'bg-slate-100 text-slate-600 border-slate-300',
+    unitBadgeBg:   dark ? 'bg-indigo-950 text-indigo-300'
+                       : 'bg-indigo-100 text-indigo-700',
+    // ── AI tab ──
+    aiContextBg:   dark ? 'bg-slate-950/80 border-indigo-500/30'
+                       : 'bg-indigo-50/60 border-indigo-200',
+    aiContextLabel:dark ? 'text-indigo-300'       : 'text-indigo-700',
+    aiContextBadge:dark ? 'bg-indigo-950 text-indigo-300 border-indigo-800/40'
+                       : 'bg-indigo-100 text-indigo-700 border-indigo-200',
+    aiBtnBg:       dark ? 'bg-slate-800/80 hover:bg-indigo-950/60 border-slate-700 hover:border-indigo-500/60 text-slate-200'
+                       : 'bg-white hover:bg-indigo-50 border-slate-200 hover:border-indigo-400 text-slate-700',
+    aiCtxBtnBg:    dark ? 'bg-indigo-950/40 hover:bg-indigo-900/50 border-indigo-800/50 hover:border-indigo-500/70 text-indigo-200'
+                       : 'bg-indigo-50 hover:bg-indigo-100 border-indigo-200 hover:border-indigo-400 text-indigo-700',
+    aiLoadBg:      dark ? 'bg-slate-950/90 border-indigo-500/40'
+                       : 'bg-indigo-50 border-indigo-200',
+    aiLoadText:    dark ? 'text-indigo-300'       : 'text-indigo-700',
+    aiLoadSub:     dark ? 'text-slate-400'        : 'text-slate-500',
+    aiSpinner:     dark ? 'border-indigo-400 border-t-transparent'
+                       : 'border-indigo-600 border-t-transparent',
+    aiErrorBg:     dark ? 'bg-rose-950/60 border-rose-800 text-rose-300'
+                       : 'bg-rose-50 border-rose-200 text-rose-700',
+    aiResponseBg:  dark ? 'bg-slate-950/90 border-slate-700/80'
+                       : 'bg-white border-slate-200',
+    aiResponseBorder: dark ? 'border-slate-800'   : 'border-slate-200',
+    aiAnswerBg:    dark ? 'bg-slate-900 border-slate-800 text-slate-100'
+                       : 'bg-slate-50 border-slate-200 text-slate-900',
+    aiExplText:    dark ? 'text-slate-300'        : 'text-slate-600',
+    aiExtrText:    dark ? 'text-slate-400'        : 'text-slate-500',
+    // ── speed selector ──
+    speedActive:   'bg-indigo-600 text-white font-bold',
+    speedInactive: dark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-800',
+    // ── copy / misc ──
+    copyBtn:       dark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-800',
+    successText:   'text-emerald-400',
+    // ── theory list ──
+    theoryListItem:dark ? 'text-slate-300'        : 'text-slate-600',
+    theorySurface: dark ? 'bg-slate-800/60 border-slate-700' : 'bg-slate-50 border-slate-200',
+  };
+}
+
+/* ─────────────────────────── props ─────────────────────────────── */
+
 interface SimulationFrameworkRunnerProps {
   definition: ISimulationDefinition;
   initialParams?: Record<string, any>;
@@ -21,6 +129,8 @@ interface SimulationFrameworkRunnerProps {
   onClose?: () => void;
   onLaunchSmartBoard?: (simKey: string, title: string, context?: ISimulationLaunchContext) => void;
 }
+
+/* ─────────────────────────── component ─────────────────────────── */
 
 export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps> = ({
   definition,
@@ -59,6 +169,11 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
   const simStateRef = useRef<any>(null);
   const animFrameRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number>(performance.now());
+
+  /* ── theme state ── */
+  const [theme, setTheme] = useState<RunnerTheme>('dark');
+  const t = useMemo(() => themeTokens(theme), [theme]);
+  const isDark = theme === 'dark';
 
   // Setup initial simulation state
   const resetSimulation = useCallback(() => {
@@ -204,11 +319,11 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
   const domainColors = getDomainColor(definition.domain);
 
   return (
-    <div className="flex flex-col h-full w-full bg-slate-950 text-slate-100 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
+    <div className={`flex flex-col h-full w-full rounded-2xl overflow-hidden border shadow-2xl transition-colors duration-300 ${t.rootBg} ${t.rootText} ${t.rootBorder}`}>
       {/* ─── RUNNER HEADER ─── */}
-      <div className="flex flex-wrap items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md gap-4">
+      <div className={`flex flex-wrap items-center justify-between px-6 py-4 border-b backdrop-blur-md gap-4 ${t.headerBg} ${t.headerBorder}`}>
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-800 text-2xl shadow-inner border border-slate-700">
+          <div className={`flex h-11 w-11 items-center justify-center rounded-xl text-2xl shadow-inner border ${t.surfaceBg} ${t.surfaceBorder}`}>
             {definition.icon}
           </div>
           <div>
@@ -218,7 +333,7 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
               >
                 {definition.domain.replace('_', ' ')}
               </span>
-              <span className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700">
+              <span className={`px-2 py-0.5 rounded-md text-[11px] font-medium border ${t.catBadge}`}>
                 {definition.category}
               </span>
               {assignedSimulation?.chapterOrUnit && (
@@ -227,12 +342,12 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
                 </span>
               )}
               {subject && (
-                <span className="text-xs text-slate-400 font-mono">
+                <span className={`text-xs font-mono ${t.textMuted}`}>
                   {subject.subjectCode}
                 </span>
               )}
             </div>
-            <h2 className="text-lg font-bold text-slate-100 mt-0.5">
+            <h2 className={`text-lg font-bold mt-0.5 ${t.textPrimary}`}>
               {assignedSimulation?.title || definition.title}
             </h2>
           </div>
@@ -240,6 +355,19 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
 
         {/* Action Toolbar */}
         <div className="flex items-center gap-2">
+          {/* Theme Toggle */}
+          <button
+            onClick={() => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))}
+            className={`px-3 py-1.5 min-h-[38px] rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all duration-300 cursor-pointer border ${t.btnSecondary}`}
+            title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          >
+            <span className="text-base leading-none transition-transform duration-300" style={{ display: 'inline-block', transform: isDark ? 'rotate(0deg)' : 'rotate(180deg)' }}>
+              {isDark ? '☀️' : '🌙'}
+            </span>
+            <span className="hidden sm:inline">{isDark ? 'Light' : 'Dark'}</span>
+          </button>
+
           {/* Play / Pause */}
           <button
             onClick={() => setIsPlaying((p) => !p)}
@@ -257,7 +385,7 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
           <button
             onClick={handleStep}
             disabled={isPlaying}
-            className="px-2.5 py-1.5 min-h-[38px] rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 border border-slate-700 transition cursor-pointer"
+            className={`px-2.5 py-1.5 min-h-[38px] rounded-lg text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed border transition cursor-pointer ${t.btnSecondary}`}
             title="Step Forward One Frame"
           >
             ⏭ Step
@@ -266,22 +394,20 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
           {/* Reset */}
           <button
             onClick={resetSimulation}
-            className="px-2.5 py-1.5 min-h-[38px] rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition cursor-pointer"
+            className={`px-2.5 py-1.5 min-h-[38px] rounded-lg text-xs font-medium border transition cursor-pointer ${t.btnSecondary}`}
             title="Reset Simulation State"
           >
             🔄 Reset
           </button>
 
           {/* Speed Selector */}
-          <div className="flex items-center min-h-[38px] rounded-lg bg-slate-800 border border-slate-700 p-0.5 text-[11px] font-mono">
+          <div className={`flex items-center min-h-[38px] rounded-lg border p-0.5 text-[11px] font-mono ${t.surfaceBg} ${t.surfaceBorder}`}>
             {[0.5, 1, 2].map((sp) => (
               <button
                 key={sp}
                 onClick={() => setSpeedMultiplier(sp)}
                 className={`px-2 py-1 rounded transition cursor-pointer ${
-                  speedMultiplier === sp
-                    ? 'bg-indigo-600 text-white font-bold'
-                    : 'text-slate-400 hover:text-white'
+                  speedMultiplier === sp ? t.speedActive : t.speedInactive
                 }`}
               >
                 {sp}x
@@ -320,7 +446,7 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
           {onClose && (
             <button
               onClick={onClose}
-              className="p-2 min-h-[38px] min-w-[38px] flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+              className={`p-2 min-h-[38px] min-w-[38px] flex items-center justify-center rounded-lg transition cursor-pointer ${t.btnClose}`}
               title="Close Runner"
             >
               ✕
@@ -332,28 +458,28 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
       {/* ─── RUNNER WORKSPACE (CANVAS + SIDEBAR) ─── */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-[500px]">
         {/* Left: Interactive Canvas Viewport */}
-        <div className="flex-1 flex flex-col bg-black relative overflow-hidden">
+        <div className={`flex-1 flex flex-col relative overflow-hidden ${t.canvasBg}`}>
           {/* Live Metrics HUD Overlay */}
           <div className="absolute top-3 left-3 right-3 flex flex-wrap gap-2.5 pointer-events-none z-10">
             {definition.metrics.map((m) => (
               <div
                 key={m.id}
-                className="px-3.5 py-2 rounded-xl bg-slate-900/85 backdrop-blur-md border border-slate-700/80 shadow-lg pointer-events-auto flex items-center gap-2.5"
+                className={`px-3.5 py-2 rounded-xl shadow-lg pointer-events-auto flex items-center gap-2.5 border ${t.hudBg}`}
               >
                 <div>
-                  <div className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
+                  <div className={`text-[10px] uppercase font-bold tracking-wider ${t.hudLabel}`}>
                     {m.label}
                   </div>
                   <div
                     className={`text-sm font-mono font-bold ${
-                      m.color || 'text-slate-100'
+                      m.color || t.textPrimary
                     }`}
                   >
                     {metricsValues[m.id] || '---'}
                   </div>
                 </div>
                 {m.badge && (
-                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
+                  <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${t.hudBadge}`}>
                     {m.badge}
                   </span>
                 )}
@@ -371,9 +497,9 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
 
           {/* Bottom Bar: Formula or Note */}
           {definition.formulaOverview && (
-            <div className="px-4 py-2 border-t border-slate-800/80 bg-slate-900/60 text-xs font-mono text-slate-300 flex items-center gap-2">
-              <span className="text-indigo-400 font-bold">Formula:</span>
-              <span className="text-slate-300 overflow-x-auto truncate">
+            <div className={`px-4 py-2 border-t text-xs font-mono flex items-center gap-2 ${t.formulaBg} ${t.formulaBorder} ${t.formulaText}`}>
+              <span className={`font-bold ${t.textAccent}`}>Formula:</span>
+              <span className="overflow-x-auto truncate">
                 {definition.formulaOverview}
               </span>
             </div>
@@ -381,15 +507,13 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
         </div>
 
         {/* Right: Dynamic Parameter Control Drawer */}
-        <div className="w-full lg:w-84 border-t lg:border-t-0 lg:border-l border-slate-800 bg-slate-900/95 flex flex-col flex-shrink-0 overflow-y-auto">
+        <div className={`w-full lg:w-84 border-t lg:border-t-0 lg:border-l flex flex-col flex-shrink-0 overflow-y-auto ${t.sidebarBg} ${t.sidebarBorder}`}>
           {/* Tab Selector */}
-          <div className="flex border-b border-slate-800 bg-slate-950/60">
+          <div className={`flex border-b ${t.sidebarBorder} ${t.tabBarBg}`}>
             <button
               onClick={() => setActiveTab('controls')}
               className={`flex-1 py-2.5 text-xs font-bold transition cursor-pointer border-b-2 ${
-                activeTab === 'controls'
-                  ? 'border-indigo-500 text-indigo-400 bg-slate-900/50'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                activeTab === 'controls' ? t.tabActive : t.tabInactive
               }`}
             >
               ⚙️ Parameters
@@ -397,9 +521,7 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
             <button
               onClick={() => setActiveTab('theory')}
               className={`flex-1 py-2.5 text-xs font-bold transition cursor-pointer border-b-2 ${
-                activeTab === 'theory'
-                  ? 'border-indigo-500 text-indigo-400 bg-slate-900/50'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                activeTab === 'theory' ? t.tabActive : t.tabInactive
               }`}
             >
               📖 Theory
@@ -407,9 +529,7 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
             <button
               onClick={() => setActiveTab('ai')}
               className={`flex-1 py-2.5 text-xs font-bold transition cursor-pointer border-b-2 ${
-                activeTab === 'ai'
-                  ? 'border-indigo-500 text-indigo-400 bg-slate-900/50'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                activeTab === 'ai' ? t.tabActive : t.tabInactive
               }`}
             >
               🤖 Understand AI
@@ -427,10 +547,10 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
                       return (
                         <div key={param.key} className="space-y-1.5">
                           <div className="flex justify-between items-center text-xs">
-                            <label className="font-semibold text-slate-200">
+                            <label className={`font-semibold ${t.textSecondary}`}>
                               {param.label}
                             </label>
-                            <span className="font-mono font-bold text-indigo-400">
+                            <span className={`font-mono font-bold ${t.textAccent}`}>
                               {currentVal} {param.unit || ''}
                             </span>
                           </div>
@@ -446,7 +566,7 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
                                 parseFloat(e.target.value)
                               )
                             }
-                            className="w-full accent-indigo-500 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
+                            className={`w-full accent-indigo-500 cursor-pointer h-1.5 rounded-lg ${t.sliderTrack}`}
                           />
                         </div>
                       );
@@ -455,7 +575,7 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
                     if (param.type === 'select') {
                       return (
                         <div key={param.key} className="space-y-1.5">
-                          <label className="text-xs font-semibold text-slate-200">
+                          <label className={`text-xs font-semibold ${t.textSecondary}`}>
                             {param.label}
                           </label>
                           <select
@@ -463,7 +583,7 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
                             onChange={(e) =>
                               handleParamChange(param.key, e.target.value)
                             }
-                            className="w-full rounded-lg bg-slate-800 border border-slate-700 px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                            className={`w-full rounded-lg border px-3 py-1.5 text-xs focus:outline-none focus:border-indigo-500 cursor-pointer ${t.inputBg} ${t.inputBorder} ${t.inputText}`}
                           >
                             {param.options?.map((opt) => (
                               <option key={opt.value} value={opt.value}>
@@ -479,9 +599,9 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
                       return (
                         <label
                           key={param.key}
-                          className="flex items-center justify-between p-2.5 rounded-lg bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:bg-slate-800 transition"
+                          className={`flex items-center justify-between p-2.5 rounded-lg border cursor-pointer transition ${t.boolCard}`}
                         >
-                          <span className="text-xs font-medium text-slate-200">
+                          <span className={`text-xs font-medium ${t.textSecondary}`}>
                             {param.label}
                           </span>
                           <input
@@ -500,7 +620,7 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
                   })}
                 </div>
 
-                <div className="pt-4 border-t border-slate-800 flex justify-between items-center">
+                <div className={`pt-4 border-t flex justify-between items-center ${t.divider}`}>
                   <button
                     onClick={() => {
                       const defs: Record<string, any> = {};
@@ -510,11 +630,11 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
                       setParams(defs);
                       resetSimulation();
                     }}
-                    className="text-xs text-slate-400 hover:text-slate-200 underline cursor-pointer"
+                    className={`text-xs underline cursor-pointer ${t.textMuted} ${isDark ? 'hover:text-slate-200' : 'hover:text-slate-800'}`}
                   >
                     Reset Defaults
                   </button>
-                  <span className="text-[11px] text-slate-500 font-mono">
+                  <span className={`text-[11px] font-mono ${t.textDimmed}`}>
                     {definition.parameters.length} parameters
                   </span>
                 </div>
@@ -522,25 +642,25 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
             ) : activeTab === 'theory' ? (
               <div className="space-y-4 text-xs">
                 <div>
-                  <h4 className="font-bold text-slate-200 text-sm mb-1.5">
+                  <h4 className={`font-bold text-sm mb-1.5 ${t.textSecondary}`}>
                     About this Simulation
                   </h4>
-                  <p className="text-slate-400 leading-relaxed">
+                  <p className={`leading-relaxed ${t.textMuted}`}>
                     {definition.detailedDescription}
                   </p>
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-slate-200 text-sm mb-2">
+                  <h4 className={`font-bold text-sm mb-2 ${t.textSecondary}`}>
                     Key Learning Objectives
                   </h4>
                   <ul className="space-y-1.5">
                     {definition.learningObjectives.map((obj, i) => (
                       <li
                         key={i}
-                        className="flex items-start gap-2 text-slate-300"
+                        className={`flex items-start gap-2 ${t.theoryListItem}`}
                       >
-                        <span className="text-indigo-400 font-bold">•</span>
+                        <span className={`font-bold ${t.textAccent}`}>•</span>
                         <span>{obj}</span>
                       </li>
                     ))}
@@ -548,15 +668,15 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
                 </div>
 
                 {definition.suggestedUnits.length > 0 && (
-                  <div className="p-3 rounded-lg bg-slate-800/60 border border-slate-700">
-                    <span className="font-semibold text-slate-200 block mb-1">
+                  <div className={`p-3 rounded-lg border ${t.theorySurface}`}>
+                    <span className={`font-semibold block mb-1 ${t.textSecondary}`}>
                       Recommended Curriculum Units:
                     </span>
                     <div className="flex gap-1.5">
                       {definition.suggestedUnits.map((u) => (
                         <span
                           key={u}
-                          className="px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 font-bold text-[11px]"
+                          className={`px-2 py-0.5 rounded font-bold text-[11px] ${t.unitBadgeBg}`}
                         >
                           Unit {u}
                         </span>
@@ -568,23 +688,23 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
             ) : (
               <div className="space-y-4 text-xs">
                 {/* Active Simulation Status Banner */}
-                <div className="p-3 rounded-xl bg-slate-950/80 border border-indigo-500/30 shadow-lg">
+                <div className={`p-3 rounded-xl shadow-lg border ${t.aiContextBg}`}>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[11px] font-bold text-indigo-300 flex items-center gap-1.5">
+                    <span className={`text-[11px] font-bold flex items-center gap-1.5 ${t.aiContextLabel}`}>
                       <span>🔬</span> Active Lab Analysis
                     </span>
-                    <span className="px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 font-mono text-[10px] font-bold border border-indigo-800/40">
+                    <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold border ${t.aiContextBadge}`}>
                       {subject?.subjectCode || 'Module'} · Unit {definition.unit || 1}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400">
+                  <p className={`text-[11px] ${t.textMuted}`}>
                     Ask AI about theoretical foundations, why & where it is used in engineering, formulas, and real-time parameters.
                   </p>
                 </div>
 
                 {/* Level 1 Default Questions */}
                 <div>
-                  <h4 className="font-bold text-slate-200 text-xs mb-2 flex items-center gap-1.5">
+                  <h4 className={`font-bold text-xs mb-2 flex items-center gap-1.5 ${t.textSecondary}`}>
                     <span>💡</span> Core Conceptual Questions
                   </h4>
                   <div className="grid grid-cols-2 gap-1.5">
@@ -594,7 +714,7 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
                         type="button"
                         onClick={() => handleAskAi(q.question)}
                         disabled={aiLoading}
-                        className="p-2 rounded-lg bg-slate-800/80 hover:bg-indigo-950/60 border border-slate-700 hover:border-indigo-500/60 transition text-left text-[11px] font-medium text-slate-200 flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                        className={`p-2 rounded-lg border transition text-left text-[11px] font-medium flex items-center gap-1.5 disabled:opacity-50 cursor-pointer ${t.aiBtnBg}`}
                         title={q.question}
                       >
                         <span>{q.icon}</span>
@@ -607,7 +727,7 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
                 {/* Level 2 Contextual Questions */}
                 {contextualQuestions.length > 0 && (
                   <div>
-                    <h4 className="font-bold text-slate-200 text-xs mb-2 flex items-center gap-1.5">
+                    <h4 className={`font-bold text-xs mb-2 flex items-center gap-1.5 ${t.textSecondary}`}>
                       <span>🎯</span> Contextual Questions
                     </h4>
                     <div className="space-y-1.5">
@@ -617,7 +737,7 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
                           type="button"
                           onClick={() => handleAskAi(q.question)}
                           disabled={aiLoading}
-                          className="w-full p-2 rounded-lg bg-indigo-950/40 hover:bg-indigo-900/50 border border-indigo-800/50 hover:border-indigo-500/70 transition text-left text-[11px] font-medium text-indigo-200 flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                          className={`w-full p-2 rounded-lg border transition text-left text-[11px] font-medium flex items-center gap-2 disabled:opacity-50 cursor-pointer ${t.aiCtxBtnBg}`}
                         >
                           <span>{q.icon}</span>
                           <span className="line-clamp-2">{q.question}</span>
@@ -629,7 +749,7 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
 
                 {/* Level 3 Custom Free Query */}
                 <div>
-                  <h4 className="font-bold text-slate-200 text-xs mb-2 flex items-center gap-1.5">
+                  <h4 className={`font-bold text-xs mb-2 flex items-center gap-1.5 ${t.textSecondary}`}>
                     <span>💬</span> Ask a Specific Question
                   </h4>
                   <div className="flex gap-1.5">
@@ -642,7 +762,7 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
                       }}
                       placeholder="Ask about this simulation..."
                       disabled={aiLoading}
-                      className="flex-1 px-3 py-1.5 text-xs rounded-lg bg-slate-950 border border-slate-700 text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 disabled:opacity-50"
+                      className={`flex-1 px-3 py-1.5 text-xs rounded-lg border focus:outline-none focus:border-indigo-500 disabled:opacity-50 ${t.inputDeepBg} ${t.inputBorder} ${t.inputText} ${isDark ? 'placeholder:text-slate-500' : 'placeholder:text-slate-400'}`}
                     />
                     <button
                       type="button"
@@ -657,13 +777,13 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
 
                 {/* Live Loading Indicator */}
                 {aiLoading && (
-                  <div className="p-4 rounded-xl bg-slate-950/90 border border-indigo-500/40 flex items-center gap-3">
-                    <div className="h-5 w-5 rounded-full border-2 border-indigo-400 border-t-transparent animate-spin flex-shrink-0" />
+                  <div className={`p-4 rounded-xl border flex items-center gap-3 ${t.aiLoadBg}`}>
+                    <div className={`h-5 w-5 rounded-full border-2 animate-spin flex-shrink-0 ${t.aiSpinner}`} />
                     <div>
-                      <div className="text-xs font-bold text-indigo-300">
+                      <div className={`text-xs font-bold ${t.aiLoadText}`}>
                         Analyzing Simulation & Grounding in Curriculum...
                       </div>
-                      <div className="text-[10px] text-slate-400">
+                      <div className={`text-[10px] ${t.aiLoadSub}`}>
                         Extracting real-time parameters, formulas & course notes
                       </div>
                     </div>
@@ -672,16 +792,16 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
 
                 {/* Error Notice */}
                 {aiError && (
-                  <div className="p-3 rounded-lg bg-rose-950/60 border border-rose-800 text-xs text-rose-300">
+                  <div className={`p-3 rounded-lg border text-xs ${t.aiErrorBg}`}>
                     ⚠️ {aiError}
                   </div>
                 )}
 
                 {/* AI Response Display */}
                 {aiResponse && (
-                  <div className="p-3.5 rounded-xl bg-slate-950/90 border border-slate-700/80 shadow-lg space-y-3">
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-                      <span className="text-[11px] font-bold text-emerald-400 flex items-center gap-1">
+                  <div className={`p-3.5 rounded-xl border shadow-lg space-y-3 ${t.aiResponseBg}`}>
+                    <div className={`flex items-center justify-between pb-2 border-b ${t.aiResponseBorder}`}>
+                      <span className={`text-[11px] font-bold flex items-center gap-1 ${t.successText}`}>
                         <span>✅</span> Grounded Simulation Answer
                       </span>
                       <button
@@ -691,34 +811,34 @@ export const SimulationFrameworkRunner: React.FC<SimulationFrameworkRunnerProps>
                           setCopiedAnswer(true);
                           setTimeout(() => setCopiedAnswer(false), 2000);
                         }}
-                        className="text-[10px] text-slate-400 hover:text-white underline cursor-pointer"
+                        className={`text-[10px] underline cursor-pointer ${t.copyBtn}`}
                       >
                         {copiedAnswer ? '✓ Copied' : 'Copy'}
                       </button>
                     </div>
 
                     <div>
-                      <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">
+                      <div className={`text-[10px] uppercase font-bold mb-1 ${t.textMuted}`}>
                         Direct Answer
                       </div>
-                      <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-100 text-xs leading-relaxed whitespace-pre-wrap font-medium">
+                      <div className={`p-2.5 rounded-lg border text-xs leading-relaxed whitespace-pre-wrap font-medium ${t.aiAnswerBg}`}>
                         {aiResponse.directAnswer}
                       </div>
                     </div>
 
                     {aiResponse.explanation && (
                       <div>
-                        <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">
+                        <div className={`text-[10px] uppercase font-bold mb-1 ${t.textMuted}`}>
                           Pedagogical Breakdown
                         </div>
-                        <div className="text-slate-300 text-[11px] leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto pr-1">
+                        <div className={`text-[11px] leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto pr-1 ${t.aiExplText}`}>
                           {aiResponse.explanation}
                         </div>
                       </div>
                     )}
 
                     {aiResponse.additionalExplanation && (
-                      <div className="text-[10px] text-slate-400 italic pt-1 border-t border-slate-800/80">
+                      <div className={`text-[10px] italic pt-1 border-t ${t.aiResponseBorder} ${t.aiExtrText}`}>
                         {aiResponse.additionalExplanation}
                       </div>
                     )}

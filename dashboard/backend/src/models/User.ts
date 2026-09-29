@@ -174,6 +174,7 @@ userSchema.index({ name: 'text', identifier: 'text', collegeEmail: 'text' });
 userSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {
+  if (!this.passwordHash || !candidatePassword) return false;
   return bcrypt.compare(candidatePassword, this.passwordHash);
 };
 

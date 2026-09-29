@@ -1,5 +1,6 @@
 import type { ISimulationDefinition } from './types';
 import { resolveSubjectDomain } from './types';
+import { CHEMISTRY_BOARD_SIMULATIONS } from './chemistry';
 
 /**
  * Data Structures & Algorithms — ten simulations in one DSA engine.
@@ -1185,6 +1186,7 @@ export const SIMULATION_REGISTRY: ISimulationDefinition[] = [
   ...MA_BOARD_SIMULATIONS,
   ...RMA_BOARD_SIMULATIONS,
   ...EE_BOARD_SIMULATIONS,
+  ...CHEMISTRY_BOARD_SIMULATIONS,
   // ═══════════════════════════════════════════════════════════════════════════
   // MATHEMATICS
   // ═══════════════════════════════════════════════════════════════════════════
@@ -3518,7 +3520,7 @@ export const SIMULATION_REGISTRY: ISimulationDefinition[] = [
 
 /**
  * Simulations for one subject.
- * 1. Only the subject's domain (Maths, Physics, CS, Civil).
+ * 1. Only the subject's domain (Maths, Physics, Chemistry, CS, Civil).
  * 2. Simulations tagged with subject words (DSA, Networking, …) appear only in
  *    subjects whose name/code contains one of those words.
  * 3. A subject that matches no tagged simulation gets the untagged (general)
@@ -3533,8 +3535,8 @@ export function getSimulationsForSubject(subject: { subjectName?: string; subjec
   const seen = new Set<string>();
   const once = (x: ISimulationDefinition) => (seen.has(x.id) ? false : (seen.add(x.id), true));
   return [
-    ...list.filter((s) => s.ecgCategory || s.pdcCategory || s.dsaCategory || s.osCategory || s.cCategory || s.boardEngine === 'ecg' || s.boardEngine === 'pdc' || s.boardEngine === 'cn' || s.boardEngine === 'ep' || s.boardEngine === 'eg' || s.boardEngine === 'ma' || s.boardEngine === 'ee'),
-    ...list.filter((s) => !s.ecgCategory && !s.pdcCategory && !s.dsaCategory && !s.osCategory && !s.cCategory && s.boardEngine !== 'ecg' && s.boardEngine !== 'pdc' && s.boardEngine !== 'cn' && s.boardEngine !== 'ep' && s.boardEngine !== 'eg' && s.boardEngine !== 'ma' && s.boardEngine !== 'ee'),
+    ...list.filter((s) => s.ecgCategory || s.pdcCategory || s.dsaCategory || s.osCategory || s.cCategory || s.boardEngine === 'ecg' || s.boardEngine === 'pdc' || s.boardEngine === 'cn' || s.boardEngine === 'ep' || s.boardEngine === 'eg' || s.boardEngine === 'ma' || s.boardEngine === 'ee' || s.boardEngine === 'chem'),
+    ...list.filter((s) => !s.ecgCategory && !s.pdcCategory && !s.dsaCategory && !s.osCategory && !s.cCategory && s.boardEngine !== 'ecg' && s.boardEngine !== 'pdc' && s.boardEngine !== 'cn' && s.boardEngine !== 'ep' && s.boardEngine !== 'eg' && s.boardEngine !== 'ma' && s.boardEngine !== 'ee' && s.boardEngine !== 'chem'),
   ].filter(once);
 }
 

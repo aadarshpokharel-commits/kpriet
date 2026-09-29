@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f7f3">
+  <title>Engineering Chemistry Simulations · Eduverse</title>
+  <link rel="stylesheet" href="styles/ep-simulation.css">
+  <link rel="stylesheet" href="styles/sim-shell.css">
+</head>
+<body>
+  <main class="ep-app" id="ep-app">
+    <header class="ep-header">
+      <div class="ep-brand" aria-hidden="true">CY</div>
+      <div class="ep-heading">
+        <nav class="ep-crumbs" id="ep-crumbs" aria-label="Location">Semester I › Engineering Chemistry</nav>
+        <h1><span id="ep-title">Engineering Chemistry Interactive Laboratory</span> <span class="ep-concept hidden" id="ep-concept">Conceptual Visualization</span></h1>
+        <p id="ep-subtitle">U21CY101 · 68 interactive simulations and virtual labs</p>
+      </div>
+      <div class="ep-header-actions">
+        <label class="ep-mode ep-player-only hidden" id="ep-mode-wrap">Mode <select id="ep-mode" aria-label="Visualization mode"></select></label>
+        <button type="button" class="ep-btn ep-btn-toggle ep-player-only hidden active" id="ep-toggle-formula">ƒ Formulas</button>
+        <button type="button" class="ep-btn ep-btn-toggle ep-player-only hidden active" id="ep-toggle-explain">💬 Explanation</button>
+        <button type="button" class="ep-btn ep-btn-outline hidden" id="ep-library-btn">☰ All simulations</button>
+        <button type="button" class="ep-btn ep-btn-outline hidden" id="ep-publish">📌 Publish for students</button>
+        <button type="button" class="ep-btn ep-btn-primary hidden" id="ep-launch-board">🖥 Launch Smart Board</button>
+        <button type="button" class="ep-btn ep-btn-outline ep-player-only hidden" id="ep-export">⬇ Export</button>
+        <button type="button" class="ep-btn ep-btn-outline ep-icon-btn" id="ep-fullscreen" title="Full screen" aria-label="Full screen">⛶</button>
+      </div>
+    </header>
+    <section id="ep-library" class="ep-library hidden" aria-label="Engineering Chemistry simulation library"></section>
+    <section id="ep-player" class="ep-player hidden">
+      <div class="ep-layout">
+        <aside class="ep-side">
+          <section class="ep-card"><div class="ep-card-head ep-row"><div><span class="ep-kicker">PARAMETERS</span><h2>Inputs</h2></div><div class="ep-mini-actions"><button type="button" class="ep-btn ep-small" id="ep-examples">🎲 Generate example</button><button type="button" class="ep-btn ep-small" id="ep-reset-params">Defaults</button></div></div><form id="ep-params" class="ep-params" autocomplete="off" onsubmit="return false"></form><p class="ep-hint hidden" id="ep-student-note">Your changes stay on this device — the teacher's settings are not changed.</p></section>
+          <section class="ep-card"><div class="ep-card-head"><span class="ep-kicker">STEP-BY-STEP</span><h2>Steps</h2></div><ol id="ep-steps" class="ep-steps"></ol></section>
+          <section class="ep-card ep-ai"><div class="ep-card-head"><span class="ep-kicker">ASK ABOUT THIS STEP</span><h2>Subject AI</h2></div><textarea id="ep-ai-q" rows="2" placeholder="Ask about this step…"></textarea><button type="button" class="ep-btn ep-btn-primary" id="ep-ask-ai">Ask AI about this step</button><div id="ep-ai-answer" class="ep-ai-answer hidden"></div></section>
+        </aside>
+        <section class="ep-center"><div class="ep-card ep-stage"><div class="ep-stage-top"><div id="ep-readouts" class="ep-readouts"></div><div id="ep-tools" class="ep-tools hidden"></div><div class="ep-view3d hidden" id="ep-view3d"><button type="button" class="ep-btn ep-sq" id="ep-rot-l">⟲</button><button type="button" class="ep-btn ep-sq" id="ep-rot-r">⟳</button><button type="button" class="ep-btn ep-sq" id="ep-zoom-in">＋</button><button type="button" class="ep-btn ep-sq" id="ep-zoom-out">－</button><button type="button" class="ep-btn" id="ep-pan">✋ Pan</button><button type="button" class="ep-btn" id="ep-auto-rot">Auto-rotate</button><button type="button" class="ep-btn" id="ep-view-reset">Reset view</button></div></div><div id="ep-stage-row" class="ep-stage-row"><div id="ep-canvas-wrap" class="ep-canvas-wrap"><canvas id="ep-canvas" width="1000" height="560" role="img" aria-label="Engineering Chemistry simulation"></canvas></div></div><div id="ep-warn" class="ep-warn hidden"></div><div class="ep-banner"><span class="ep-banner-no" id="ep-banner-no">Step 1 of 1</span><div><b id="ep-banner-title"></b> <span id="ep-banner-text"></span></div></div></div></section>
+        <aside class="ep-bottom" id="ep-bottom"><section class="ep-card ep-formula-card" id="ep-formula-card"><div class="ep-card-head"><span class="ep-kicker">FORMULA &amp; CALCULATION</span><h2>The chemistry</h2></div><div id="ep-formulas" class="ep-formulas"></div></section><section class="ep-card ep-explain-card" id="ep-explain-card"><div class="ep-card-head"><span class="ep-kicker">EXPLANATION</span><h2>Understand it</h2></div><dl id="ep-explain" class="ep-explain"></dl></section></aside>
+      </div>
+      <footer class="ep-controls" role="toolbar"><button type="button" class="ep-btn ep-big" id="ep-prev">↩ Previous</button><button type="button" class="ep-btn ep-big ep-btn-primary" id="ep-play">▶ Play</button><button type="button" class="ep-btn ep-big" id="ep-next">⏭ Next step</button><button type="button" class="ep-btn ep-big" id="ep-reset">↻ Reset</button><div class="ep-speed"><span>Speed</span><button type="button" class="ep-seg" data-speed="0.5">0.5x</button><button type="button" class="ep-seg" data-speed="1">1x</button><button type="button" class="ep-seg" data-speed="1.5">1.5x</button><button type="button" class="ep-seg" data-speed="2">2x</button></div><div class="ep-progress"><div id="ep-progress-fill"></div></div></footer>
+    </section>
+    <div id="ep-toast" class="ep-toast"></div>
+  </main>
+  <script src="tools/chem-catalog.js"></script>
+  <script src="tools/ep-draw.js"></script>
+  <script src="tools/chemistry-data.js"></script>
+  <script src="tools/chemistry-engines.js"></script>
+  <script src="tools/chem-sims.js"></script>
+  <script>
+    window.EduverseSimLabConfig = {
+      catalog: window.EduverseChemCatalog, sims: window.ChemSims, engine: 'engineering-chemistry', learningModes: true,
+      aiType: 'Engineering Chemistry simulation state', source: 'chem-simulation',
+      libraryTitle: 'Engineering Chemistry Interactive Laboratory', docTitle: 'Engineering Chemistry Simulations',
+    };
+  </script>
+  <script src="tools/ep-simulation.js"></script>
+  <script src="tools/sim-shell.js"></script>
+</body>
+</html>
