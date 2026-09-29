@@ -9,6 +9,22 @@
       "destination": "https://kpriet.onrender.com/api/v1/:match*"
     },
     {
+      "source": "/smartboard",
+      "destination": "/smartboard/index.html"
+    },
+    {
+      "source": "/smartboard/",
+      "destination": "/smartboard/index.html"
+    },
+    {
+      "source": "/smart-board",
+      "destination": "/smartboard/index.html"
+    },
+    {
+      "source": "/smart-board/",
+      "destination": "/smartboard/index.html"
+    },
+    {
       "source": "/((?!smartboard|assets|brand|favicon|.*\\..*).*)",
       "destination": "/index.html"
     }

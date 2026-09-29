@@ -48,7 +48,7 @@ const TEACHER_NAV: NavEntry[] = [
   { label: 'Student Progress', tab: 'studentProgress', icon: '👥' },
   { label: 'Simulations', tab: 'simulations', icon: '🔬' },
   { label: 'AI Query', tab: 'aiKnowledge', icon: '💡' },
-  { label: 'Smart Board', to: '/smartboard', icon: '✨', isExternal: true },
+  { label: 'Smart Board', to: '/smartboard/index.html', icon: '✨', isExternal: true },
 ];
 
 const HOD_NAV: NavEntry[] = [
@@ -110,6 +110,19 @@ export function DashboardLayout() {
     return false;
   };
 
+  const getSmartBoardUrl = () => {
+    if (!user) return '/smartboard/index.html';
+    const params = new URLSearchParams({
+      role: (user.role || 'teacher').toLowerCase(),
+      teacherName: user.name || '',
+      name: user.name || '',
+      teacherId: (user as any).id || (user as any)._id || '',
+      departmentName: (user as any).departmentName || (user as any).department?.name || '',
+      returnUrl: window.location.pathname + window.location.search,
+    });
+    return `/smartboard/index.html?${params.toString()}`;
+  };
+
   return (
     <div className="min-h-dvh bg-background text-foreground flex flex-col transition-colors duration-200">
       <a
@@ -162,7 +175,9 @@ export function DashboardLayout() {
               Public Portal
             </Link>
             <a
-              href="/smartboard"
+              href={getSmartBoardUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
               className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-primary dark:text-accent-foreground bg-primary-soft border border-primary-border hover:bg-primary hover:text-white transition-all shadow-2xs"
             >
               <span>✨</span> Smart Board
@@ -261,7 +276,12 @@ export function DashboardLayout() {
               >
                 System Status
               </NavLink>
-              <a href="/smartboard" className="text-primary font-medium">
+              <a
+                href={getSmartBoardUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary font-medium"
+              >
                 Open Smart Board →
               </a>
             </div>
@@ -343,7 +363,9 @@ export function DashboardLayout() {
                     return (
                       <li key={item.label}>
                         <a
-                          href={targetUrl}
+                          href={item.label === 'Smart Board' ? getSmartBoardUrl() : targetUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           title={sidebarCollapsed ? item.label : undefined}
                           className={cn(
                             'flex items-center rounded-xl py-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors min-h-[38px]',

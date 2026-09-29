@@ -345,7 +345,9 @@ export function StudentDashboardPage() {
             <span>📜</span> Past Semesters Archive
           </button>
           <a
-            href="/smartboard"
+            href="/smartboard/index.html"
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow hover:bg-indigo-500 transition-all"
           >
             <span>🚀</span> Interactive Board
@@ -1584,7 +1586,9 @@ export function StudentDashboardPage() {
               </p>
             </div>
             <a
-              href="/smartboard"
+              href="/smartboard/index.html"
+              target="_blank"
+              rel="noopener noreferrer"
               className="rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500"
             >
               Open in Smart Board →
