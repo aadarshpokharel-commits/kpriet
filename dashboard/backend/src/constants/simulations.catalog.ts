@@ -678,6 +678,75 @@ export const MA_SIMULATION_TEMPLATES: ISimulationCatalogItem[] = [
 ];
 
 /**
+ * Higher Mathematics (U25RMA101) — 35 Interactive Simulations across Units I–V.
+ * Powered by MathSimulations 3D/2D live engine with custom equation parser.
+ */
+const RMA_SUBJECT_KEYWORDS = ['u25rma101', 'higher mathematics', 'differential calculus', 'integral calculus', 'vector calculus', 'ordinary differential equations', 'engineering mathematics', 'mathematics'];
+function rmaTemplate(id: string, unit: number, topic: string, title: string, description: string): ISimulationCatalogItem {
+  return {
+    id,
+    domain: 'MATHEMATICS',
+    category: 'higher mathematics',
+    title,
+    description,
+    suggestedUnits: [unit],
+    smartboardPresetKey: id,
+    defaultParams: { simulationType: 'higher-mathematics', simulationSubtype: id, defaultParameters: {}, visualizationMode: '', steps: [] },
+    tags: ['Higher Mathematics', 'U25RMA101', topic],
+    subjectKeywords: RMA_SUBJECT_KEYWORDS,
+    unit,
+    topic,
+  };
+}
+
+export const RMA_SIMULATION_TEMPLATES: ISimulationCatalogItem[] = [
+  // Unit I: Differential Calculus
+  rmaTemplate("u1_surf", 1, "Functions of Two Variables", "Functions of Two Variables", "Interactive 3D surface z = f(x,y) with custom equation input, orbit rotation, and coordinate probes."),
+  rmaTemplate("u1_partial", 1, "Partial Derivatives", "Partial Derivatives", "Fix x or y to generate cross-sections, tangent slopes ∂f/∂x and ∂f/∂y, and the tangent plane."),
+  rmaTemplate("u1_total", 1, "Total Derivatives", "Total Derivatives", "Change increments dx and dy; visualize resulting differential dz vs true surface increment Δz."),
+  rmaTemplate("u1_taylor", 1, "Taylor's Series", "Taylor Series Graph & Expansion", "Interactive two-variable 3D & single-variable 2D Taylor polynomial approximation with live order control, step-by-step term expansion, and SmartBoard canvas export."),
+  rmaTemplate("u1_extrema", 1, "Extreme Values", "Extreme Values & Saddle Points", "Find local maxima, local minima, and saddle points using the Hessian discriminant D = fxx·fyy - fxy²."),
+
+  // Unit II: Integral Calculus
+  rmaTemplate("u2_double_riemann", 2, "Double Integrals", "Double Integrals (Riemann Sum)", "Build the volume integral using rectangular 3D elements Δx·Δy with adjustable subdivision density."),
+  rmaTemplate("u2_rectangles", 2, "Over Rectangles", "Double Integrals over Rectangles", "Adjust limits [a,b] × [c,d] and visualize the 3D volume under surface z = f(x,y)."),
+  rmaTemplate("u2_general_regions", 2, "General Regions", "General Regions (Type I & II)", "Integration over arbitrary curved boundaries between curves y = g₁(x) and y = g₂(x)."),
+  rmaTemplate("u2_fubini", 2, "Fubini's Theorem", "Fubini's Theorem", "Switch integration order between dx dy and dy dx; slice animation shows both yield identical volume."),
+  rmaTemplate("u2_area_volume", 2, "Area & Volume", "Area & Volume by Integration", "Accumulate cross-sectional slices to build 2D enclosed area and 3D volume."),
+  rmaTemplate("u2_reverse_order", 2, "Reverse Order", "Reversing Order of Integration", "Visually swap vertical slicing strips to horizontal slicing strips to evaluate otherwise non-elementary integrals."),
+
+  // Unit III: Vector Calculus
+  rmaTemplate("u3_vector_fields", 3, "Vector Fields", "Vector Fields", "Interactive grid of vector arrows with animated flow particles and custom vector inputs P(x,y), Q(x,y)."),
+  rmaTemplate("u3_gradient", 3, "Gradient", "Gradient (∇f)", "Shows direction of maximum increase orthogonal to scalar field contour curves."),
+  rmaTemplate("u3_directional", 3, "Directional Deriv", "Directional Derivative", "Rotate unit vector u via slider; compute rate of change Du f = ∇f · u."),
+  rmaTemplate("u3_divergence", 3, "Divergence", "Divergence (div F)", "Visualize vector spreading (sources, div > 0) and converging (sinks, div < 0)."),
+  rmaTemplate("u3_curl", 3, "Curl", "Curl & Vortex Rotation", "Animate rotational fluid flow with an interactive paddle wheel showing local vorticity."),
+  rmaTemplate("u3_line_integral", 3, "Line Integrals", "Line Integrals along Curves", "Move a particle along path C; accumulate line integral ∫_C F · dr in real time."),
+  rmaTemplate("u3_work", 3, "Work Done", "Work Done by Force Field", "Force field F acting on a particle moving from A to B; gauge displays total Work."),
+  rmaTemplate("u3_circulation", 3, "Circulation", "Circulation along Closed Loop", "Particle orbiting around a closed boundary C; calculates net circulation ∮ F · dr."),
+  rmaTemplate("u3_flux", 3, "Flux", "Flux through Boundaries", "Vectors crossing boundary curves and surfaces; displays outward normal dot product."),
+  rmaTemplate("u3_path_indep", 3, "Path Independence", "Path Independence", "Compare line integrals along straight, parabolic, and wavy paths between points A and B."),
+  rmaTemplate("u3_conservative", 3, "Conservative", "Conservative Vector Fields", "Verify ∂P/∂y = ∂Q/∂x and reconstruct potential function φ(x,y) with equipotential lines."),
+  rmaTemplate("u3_greens", 3, "Green's Theorem", "Green's Theorem", "Boundary circulation ∮ (P dx + Q dy) equals double area integral ∬ (∂Q/∂x - ∂P/∂y) dA."),
+  rmaTemplate("u3_gauss_stokes", 3, "Gauss & Stokes", "Gauss & Stokes Theorems", "3D Divergence theorem over closed volumes and Stokes curl circulation over 3D surfaces."),
+
+  // Unit IV: First Order Linear ODE
+  rmaTemplate("u4_basics", 4, "ODE Basics", "ODE Basics & Direction Field", "Interactive slope field grid; click anywhere on canvas or type custom dy/dx to generate RK4 trajectory."),
+  rmaTemplate("u4_separable", 4, "Separable ODE", "Separable Differential Equations", "dy/dx = g(x)h(y); adjust initial condition y(x₀) = y₀ to trace analytical solution families."),
+  rmaTemplate("u4_exact", 4, "Exact ODE", "Exact Differential Equations", "M dx + N dy = 0; visualize level curves of potential function Ψ(x,y) = C."),
+  rmaTemplate("u4_int_factor", 4, "Integrating Factor", "Integrating Factors", "Transform non-exact ODE to exact form using multiplier μ(x) = exp(∫(My-Nx)/N dx)."),
+  rmaTemplate("u4_linear", 4, "Linear ODE", "First-Order Linear ODE", "dy/dx + P(x)y = Q(x); decompose solution into Transient Response and Steady-State."),
+  rmaTemplate("u4_modelling", 4, "Real Modelling", "Mathematical Modelling", "Newton Cooling, Logistic Population growth, and RL electrical circuit simulations."),
+
+  // Unit V: Second Order Linear ODE
+  rmaTemplate("u5_homogeneous", 5, "Homogeneous", "Homogeneous Second-Order ODE", "ay″ + by′ + cy = 0; displays phase plane (y, y′) and time trajectory y(t)."),
+  rmaTemplate("u5_linearity", 5, "Superposition", "Linearity Principle & Superposition", "y(t) = c₁y₁ + c₂y₂; test linear independence with the Wronskian determinant W(y₁,y₂)."),
+  rmaTemplate("u5_constant_coeff", 5, "Root Cases", "Constant Coefficients (Root Cases)", "Real roots (exponential), repeated roots (critical damping), complex roots (oscillatory)."),
+  rmaTemplate("u5_euler_cauchy", 5, "Euler–Cauchy", "Euler–Cauchy Equations", "x²y″ + axy′ + by = 0; transform via x = eᵗ to analyze power-law solutions."),
+  rmaTemplate("u5_variation_params", 5, "Var of Parameters", "Variation of Parameters", "Construct particular solution yp = u₁y₁ + u₂y₂ using Green-Wronskian integrals."),
+];
+
+/**
  * Principles of Data Communication (U21IT201) — 42 Smart Board simulations (engine: smartboard/pdc-simulation.html).
  */
 const PDC_SUBJECT_KEYWORDS = ['principles of data communication', 'data communication', 'u21it201', 'u211t201', 'pdc'];
@@ -893,7 +962,7 @@ export const ECG_SIMULATION_TEMPLATES: ISimulationCatalogItem[] = [
   ecgTemplate("de-hazard-free", 5, "Hazard-Free Circuits", "Hazard-Free Circuit Designer", "Modify logic circuits to remove hazards: Hazardous Circuit → Identify Hazard → Add Redundant Logic (consensus term) → Hazard-Free Circuit → Verify."),
 ];
 
-SIMULATION_CATALOG.push(...ECG_SIMULATION_TEMPLATES, ...PDC_SIMULATION_TEMPLATES, ...EP_SIMULATION_TEMPLATES, ...EG_SIMULATION_TEMPLATES, ...MA_SIMULATION_TEMPLATES, ...EE_SIMULATION_TEMPLATES);
+SIMULATION_CATALOG.push(...ECG_SIMULATION_TEMPLATES, ...PDC_SIMULATION_TEMPLATES, ...EP_SIMULATION_TEMPLATES, ...EG_SIMULATION_TEMPLATES, ...MA_SIMULATION_TEMPLATES, ...RMA_SIMULATION_TEMPLATES, ...EE_SIMULATION_TEMPLATES);
 
 export function resolveSubjectDomain(subject: {
   subjectCode?: string;

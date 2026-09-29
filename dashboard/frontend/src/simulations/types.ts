@@ -1,6 +1,6 @@
 export type SimulationDomain = 'MATHEMATICS' | 'PHYSICS' | 'COMPUTER_SCIENCE' | 'CIVIL';
 
-export type MathCategory = 'graphs' | 'calculus visualization' | 'geometry' | 'matrices' | 'engineering mathematics';
+export type MathCategory = 'graphs' | 'calculus visualization' | 'geometry' | 'matrices' | 'engineering mathematics' | 'higher mathematics';
 export type PhysicsCategory = 'projectile motion' | 'circular motion' | 'mechanics' | 'waves' | 'engineering physics';
 export type CSCategory = 'sorting' | 'data structures' | 'algorithms' | 'networking' | 'data structures & algorithms' | 'operating systems' | 'engineering graphics' | 'electrical & electronics' | 'c programming' | 'problem solving';
 export type CivilCategory = 'structural analysis' | 'surveying' | 'construction simulations';

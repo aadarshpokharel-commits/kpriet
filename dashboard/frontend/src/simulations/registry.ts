@@ -605,6 +605,89 @@ export const MA_BOARD_SIMULATIONS: ISimulationDefinition[] = [
   maBoardSimulation("ma-variation-params", 5, "Ordinary Differential Equations", "ode", "Variation of Parameters", "Variation of Parameters Simulator", "🧷", "y₁, y₂, Wronskian, u₁ = −∫y₂f/W, u₂ = ∫y₁f/W, particular solution and the final curve."),
 ];
 
+/**
+ * Higher Mathematics (U25RMA101) — 35 Interactive Simulations across Units I–V.
+ * Powered by MathSimulations 3D/2D live engine with custom equation parser.
+ */
+const RMA_SUBJECT_KEYWORDS = ['u25rma101', 'higher mathematics', 'differential calculus', 'integral calculus', 'vector calculus', 'ordinary differential equations', 'engineering mathematics', 'mathematics'];
+function rmaBoardSimulation(id: string, unit: number, unitTitle: string, topic: string, title: string, icon: string, shortDescription: string): ISimulationDefinition {
+  return {
+    id,
+    boardEngine: 'ma',
+    unit,
+    unitTitle,
+    topic,
+    subjectKeywords: RMA_SUBJECT_KEYWORDS,
+    title,
+    domain: 'MATHEMATICS',
+    category: 'higher mathematics',
+    icon,
+    shortDescription,
+    detailedDescription: `${shortDescription} Opens inside the Smart Board Higher Mathematics 3D/2D Laboratory with custom equation input, live parameter controls, interactive canvas, and whiteboard stamp export.`,
+    learningObjectives: [`Understand and analyze ${topic} through interactive real-time visual exploration`, 'Connect theoretical equations with numerical and graphical representations'],
+    suggestedUnits: [unit],
+    smartboardPresetKey: id,
+    tags: ['Higher Mathematics', 'U25RMA101', unitTitle, topic],
+    parameters: [],
+    metrics: [],
+    engine: {
+      createInitialState: () => ({}),
+      update: (state) => state,
+      render: (ctx, width, height) => {
+        ctx.fillStyle = '#030712';
+        ctx.fillRect(0, 0, width, height);
+      },
+    },
+  };
+}
+
+export const RMA_BOARD_SIMULATIONS: ISimulationDefinition[] = [
+  // Unit I: Differential Calculus
+  rmaBoardSimulation("u1_surf", 1, "Differential Calculus", "Two Variables", "Functions of Two Variables", "🌐", "Interactive 3D surface z = f(x,y) with custom equation input, orbit rotation, and coordinate probes."),
+  rmaBoardSimulation("u1_partial", 1, "Differential Calculus", "Partial Derivs", "Partial Derivatives", "✂️", "Fix x or y to generate cross-sections, tangent slopes ∂f/∂x and ∂f/∂y, and the tangent plane."),
+  rmaBoardSimulation("u1_total", 1, "Differential Calculus", "Total Derivs", "Total Derivatives", "📈", "Change increments dx and dy; visualize resulting differential dz vs true surface increment Δz."),
+  rmaBoardSimulation("u1_taylor", 1, "Differential Calculus", "Taylor's Series", "Taylor Series Graph & Expansion", "✨", "Interactive two-variable 3D & single-variable 2D Taylor polynomial approximation with live order control, step-by-step term expansion, and SmartBoard canvas export."),
+  rmaBoardSimulation("u1_extrema", 1, "Differential Calculus", "Extreme Values", "Extreme Values & Saddle Points", "🏔️", "Find local maxima, local minima, and saddle points using the Hessian discriminant D = fxx·fyy - fxy²."),
+
+  // Unit II: Integral Calculus
+  rmaBoardSimulation("u2_double_riemann", 2, "Integral Calculus", "Double Integrals", "Double Integrals (Riemann Sum)", "🧱", "Build the volume integral using rectangular 3D elements Δx·Δy with adjustable subdivision density."),
+  rmaBoardSimulation("u2_rectangles", 2, "Integral Calculus", "Over Rectangles", "Double Integrals over Rectangles", "▭", "Adjust limits [a,b] × [c,d] and visualize the 3D volume under surface z = f(x,y)."),
+  rmaBoardSimulation("u2_general_regions", 2, "Integral Calculus", "General Regions", "General Regions (Type I & II)", "🔷", "Integration over arbitrary curved boundaries between curves y = g₁(x) and y = g₂(x)."),
+  rmaBoardSimulation("u2_fubini", 2, "Integral Calculus", "Fubini's Theorem", "Fubini's Theorem", "⇄", "Switch integration order between dx dy and dy dx; slice animation shows both yield identical volume."),
+  rmaBoardSimulation("u2_area_volume", 2, "Integral Calculus", "Area & Volume", "Area & Volume by Integration", "📦", "Accumulate cross-sectional slices to build 2D enclosed area and 3D volume."),
+  rmaBoardSimulation("u2_reverse_order", 2, "Integral Calculus", "Reverse Order", "Reversing Order of Integration", "🔀", "Visually swap vertical slicing strips to horizontal slicing strips to evaluate otherwise non-elementary integrals."),
+
+  // Unit III: Vector Calculus
+  rmaBoardSimulation("u3_vector_fields", 3, "Vector Calculus", "Vector Fields", "Vector Fields", "↗️", "Interactive grid of vector arrows with animated flow particles and custom vector inputs P(x,y), Q(x,y)."),
+  rmaBoardSimulation("u3_gradient", 3, "Vector Calculus", "Gradient", "Gradient (∇f)", "⛰️", "Shows direction of maximum increase orthogonal to scalar field contour curves."),
+  rmaBoardSimulation("u3_directional", 3, "Vector Calculus", "Directional Deriv", "Directional Derivative", "🎯", "Rotate unit vector u via slider; compute rate of change Du f = ∇f · u."),
+  rmaBoardSimulation("u3_divergence", 3, "Vector Calculus", "Divergence", "Divergence (div F)", "💥", "Visualize vector spreading (sources, div > 0) and converging (sinks, div < 0)."),
+  rmaBoardSimulation("u3_curl", 3, "Vector Calculus", "Curl", "Curl & Vortex Rotation", "🌪️", "Animate rotational fluid flow with an interactive paddle wheel showing local vorticity."),
+  rmaBoardSimulation("u3_line_integral", 3, "Vector Calculus", "Line Integrals", "Line Integrals along Curves", "〰️", "Move a particle along path C; accumulate line integral ∫_C F · dr in real time."),
+  rmaBoardSimulation("u3_work", 3, "Vector Calculus", "Work Done", "Work Done by Force Field", "⚙️", "Force field F acting on a particle moving from A to B; gauge displays total Work."),
+  rmaBoardSimulation("u3_circulation", 3, "Vector Calculus", "Circulation", "Circulation along Closed Loop", "🔄", "Particle orbiting around a closed boundary C; calculates net circulation ∮ F · dr."),
+  rmaBoardSimulation("u3_flux", 3, "Vector Calculus", "Flux", "Flux through Boundaries", "🚿", "Vectors crossing boundary curves and surfaces; displays outward normal dot product."),
+  rmaBoardSimulation("u3_path_indep", 3, "Vector Calculus", "Path Independence", "Path Independence", "🛤️", "Compare line integrals along straight, parabolic, and wavy paths between points A and B."),
+  rmaBoardSimulation("u3_conservative", 3, "Vector Calculus", "Conservative", "Conservative Vector Fields", "🛡️", "Verify ∂P/∂y = ∂Q/∂x and reconstruct potential function φ(x,y) with equipotential lines."),
+  rmaBoardSimulation("u3_greens", 3, "Vector Calculus", "Green's Theorem", "Green's Theorem", "🔄▭", "Boundary circulation ∮ (P dx + Q dy) equals double area integral ∬ (∂Q/∂x - ∂P/∂y) dA."),
+  rmaBoardSimulation("u3_gauss_stokes", 3, "Vector Calculus", "Gauss & Stokes", "Gauss & Stokes Theorems", "🌐💫", "3D Divergence theorem over closed volumes and Stokes curl circulation over 3D surfaces."),
+
+  // Unit IV: First Order Linear ODE
+  rmaBoardSimulation("u4_basics", 4, "First Order ODE", "ODE Basics", "ODE Basics & Direction Field", "🧭", "Interactive slope field grid; click anywhere on canvas or type custom dy/dx to generate RK4 trajectory."),
+  rmaBoardSimulation("u4_separable", 4, "First Order ODE", "Separable ODE", "Separable Differential Equations", "✂️", "dy/dx = g(x)h(y); adjust initial condition y(x₀) = y₀ to trace analytical solution families."),
+  rmaBoardSimulation("u4_exact", 4, "First Order ODE", "Exact ODE", "Exact Differential Equations", "⚖️", "M dx + N dy = 0; visualize level curves of potential function Ψ(x,y) = C."),
+  rmaBoardSimulation("u4_int_factor", 4, "First Order ODE", "Integrating Factor", "Integrating Factors", "🔑", "Transform non-exact ODE to exact form using multiplier μ(x) = exp(∫(My-Nx)/N dx)."),
+  rmaBoardSimulation("u4_linear", 4, "First Order ODE", "Linear ODE", "First-Order Linear ODE", "📈", "dy/dx + P(x)y = Q(x); decompose solution into Transient Response and Steady-State."),
+  rmaBoardSimulation("u4_modelling", 4, "First Order ODE", "Real Modelling", "Mathematical Modelling", "🧪", "Newton Cooling, Logistic Population growth, and RL electrical circuit simulations."),
+
+  // Unit V: Second Order Linear ODE
+  rmaBoardSimulation("u5_homogeneous", 5, "Second Order ODE", "Homogeneous", "Homogeneous Second-Order ODE", "⚖️", "ay″ + by′ + cy = 0; displays phase plane (y, y′) and time trajectory y(t)."),
+  rmaBoardSimulation("u5_linearity", 5, "Second Order ODE", "Superposition", "Linearity Principle & Superposition", "➕", "y(t) = c₁y₁ + c₂y₂; test linear independence with the Wronskian determinant W(y₁,y₂)."),
+  rmaBoardSimulation("u5_constant_coeff", 5, "Second Order ODE", "Root Cases", "Constant Coefficients (Root Cases)", "⚡", "Real roots (exponential), repeated roots (critical damping), complex roots (oscillatory)."),
+  rmaBoardSimulation("u5_euler_cauchy", 5, "Second Order ODE", "Euler–Cauchy", "Euler–Cauchy Equations", "📐", "x²y″ + axy′ + by = 0; transform via x = eᵗ to analyze power-law solutions."),
+  rmaBoardSimulation("u5_variation_params", 5, "Second Order ODE", "Var of Parameters", "Variation of Parameters", "🧩", "Construct particular solution yp = u₁y₁ + u₂y₂ using Green-Wronskian integrals."),
+];
+
 export const EG_BOARD_SIMULATIONS: ISimulationDefinition[] = [
   egBoardSimulation("eg-projection-generator", 4, "Solids, Sections and Development", "projection-generator", "3D Object → Projection", "3D Object → Projection Generator", "🧊", "Flagship: pick a solid, rotate it, choose a view and watch the front, top and side views generate with projection lines."),
   egBoardSimulation("eg-projection-solids", 4, "Solids, Sections and Development", "projection-of-solids", "Projection of Solids", "Projection of Solids", "🔷", "Prism, pyramid, cylinder and cone — axis perpendicular, inclined to HP, inclined to VP — views drawn stage by stage."),
@@ -1100,6 +1183,7 @@ export const SIMULATION_REGISTRY: ISimulationDefinition[] = [
   ...EP_BOARD_SIMULATIONS,
   ...EG_BOARD_SIMULATIONS,
   ...MA_BOARD_SIMULATIONS,
+  ...RMA_BOARD_SIMULATIONS,
   ...EE_BOARD_SIMULATIONS,
   // ═══════════════════════════════════════════════════════════════════════════
   // MATHEMATICS

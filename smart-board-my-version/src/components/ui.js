@@ -1300,6 +1300,10 @@ const UI = (() => {
             <svg viewBox="0 0 32 32" fill="none"><polygon points="16,4 28,26 4,26" stroke="#0284c7" stroke-width="2" fill="none"/><circle cx="16" cy="4" r="2.5" fill="#facc15"/><circle cx="28" cy="26" r="2.5" fill="#facc15"/><circle cx="4" cy="26" r="2.5" fill="#facc15"/><path d="M7,26 A8,8 0 0,0 12,23" stroke="#38bdf8" stroke-width="1.5" fill="none"/></svg>
             <span class="qlabel">Geo Proofs</span>
           </button>
+          <button class="fsc-quick-tool-btn is-sim-btn" onclick="MathSimulations.show(); UI.closeShapesFlyout();" title="📐 Higher Mathematics Lab (U25RMA101 · 35 Interactive Modules Units I–V)">
+            <svg viewBox="0 0 32 32" fill="none"><path d="M4,28 L16,4 L28,28 Z" stroke="#38bdf8" stroke-width="2" fill="none"/><circle cx="16" cy="14" r="5" stroke="#facc15" stroke-width="1.6"/><path d="M12,24 C14,20 18,20 20,24" stroke="#4ade80" stroke-width="1.6"/></svg>
+            <span class="qlabel">Higher Math</span>
+          </button>
         </div>`;
     } else if (domain === 'physics') {
       shelf.innerHTML = `

@@ -1519,10 +1519,40 @@
     const physKeys = ['projectile', 'pendulum', 'collision', 'optics', 'waves', 'circuits', 'thermodynamics'];
     const mathKeys = ['unitcircle', 'calculus', 'math-graphs', 'transforms', 'matrix-calc'];
 
+    const isMathSimKey = (k) => {
+      if (!k) return false;
+      if (k === 'math-sim' || k === 'math-simulations' || k === 'higher-math') return true;
+      if (/^u[1-5]_/.test(k)) return true;
+      if (window.MathSimulations && window.MathSimulations.CURRICULUM) {
+        for (const u of Object.values(window.MathSimulations.CURRICULUM)) {
+          if (u.modules && u.modules.some(m => m.id === k)) return true;
+        }
+      }
+      return false;
+    };
+
     if (physKeys.includes(key) && window.PhysicsLab && typeof window.PhysicsLab.show === 'function') {
       window.PhysicsLab.show(key);
       if (window.App && typeof window.App.showToast === 'function') {
         window.App.showToast('🚀 Physics Lab Launched: ' + (title || key), 'success');
+      }
+    } else if (isMathSimKey(key) && window.MathSimulations && typeof window.MathSimulations.show === 'function') {
+      let foundUnit = 'unit1';
+      let foundMod = key;
+      if (window.MathSimulations.CURRICULUM) {
+        for (const [uk, u] of Object.entries(window.MathSimulations.CURRICULUM)) {
+          if (u.modules && u.modules.some(m => m.id === key)) {
+            foundUnit = uk;
+            foundMod = key;
+            break;
+          }
+        }
+      } else if (/^u([1-5])_/.test(key)) {
+        foundUnit = 'unit' + key.match(/^u([1-5])_/)[1];
+      }
+      window.MathSimulations.show(foundUnit, foundMod);
+      if (window.App && typeof window.App.showToast === 'function') {
+        window.App.showToast('📐 Higher Math Launched: ' + (title || key), 'success');
       }
     } else if (mathKeys.includes(key) && window.MathVisualizer && typeof window.MathVisualizer.show === 'function') {
       window.MathVisualizer.show(key);
@@ -2374,7 +2404,7 @@
     const isEcgLab = simKey === 'ecg-lab' || (simKey && (simKey.startsWith('de-') || simKey.startsWith('ecg-'))) || (session && (session.subjectCode === 'U21ECG01' || String(session.subjectName || '').toLowerCase().includes('digital electronics')));
     const isPdcLab = simKey === 'pdc-lab' || (simKey && (simKey.startsWith('am-') || simKey.startsWith('fm-') || simKey.startsWith('comm-') || simKey.startsWith('ask-') || simKey.startsWith('fsk-') || simKey.startsWith('psk-') || simKey.startsWith('dpsk-') || simKey.startsWith('error-') || simKey.startsWith('rs232-') || simKey.startsWith('modem-') || simKey.startsWith('ascii-') || simKey.startsWith('barcode-') || simKey.startsWith('bandwidth-') || simKey.startsWith('analog-') || simKey.startsWith('bit-') || simKey.startsWith('waveform-') || simKey.startsWith('dcom-') || simKey.startsWith('info-') || simKey.startsWith('ber-') || simKey.startsWith('angle-') || simKey.startsWith('pm-'))) || (session && (session.subjectCode === 'U21IT201' || session.subjectCode === 'U211T201' || String(session.subjectName || '').toLowerCase().includes('data communication')));
     const isEeLab = simKey === 'ee-lab';
-    const isMaLab = simKey === 'ma-lab';
+    const isMaLab = simKey === 'ma-lab' || (simKey && (simKey.startsWith('ma-') || simKey.startsWith('math-') || /^u[1-5]_/.test(simKey))) || (session && (session.subjectCode === 'U21MA101' || session.subjectCode === 'U25RMA101' || String(session.subjectName || '').toLowerCase().includes('mathematics')));
     const isEgLab = simKey === 'eg-lab';
     const isEpLab = simKey === 'ep-lab' || isEgLab || isMaLab || isEeLab; // EP, EG and MA share the canvas engine (ep-simulation.js)
     const isCnLab = simKey === 'cn-lab' || isEpLab || isPdcLab || isEcgLab; // catalogue labs share one code path (PDC / CN / EP / EG / ECG)
@@ -2385,7 +2415,7 @@
     const widget = document.createElement('div');
     widget.id = 'rbac-smartboard-sim-widget';
     const boardTop = isIframeLab ? Math.max(56, Math.round((document.getElementById('app-main') || document.body).getBoundingClientRect().top) + 8) : 0;
-    widget.style.cssText = `position:fixed;${isIframeLab ? `top:${boardTop}px;left:16px;` : 'bottom:24px;right:24px;'}width:${isIframeLab ? 'calc(100vw - 32px)' : '640px'};height:${isIframeLab ? `calc(100vh - ${boardTop + 44}px)` : 'auto'};max-width:calc(100vw - 32px);max-height:calc(100vh - 32px);background:#0b1320;color:#f8fafc;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,0.6);border:1.5px solid ${isCLab || isOsLab ? '#0284c7' : isEcgLab ? '#6366f1' : isPdcLab ? '#10b981' : '#246B45'};z-index:9000;overflow:hidden;display:flex;flex-direction:column;font-family:"Plus Jakarta Sans","Inter",sans-serif;user-select:none;`;
+    widget.style.cssText = `position:fixed;${isIframeLab ? `top:${boardTop}px;left:16px;` : 'bottom:24px;right:24px;'}width:${isIframeLab ? 'calc(100vw - 32px)' : '640px'};height:${isIframeLab ? `calc(100vh - ${boardTop + 44}px)` : 'auto'};max-width:calc(100vw - 32px);max-height:calc(100vh - 32px);background:#0b1320;color:#f8fafc;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,0.6);border:1.5px solid ${isCLab || isOsLab ? '#0284c7' : isEcgLab ? '#6366f1' : isPdcLab ? '#10b981' : isMaLab ? '#38bdf8' : '#246B45'};z-index:9000;overflow:hidden;display:flex;flex-direction:column;font-family:"Plus Jakarta Sans","Inter",sans-serif;user-select:none;`;
 
     let labFrameUrl = '';
     if (isCnLab) {
@@ -2394,10 +2424,10 @@
       const cnQuery = new URLSearchParams({
         embedded: '1', lock: '1', sim: String(actualSimId),
         subjectId: String(session.subjectId || ''),
-        subjectName: String(session.subjectName || (isEcgLab ? 'Digital Electronics' : isPdcLab ? 'Principles of Data Communication' : '')),
-        subjectCode: String(session.subjectCode || (isEcgLab ? 'U21ECG01' : isPdcLab ? 'U21IT201' : '')),
+        subjectName: String(session.subjectName || (isEcgLab ? 'Digital Electronics' : isPdcLab ? 'Principles of Data Communication' : isMaLab ? 'Engineering Mathematics' : '')),
+        subjectCode: String(session.subjectCode || (isEcgLab ? 'U21ECG01' : isPdcLab ? 'U21IT201' : isMaLab ? (session.subjectCode || 'U21MA101') : '')),
         departmentId: String(session.departmentId || ''), departmentName: String(session.departmentName || session.programmeName || ''),
-        semesterId: String(session.semesterId || ''), semesterNumber: String(session.semesterNumber || (isEcgLab ? '2' : isPdcLab ? '2' : '')), role: String(session.role || 'teacher'),
+        semesterId: String(session.semesterId || ''), semesterNumber: String(session.semesterNumber || (isEcgLab ? '2' : isPdcLab ? '2' : isMaLab ? '1' : '')), role: String(session.role || 'teacher'),
         config: JSON.stringify(cnCtx.config || {}), state: JSON.stringify(cnCtx.state || {}),
       });
       const labFile = isEcgLab ? 'ecg-simulation.html' : isPdcLab ? 'pdc-simulation.html' : isEeLab ? 'ee-simulation.html' : isMaLab ? 'ma-simulation.html' : isEgLab ? 'eg-simulation.html' : isEpLab ? 'ep-simulation.html' : 'cn-simulation.html';
