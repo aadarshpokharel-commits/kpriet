@@ -19,10 +19,38 @@ import { HODRoute } from './guards/HODRoute';
 import { StudentRoute } from './guards/StudentRoute';
 import { TeacherRoute } from './guards/TeacherRoute';
 import { ProtectedRoute } from './guards/ProtectedRoute';
-import { paths } from './paths';
+import { paths, getDashboardPathForRole } from './paths';
+import { useAuth } from '@/context/AuthContext';
+
+function DashboardRedirect() {
+  const { user, isAuthenticated, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-900 text-white">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
+          <p className="text-sm text-slate-400">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+  if (!isAuthenticated || !user) {
+    return <Navigate to={paths.signin} replace />;
+  }
+  return <Navigate to={getDashboardPathForRole(user.role)} replace />;
+}
 
 export const router = createBrowserRouter(
   [
+    // Dashboard aliases (smooth return from Smart Board or bookmarks)
+    {
+      path: '/dashboard',
+      element: <DashboardRedirect />,
+    },
+    {
+      path: '/dashboard/index.html',
+      element: <DashboardRedirect />,
+    },
     // Public Web Pages
     {
       path: paths.root,

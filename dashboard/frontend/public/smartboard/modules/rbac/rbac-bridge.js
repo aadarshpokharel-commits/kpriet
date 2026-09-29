@@ -24,7 +24,26 @@
 
   const SESSION_KEY = 'eduverse_rbac_session';
   const ACTIVE_STORAGE_KEY = 'eduverse_smartboard_active_session';
-  const DASHBOARD_URL = '../dashboard/index.html';
+  const DASHBOARD_URL = '/teacher/dashboard';
+
+  function resolveDashboardUrl() {
+    if (session && session.returnUrl && !session.returnUrl.includes('dashboard/index.html')) {
+      return session.returnUrl;
+    }
+    if (document.referrer && (document.referrer.includes('/teacher') || document.referrer.includes('/student') || document.referrer.includes('/hod') || document.referrer.includes('/admin')) && !document.referrer.includes('dashboard/index.html')) {
+      return document.referrer;
+    }
+    const role = String(session.role || session.user?.role || '').toLowerCase();
+    if (role === 'student') {
+      if (session.subjectId) {
+        return `/student/subjects/${encodeURIComponent(session.subjectId)}`;
+      }
+      return '/student/dashboard';
+    }
+    if (role === 'hod') return '/hod/dashboard';
+    if (role === 'admin' || role === 'principal') return '/admin/dashboard';
+    return '/teacher/dashboard';
+  }
 
   /* ══════════════════════════════════════════════════════════
      1. PARSE QUERY PARAMETERS & PERSISTENT SESSION
@@ -717,13 +736,7 @@
     const backBtn = document.getElementById('rbac-back-to-dashboard');
     if (backBtn) {
       backBtn.addEventListener('click', function() {
-        if (session && session.returnUrl) {
-          window.location.href = session.returnUrl;
-        } else if (document.referrer && (document.referrer.includes('/teacher') || document.referrer.includes('/dashboard'))) {
-          window.location.href = document.referrer;
-        } else {
-          window.location.href = DASHBOARD_URL;
-        }
+        window.location.href = resolveDashboardUrl();
       });
     }
 
@@ -2381,8 +2394,7 @@
       });
 
       content.querySelector('#rbac-sn-back-dash').addEventListener('click', () => {
-        const url = (session && session.returnUrl) ? session.returnUrl : DASHBOARD_URL;
-        window.location.href = url;
+        window.location.href = resolveDashboardUrl();
       });
     }
 
