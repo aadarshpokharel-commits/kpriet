@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#f4f7f4">
+  <title>Principles of Data Communication Lab · Eduverse</title>
+  <link rel="stylesheet" href="styles/pdc-simulation.css">
+</head>
+<body>
+  <main class="pdc-app" id="pdc-app">
+    <!-- Header with Subject Metadata & Actions -->
+    <header class="pdc-header">
+      <div class="pdc-brand-mark" aria-hidden="true">PDC</div>
+      <div class="pdc-heading">
+        <div class="pdc-eyebrow" id="pdc-eyebrow">EDUVERSE · INTERACTIVE COMMUNICATION LAB</div>
+        <h1 id="pdc-title">Principles of Data Communication</h1>
+        <div class="pdc-sub-meta">
+          <span class="pdc-code-badge">U21IT201 · Sem II</span>
+          <span id="pdc-topic-tag" class="pdc-topic-tag">Communication System Elements Visualizer</span>
+        </div>
+      </div>
+      <div class="pdc-header-actions">
+        <!-- Dark / White Theme Toggle Button -->
+        <button type="button" id="pdc-theme-toggle" class="pdc-btn pdc-btn-outline pdc-theme-btn" title="Toggle between Dark and White theme" aria-label="Toggle Color Theme">
+          🌓 Dark Theme
+        </button>
+        <button type="button" id="pdc-fullscreen" class="pdc-btn pdc-btn-outline" title="Toggle Fullscreen">⛶ Fullscreen</button>
+        <button type="button" id="pdc-launch-board" class="pdc-btn pdc-btn-outline" style="display:none">Open in Smart Board</button>
+        <button type="button" id="pdc-close" class="pdc-icon-btn" aria-label="Close simulation" title="Close">✕</button>
+      </div>
+    </header>
+
+    <!-- Master Control Toolbar -->
+    <section class="pdc-toolbar" aria-label="Simulation selection and playback controls">
+      <div class="pdc-toolbar-left">
+        <label class="pdc-select-label">Curriculum Unit
+          <select id="pdc-unit" aria-label="Select PDC Unit">
+            <option value="1" selected>Unit I: Introduction</option>
+            <option value="2">Unit II: Amplitude Modulation</option>
+            <option value="3">Unit III: Angle Modulation</option>
+            <option value="4">Unit IV: Digital Modulation</option>
+            <option value="5">Unit V: Data Communication</option>
+          </select>
+        </label>
+        <label class="pdc-select-label" id="pdc-sim-wrap">Simulation Topic
+          <select id="pdc-simulation" aria-label="Select simulation topic"></select>
+        </label>
+      </div>
+
+      <!-- Mode Switcher: Learn | Experiment | Challenge -->
+      <div class="pdc-toolbar-center">
+        <div class="pdc-mode-switcher" role="tablist" aria-label="Simulation Learning Modes">
+          <button type="button" class="pdc-mode-btn active" data-mode="learn" role="tab" aria-selected="true" title="Teacher/Concept Guided Mode">
+            🎓 Learn Mode
+          </button>
+          <button type="button" class="pdc-mode-btn" data-mode="experiment" role="tab" aria-selected="false" title="Interactive Exploration Mode">
+            🔬 Experiment
+          </button>
+          <button type="button" class="pdc-mode-btn" data-mode="challenge" role="tab" aria-selected="false" title="Problem Solving & Assessment Mode">
+            🏆 Challenge
+          </button>
+        </div>
+      </div>
+
+      <!-- Playback Controls -->
+      <div class="pdc-toolbar-right">
+        <div class="pdc-playback" role="group" aria-label="Playback controls">
+          <button type="button" class="pdc-btn" id="pdc-prev" aria-label="Previous step" title="Step Back">◀ Prev</button>
+          <button type="button" class="pdc-btn pdc-btn-primary" id="pdc-play" title="Play animation">▶ Play</button>
+          <button type="button" class="pdc-btn" id="pdc-pause" disabled title="Pause animation">⏸ Pause</button>
+          <button type="button" class="pdc-btn" id="pdc-next" aria-label="Next step" title="Advance one step">Next ▶</button>
+          <button type="button" class="pdc-btn" id="pdc-reset" title="Reset parameters">↻ Reset</button>
+        </div>
+
+        <label class="pdc-select-label" for="pdc-speed">Speed
+          <select id="pdc-speed" aria-label="Animation speed">
+            <option value="0.5">0.5×</option>
+            <option value="1" selected>1×</option>
+            <option value="1.5">1.5×</option>
+            <option value="2">2×</option>
+          </select>
+        </label>
+
+        <div class="pdc-step-pill">
+          <span id="pdc-step-label">Step 1 of 4</span>
+          <div class="pdc-progress-track" aria-hidden="true"><div id="pdc-progress-fill" class="pdc-progress-fill"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Workspace Layout (2-Column DSA Structure) -->
+    <div class="pdc-layout">
+      <!-- Left Column: Visual Canvas Stage, Explanation Grid, Controls -->
+      <section class="pdc-main-col">
+        <!-- Interactive Stage Card -->
+        <div class="pdc-card pdc-stage-card" aria-labelledby="pdc-visual-heading">
+          <div class="pdc-card-head">
+            <div>
+              <span class="pdc-kicker" id="pdc-kicker-badge">LIVE SIGNAL SIMULATION</span>
+              <h2 id="pdc-visual-heading">Signal Visualization Stage</h2>
+            </div>
+            <div class="pdc-legend" id="pdc-legend" aria-label="Visualization legend"></div>
+          </div>
+
+          <div class="pdc-stage-container" id="pdc-stage-container">
+            <div class="pdc-stage-overlay">
+              <span class="pdc-overlay-badge" id="pdc-overlay-sim">AM Principle</span>
+              <span class="pdc-overlay-badge" id="pdc-overlay-state">Live Math Engine</span>
+            </div>
+            <canvas id="pdc-canvas" class="pdc-canvas" width="960" height="380"></canvas>
+          </div>
+        </div>
+
+        <!-- Pedagogical Explanation Grid (DSA Follow-The-Logic) -->
+        <div class="pdc-card pdc-explain-card" aria-labelledby="pdc-explain-heading">
+          <div class="pdc-card-head">
+            <div>
+              <span class="pdc-kicker">STEP-BY-STEP DYNAMICS</span>
+              <h2 id="pdc-explain-heading">Pedagogical Analysis</h2>
+            </div>
+          </div>
+          <div class="pdc-explain-grid">
+            <div class="pdc-explain-cell">
+              <span class="pdc-cell-label">What is happening</span>
+              <p id="pdc-what">Signal initialized. Ready to begin simulation.</p>
+            </div>
+            <div class="pdc-explain-cell">
+              <span class="pdc-cell-label">Why this happens</span>
+              <p id="pdc-why">Baseband message modulates carrier wave to allow electromagnetic propagation.</p>
+            </div>
+            <div class="pdc-explain-cell">
+              <span class="pdc-cell-label">Next Step / Effect</span>
+              <p id="pdc-next-info">Advance the step or adjust parameters to observe dynamic signal changes.</p>
+            </div>
+          </div>
+
+          <!-- Dynamic Real-Time Math Metrics Strip -->
+          <div class="pdc-metrics-row" id="pdc-metrics-row" aria-label="Real-time mathematical metrics"></div>
+        </div>
+
+        <!-- Interactive Inputs & Parameters Card -->
+        <div class="pdc-card pdc-input-card" id="pdc-input-card" aria-labelledby="pdc-input-heading">
+          <div class="pdc-card-head">
+            <div>
+              <span class="pdc-kicker">PARAMETERS &amp; CONTROLS</span>
+              <h2 id="pdc-input-heading">Interactive Signal Controls</h2>
+            </div>
+            <span class="pdc-muted" style="font-size:11px">Real-time parametric adjustments</span>
+          </div>
+          <form id="pdc-inputs-form" class="pdc-inputs-grid" autocomplete="off" onsubmit="return false;"></form>
+          <div class="pdc-input-actions" id="pdc-input-actions"></div>
+        </div>
+
+        <!-- Challenge Mode Interactive Card -->
+        <div class="pdc-card pdc-challenge-card" id="pdc-challenge-card" style="display:none">
+          <div class="pdc-card-head">
+            <div>
+              <span class="pdc-kicker" style="color:#db2777">CHALLENGE &amp; ASSESSMENT</span>
+              <h2>Interactive Subject Challenge</h2>
+            </div>
+          </div>
+          <div class="pdc-challenge-body">
+            <div class="pdc-challenge-prompt" id="pdc-challenge-prompt">Challenge instructions loading...</div>
+            <div class="pdc-input-actions">
+              <button type="button" class="pdc-btn pdc-btn-primary" id="pdc-verify-challenge">Submit &amp; Verify Solution</button>
+              <button type="button" class="pdc-btn" id="pdc-reset-challenge">Reset Challenge</button>
+            </div>
+            <div class="pdc-challenge-result" id="pdc-challenge-result"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Formulas, Engineering Specs & Subject AI -->
+      <aside class="pdc-side-col">
+        <!-- Mathematical Formulation Card -->
+        <section class="pdc-card pdc-math-card" aria-labelledby="pdc-math-heading">
+          <div class="pdc-card-head">
+            <div>
+              <span class="pdc-kicker">MATHEMATICAL FORMULATION</span>
+              <h2 id="pdc-math-heading">Governing Equations</h2>
+            </div>
+          </div>
+          <div class="pdc-formula-box" id="pdc-formula-box">s(t) = A_c [1 + m \cdot \cos(\omega_m t)] \cos(\omega_c t)</div>
+        </section>
+
+        <!-- Engineering Specifications & Limits Card -->
+        <section class="pdc-card pdc-spec-card" aria-labelledby="pdc-spec-heading">
+          <div class="pdc-card-head">
+            <div>
+              <span class="pdc-kicker">SYSTEM SPECIFICATIONS</span>
+              <h2 id="pdc-spec-heading">Key Parameters</h2>
+            </div>
+          </div>
+          <div class="pdc-spec-list" id="pdc-spec-list"></div>
+        </section>
+
+        <!-- Context-Aware Subject AI Assistant -->
+        <section class="pdc-card pdc-ai-card" aria-labelledby="pdc-ai-heading">
+          <div class="pdc-card-head">
+            <div>
+              <span class="pdc-kicker">CONTEXT-AWARE TUTOR</span>
+              <h2 id="pdc-ai-heading">Communication AI Assistant</h2>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--pdc-muted);margin-bottom:8px">
+            Ask about the current waveform state, modulation index, sidebands, or channel errors.
+          </p>
+          <textarea id="pdc-ai-question" rows="2" placeholder="e.g. Why does overmodulation cause distortion?" aria-label="Ask about this simulation step"></textarea>
+          <div style="margin-top:8px">
+            <button type="button" id="pdc-ask-ai" class="pdc-btn pdc-btn-primary" style="width:100%">Ask Subject AI</button>
+          </div>
+          <div id="pdc-ai-answer" class="pdc-ai-answer" style="display:none" aria-live="polite"></div>
+        </section>
+      </aside>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="pdc-toast" class="pdc-toast" role="status" aria-live="polite"></div>
+  </main>
+
+  <!-- Load Catalog and Simulation Engine Scripts -->
+  <script src="tools/pdc-catalog.js"></script>
+  <script src="tools/pdc-simulation.js"></script>
+</body>
+</html>

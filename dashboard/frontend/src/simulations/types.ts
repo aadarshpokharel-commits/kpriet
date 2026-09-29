@@ -2,7 +2,7 @@ export type SimulationDomain = 'MATHEMATICS' | 'PHYSICS' | 'COMPUTER_SCIENCE' | 
 
 export type MathCategory = 'graphs' | 'calculus visualization' | 'geometry' | 'matrices' | 'engineering mathematics';
 export type PhysicsCategory = 'projectile motion' | 'circular motion' | 'mechanics' | 'waves' | 'engineering physics';
-export type CSCategory = 'sorting' | 'data structures' | 'algorithms' | 'networking' | 'data structures & algorithms' | 'operating systems' | 'engineering graphics' | 'c programming' | 'problem solving';
+export type CSCategory = 'sorting' | 'data structures' | 'algorithms' | 'networking' | 'data structures & algorithms' | 'operating systems' | 'engineering graphics' | 'electrical & electronics' | 'c programming' | 'problem solving';
 export type CivilCategory = 'structural analysis' | 'surveying' | 'construction simulations';
 
 export type SimulationCategory = MathCategory | PhysicsCategory | CSCategory | CivilCategory;
@@ -60,14 +60,18 @@ export interface ISimulationDefinition {
   osCategory?: string;
   /** C Programming simulation (Execution, Memory, Pointers, Arrays, Structs, …). Runs inside Smart Board. */
   cCategory?: string;
+  /** Principles of Data Communication simulation (AM, FM, PM, ASK, FSK, PSK, Error Control, …). Runs inside Smart Board. */
+  pdcCategory?: string;
+  /** Digital Electronics (U21ECG01) simulation. Runs inside Smart Board. */
+  ecgCategory?: string;
   /**
    * Subject words this simulation belongs to (matched against the subject name/code).
    * When set, the simulation is shown only in matching subjects — e.g. networking
-   * simulations only in Computer Networks, DSA simulations only in Data Structures, OS simulations only in Operating Systems, C simulations only in C Programming.
+   * simulations only in Computer Networks, DSA simulations only in Data Structures, OS simulations only in Operating Systems, C simulations only in C Programming, PDC in Principles of Data Communication.
    */
   subjectKeywords?: string[];
-  /** Engine that runs this simulation inside the Smart Board ('dsa' or 'cn'). */
-  boardEngine?: 'dsa' | 'cn' | 'ep' | 'eg' | 'ma';
+  /** Engine that runs this simulation inside the Smart Board ('dsa', 'cn', 'ep', 'eg', 'ma', 'pdc', 'ee', 'ecg'). */
+  boardEngine?: 'dsa' | 'cn' | 'ep' | 'eg' | 'ma' | 'pdc' | 'ee' | 'ecg';
   /** Engineering Physics: syllabus area of the simulation (laser, fiber-optics, ultrasonics, thermal-fluids, crystal-physics). */
   simulationSubtype?: string;
   /** Syllabus unit / topic (used to organise the subject's simulation library). */
@@ -91,6 +95,11 @@ export function isSmartBoardOsSimulation(def?: { id?: string; osCategory?: strin
 /** True when the simulation is one of the C Programming simulations that open on the Smart Board. */
 export function isSmartBoardCSimulation(def?: { id?: string; cCategory?: string } | null): boolean {
   return Boolean(def && (def.cCategory || (def.id && def.id.startsWith('c-')) || def.id === 'cs-c-lab'));
+}
+
+/** True when the simulation is one of the Principles of Data Communication simulations. */
+export function isSmartBoardPdcSimulation(def?: { id?: string; pdcCategory?: string; boardEngine?: string } | null): boolean {
+  return Boolean(def && (def.pdcCategory || def.boardEngine === 'pdc' || (def.id && (def.id.startsWith('pdc-') || def.id.startsWith('am-') || def.id.startsWith('fm-') || def.id.startsWith('comm-')))));
 }
 
 export interface IAssignedSimulation {
@@ -130,6 +139,8 @@ export interface ISimulationLaunchContext {
   category?: string;
   config?: Record<string, unknown>;
   state?: Record<string, unknown>;
+  /** Syllabus unit of the simulation (used by catalogue labs). */
+  unit?: number;
 }
 
 
@@ -282,4 +293,34 @@ export function isSmartBoardEgSimulation(def?: { boardEngine?: string } | null):
 /** True when the simulation is one of the Engineering Mathematics simulations that open on the Smart Board. */
 export function isSmartBoardMaSimulation(def?: { boardEngine?: string } | null): boolean {
   return Boolean(def && def.boardEngine === 'ma');
+}
+
+/** True when the simulation is one of the Electrical & Electronics (U21EEG01) simulations that open on the Smart Board. */
+export function isSmartBoardEeSimulation(def?: { boardEngine?: string } | null): boolean {
+  return Boolean(def && def.boardEngine === 'ee');
+}
+
+/** True when the simulation is one of the Digital Electronics (U21ECG01) simulations that open on the Smart Board. */
+export function isSmartBoardEcgSimulation(def?: { id?: string; ecgCategory?: string; boardEngine?: string } | null): boolean {
+  return Boolean(def && (def.ecgCategory || def.boardEngine === 'ecg' || (def.id && (def.id.startsWith('de-') || def.id.startsWith('ecg-')))));
+}
+
+/** One Challenge-mode attempt stored in SimulationActivity.challengeAttempts. */
+export interface ISimulationChallengeAttempt {
+  _id?: string;
+  student?: { _id: string; name?: string; email?: string; rollNumber?: string } | string;
+  challengeId: string;
+  kind: string;
+  prompt: string;
+  target: number;
+  unit?: string;
+  tolerance: number;
+  configuration?: Record<string, unknown>;
+  answer?: { value?: number | null; text?: string };
+  calculation?: string;
+  attempt: number;
+  result: 'CORRECT' | 'INCORRECT';
+  verified: boolean;
+  serverValue?: number | null;
+  submittedAt: string;
 }

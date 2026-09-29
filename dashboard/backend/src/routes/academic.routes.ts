@@ -23,6 +23,7 @@ import {
   gradeSubmissionSchema,
   recordAttendanceSchema,
   recordSimulationActivitySchema,
+  submitSimulationChallengeSchema,
   requestEnrollmentSchema,
   reviewEnrollmentSchema,
   reviewFacultySchema,
@@ -391,6 +392,23 @@ academicRouter.post(
   requireSubjectAccess('id'),
   validate({ body: recordSimulationActivitySchema }),
   AcademicController.recordSimulationActivity
+);
+
+// Challenge mode: a student submits an attempt (verified server-side, stored in SimulationActivity)
+academicRouter.post(
+  '/subjects/:id/simulations/:simulationId/challenge-attempts',
+  requireRole(UserRole.STUDENT),
+  requireSubjectAccess('id'),
+  validate({ body: submitSimulationChallengeSchema }),
+  AcademicController.submitSimulationChallenge
+);
+
+// Challenge results: teachers of the subject see every student's attempts; a student sees only their own
+academicRouter.get(
+  '/subjects/:id/simulations/:simulationId/challenge-attempts',
+  requireRole(UserRole.STUDENT, UserRole.TEACHER, UserRole.HOD, UserRole.ADMIN, UserRole.PRINCIPAL),
+  requireSubjectAccess('id'),
+  AcademicController.getSimulationChallengeAttempts
 );
 
 // Teacher assigns simulation to subject & chapter/unit

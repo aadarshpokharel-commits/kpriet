@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#f4f5f9">
+  <title>Digital Electronics Lab · Eduverse</title>
+  <link rel="stylesheet" href="styles/ecg-simulation.css">
+</head>
+<body>
+  <main class="ecg-app" id="ecg-app">
+    <!-- Header with Subject Metadata & Actions -->
+    <header class="ecg-header">
+      <div class="ecg-brand-mark" aria-hidden="true">DE</div>
+      <div class="ecg-heading">
+        <div class="ecg-eyebrow" id="ecg-eyebrow">EDUVERSE · INTERACTIVE DIGITAL ELECTRONICS LAB</div>
+        <h1 id="ecg-title">Digital Electronics</h1>
+        <div class="ecg-sub-meta">
+          <span class="ecg-code-badge">U21ECG01 · Sem II</span>
+          <span id="ecg-topic-tag" class="ecg-topic-tag">Logic Gate Simulator</span>
+        </div>
+      </div>
+      <div class="ecg-header-actions">
+        <!-- Dark / White Theme Toggle Button -->
+        <button type="button" id="ecg-theme-toggle" class="ecg-btn ecg-btn-outline ecg-theme-btn" title="Toggle between Dark and White theme" aria-label="Toggle Color Theme">
+          🌓 Dark Theme
+        </button>
+        <button type="button" id="ecg-fullscreen" class="ecg-btn ecg-btn-outline" title="Toggle Fullscreen">⛶ Fullscreen</button>
+        <button type="button" id="ecg-launch-board" class="ecg-btn ecg-btn-outline" style="display:none">Open in Smart Board</button>
+        <button type="button" id="ecg-close" class="ecg-icon-btn" aria-label="Close simulation" title="Close">✕</button>
+      </div>
+    </header>
+
+    <!-- Master Control Toolbar -->
+    <section class="ecg-toolbar" aria-label="Simulation selection and playback controls">
+      <div class="ecg-toolbar-left">
+        <label class="ecg-select-label">Curriculum Unit
+          <select id="ecg-unit" aria-label="Select DE Unit">
+            <option value="1" selected>Unit I: Boolean Theorems & Logic Reduction</option>
+            <option value="2">Unit II: Combinational Logic Design</option>
+            <option value="3">Unit III: Latches and Flip-Flops</option>
+            <option value="4">Unit IV: Sequential Circuits</option>
+            <option value="5">Unit V: Registers and Hazards</option>
+          </select>
+        </label>
+        <label class="ecg-select-label" id="ecg-sim-wrap">Simulation Topic
+          <select id="ecg-simulation" aria-label="Select simulation topic"></select>
+        </label>
+      </div>
+
+      <!-- Mode Switcher: Learn | Experiment | Challenge -->
+      <div class="ecg-toolbar-center">
+        <div class="ecg-mode-switcher" role="tablist" aria-label="Simulation Learning Modes">
+          <button type="button" class="ecg-mode-btn active" data-mode="learn" role="tab" aria-selected="true" title="Teacher/Concept Guided Mode">
+            🎓 Learn Mode
+          </button>
+          <button type="button" class="ecg-mode-btn" data-mode="experiment" role="tab" aria-selected="false" title="Interactive Exploration Mode">
+            🔬 Experiment
+          </button>
+          <button type="button" class="ecg-mode-btn" data-mode="challenge" role="tab" aria-selected="false" title="Problem Solving & Assessment Mode">
+            🏆 Challenge
+          </button>
+        </div>
+      </div>
+
+      <!-- Playback Controls -->
+      <div class="ecg-toolbar-right">
+        <div class="ecg-playback" role="group" aria-label="Playback controls">
+          <button type="button" class="ecg-btn" id="ecg-prev" aria-label="Previous step" title="Step Back">◀ Prev</button>
+          <button type="button" class="ecg-btn ecg-btn-primary" id="ecg-play" title="Play animation">▶ Play</button>
+          <button type="button" class="ecg-btn" id="ecg-pause" disabled title="Pause animation">⏸ Pause</button>
+          <button type="button" class="ecg-btn" id="ecg-next" aria-label="Next step" title="Advance one step">Next ▶</button>
+          <button type="button" class="ecg-btn" id="ecg-reset" title="Reset parameters">↻ Reset</button>
+        </div>
+
+        <label class="ecg-select-label" for="ecg-speed">Speed
+          <select id="ecg-speed" aria-label="Animation speed">
+            <option value="0.5">0.5×</option>
+            <option value="1" selected>1×</option>
+            <option value="1.5">1.5×</option>
+            <option value="2">2×</option>
+          </select>
+        </label>
+
+        <div class="ecg-step-pill">
+          <span id="ecg-step-label">Step 1 of 4</span>
+          <div class="ecg-progress-track" aria-hidden="true"><div id="ecg-progress-fill" class="ecg-progress-fill"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Workspace Layout (2-Column) -->
+    <div class="ecg-layout">
+      <!-- Left Column: Visual Canvas Stage, Explanation Grid, Controls -->
+      <section class="ecg-main-col">
+        <!-- Interactive Stage Card -->
+        <div class="ecg-card ecg-stage-card" aria-labelledby="ecg-visual-heading">
+          <div class="ecg-card-head">
+            <div>
+              <span class="ecg-kicker" id="ecg-kicker-badge">LIVE CIRCUIT SIMULATION</span>
+              <h2 id="ecg-visual-heading">Circuit Visualization Stage</h2>
+            </div>
+            <div class="ecg-legend" id="ecg-legend" aria-label="Visualization legend"></div>
+          </div>
+
+          <div class="ecg-stage-container" id="ecg-stage-container">
+            <div class="ecg-stage-overlay">
+              <span class="ecg-overlay-badge" id="ecg-overlay-sim">Logic Gates</span>
+              <span class="ecg-overlay-badge" id="ecg-overlay-state">Live Logic Engine</span>
+            </div>
+            <canvas id="ecg-canvas" class="ecg-canvas" width="960" height="420"></canvas>
+          </div>
+        </div>
+
+        <!-- Pedagogical Explanation Grid -->
+        <div class="ecg-card ecg-explain-card" aria-labelledby="ecg-explain-heading">
+          <div class="ecg-card-head">
+            <div>
+              <span class="ecg-kicker">STEP-BY-STEP LOGIC</span>
+              <h2 id="ecg-explain-heading">Pedagogical Analysis</h2>
+            </div>
+          </div>
+          <div class="ecg-explain-grid">
+            <div class="ecg-explain-cell">
+              <span class="ecg-cell-label">What is happening</span>
+              <p id="ecg-what">Circuit initialized. Ready to begin simulation.</p>
+            </div>
+            <div class="ecg-explain-cell">
+              <span class="ecg-cell-label">Why this happens</span>
+              <p id="ecg-why">Digital logic gates process binary inputs to produce deterministic outputs based on Boolean algebra.</p>
+            </div>
+            <div class="ecg-explain-cell">
+              <span class="ecg-cell-label">Next Step / Effect</span>
+              <p id="ecg-next-info">Advance the step or adjust parameters to observe dynamic logic changes.</p>
+            </div>
+          </div>
+
+          <!-- Dynamic Real-Time Metrics Strip -->
+          <div class="ecg-metrics-row" id="ecg-metrics-row" aria-label="Real-time logic metrics"></div>
+        </div>
+
+        <!-- Interactive Inputs & Parameters Card -->
+        <div class="ecg-card ecg-input-card" id="ecg-input-card" aria-labelledby="ecg-input-heading">
+          <div class="ecg-card-head">
+            <div>
+              <span class="ecg-kicker">PARAMETERS &amp; CONTROLS</span>
+              <h2 id="ecg-input-heading">Interactive Circuit Controls</h2>
+            </div>
+            <span class="ecg-muted" style="font-size:11px">Real-time parametric adjustments</span>
+          </div>
+          <form id="ecg-inputs-form" class="ecg-inputs-grid" autocomplete="off" onsubmit="return false;"></form>
+          <div class="ecg-input-actions" id="ecg-input-actions"></div>
+        </div>
+
+        <!-- Challenge Mode Interactive Card -->
+        <div class="ecg-card ecg-challenge-card" id="ecg-challenge-card" style="display:none">
+          <div class="ecg-card-head">
+            <div>
+              <span class="ecg-kicker" style="color:#db2777">CHALLENGE &amp; ASSESSMENT</span>
+              <h2>Interactive Subject Challenge</h2>
+            </div>
+          </div>
+          <div class="ecg-challenge-body">
+            <div class="ecg-challenge-prompt" id="ecg-challenge-prompt">Challenge instructions loading...</div>
+            <div class="ecg-input-actions">
+              <button type="button" class="ecg-btn ecg-btn-primary" id="ecg-verify-challenge">Submit &amp; Verify Solution</button>
+              <button type="button" class="ecg-btn" id="ecg-reset-challenge">Reset Challenge</button>
+            </div>
+            <div class="ecg-challenge-result" id="ecg-challenge-result"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Formulas, Specifications & Subject AI -->
+      <aside class="ecg-side-col">
+        <!-- Mathematical / Boolean Formulation Card -->
+        <section class="ecg-card ecg-math-card" aria-labelledby="ecg-math-heading">
+          <div class="ecg-card-head">
+            <div>
+              <span class="ecg-kicker">BOOLEAN / MATHEMATICAL FORMULATION</span>
+              <h2 id="ecg-math-heading">Governing Equations</h2>
+            </div>
+          </div>
+          <div class="ecg-formula-box" id="ecg-formula-box">F = A · B + A' · C</div>
+        </section>
+
+        <!-- Engineering Specifications & Truth Table Card -->
+        <section class="ecg-card ecg-spec-card" aria-labelledby="ecg-spec-heading">
+          <div class="ecg-card-head">
+            <div>
+              <span class="ecg-kicker">CIRCUIT SPECIFICATIONS</span>
+              <h2 id="ecg-spec-heading">Key Parameters</h2>
+            </div>
+          </div>
+          <div class="ecg-spec-list" id="ecg-spec-list"></div>
+        </section>
+
+        <!-- Context-Aware Subject AI Assistant -->
+        <section class="ecg-card ecg-ai-card" aria-labelledby="ecg-ai-heading">
+          <div class="ecg-card-head">
+            <div>
+              <span class="ecg-kicker">CONTEXT-AWARE TUTOR</span>
+              <h2 id="ecg-ai-heading">Digital Electronics AI Assistant</h2>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--ecg-muted);margin-bottom:8px">
+            Ask about the current gate output, K-map grouping, flip-flop state, counter sequence, or hazard.
+          </p>
+          <textarea id="ecg-ai-question" rows="2" placeholder="e.g. Why does this K-map grouping simplify to AB'?" aria-label="Ask about this simulation step"></textarea>
+          <div style="margin-top:8px">
+            <button type="button" id="ecg-ask-ai" class="ecg-btn ecg-btn-primary" style="width:100%">Ask Subject AI</button>
+          </div>
+          <div id="ecg-ai-answer" class="ecg-ai-answer" style="display:none" aria-live="polite"></div>
+        </section>
+      </aside>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="ecg-toast" class="ecg-toast" role="status" aria-live="polite"></div>
+  </main>
+
+  <!-- Load Catalog and Simulation Engine Scripts -->
+  <script src="tools/ecg-catalog.js"></script>
+  <script src="tools/ecg-simulation.js"></script>
+</body>
+</html>

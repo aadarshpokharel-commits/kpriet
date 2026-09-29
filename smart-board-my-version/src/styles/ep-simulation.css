@@ -187,3 +187,23 @@ body.ep-board .ep-chip { padding: 4px 9px; }
   .ep-stage { min-height: 320px; }
   .ep-header { flex-wrap: wrap; }
 }
+
+/* ── Learn / Experiment / Challenge (labs with learningModes) ── */
+.ep-learn { display: flex; align-items: center; gap: 3px; padding: 3px; border-radius: 12px; background: #eef3ef; }
+.ep-learn .ep-seg { min-height: 38px; font-size: 13.5px; white-space: nowrap; }
+.ep-learn .ep-seg.active { background: var(--green-dark, #166534); color: #fff; }
+.ep-delta { font-style: normal; font-size: 11px; font-weight: 900; margin-left: 2px; color: var(--muted); }
+.ep-delta.up { color: #15803d; } .ep-delta.down { color: #b91c1c; }
+.ep-challenge .ep-ch-task { font-size: 15px; font-weight: 700; line-height: 1.45; margin: 4px 0 8px; }
+.ep-ch-target { display: flex; align-items: baseline; gap: 8px; padding: 8px 10px; border-radius: 10px; background: #fef3c7; border: 1px solid #fcd34d; margin-bottom: 8px; }
+.ep-ch-target span { font-size: 11px; font-weight: 850; text-transform: uppercase; color: #92400e; letter-spacing: .05em; }
+.ep-ch-target b { font-size: 18px; color: #78350f; } .ep-ch-target small { color: #92400e; font-weight: 700; }
+.ep-ch-actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0; }
+.ep-ch-actions .ep-btn { flex: 1 1 auto; min-height: 44px; }
+.ep-ch-res { display: flex; flex-direction: column; gap: 4px; padding: 8px 10px; border-radius: 10px; background: #f1f5f9; margin: 6px 0; font-size: 13.5px; }
+.ep-ch-res.ok { background: #dcfce7; border: 1px solid #86efac; } .ep-ch-res.no { background: #fee2e2; border: 1px solid #fca5a5; }
+.ep-ch-res code { font-size: 12.5px; white-space: pre-wrap; color: #0f172a; }
+.ep-ch-res small { color: var(--muted); }
+.ep-ch-history { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 3px; font-size: 12.5px; }
+.ep-ch-history li { padding: 4px 8px; border-radius: 8px; background: #f8fafc; } .ep-ch-history li.ok { background: #f0fdf4; } .ep-ch-history li.no { background: #fef2f2; }
+body.ep-board .ep-learn .ep-seg { min-height: 46px; font-size: 14.5px; }

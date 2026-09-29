@@ -913,6 +913,14 @@
     return DSA_SIMULATIONS.find((s) => s.dsaCategory === category) || null;
   }
 
+  /* Principles of Data Communication (U21IT201) — 42 simulations from tools/pdc-catalog.js */
+  const PDC_SUBJECT_KEYWORDS = ['principles of data communication', 'data communication', 'u21it201', 'u211t201', 'pdc'];
+  const PDC_CATALOG = (typeof window !== 'undefined' && window.EduversePDCCatalog) || null;
+  const PDC_SIMULATIONS = PDC_CATALOG ? PDC_CATALOG.simulations.map((sim) => ({
+    id: 'sim-' + sim.id, simKey: sim.id, title: sim.title, domain: 'DSA', category: `Unit ${sim.unit} · ${sim.topic}`,
+    description: sim.description, icon: sim.icon, subjectKeywords: PDC_SUBJECT_KEYWORDS, unit: sim.unit, topic: sim.topic,
+  })) : [];
+
   /* Computer Networks (U21CSG05) — 35 simulations from tools/cn-catalog.js, organised
      Unit → Topic. Each opens inside the Smart Board (engine: cn-simulation.html). */
   const CN_SUBJECT_KEYWORDS = ['computer network', 'data communication', 'internetwork'];
@@ -930,14 +938,47 @@
     id: 'sim-' + sim.id, simKey: sim.id, title: sim.title, domain: 'PHYSICS', category: `Unit ${sim.unit} · ${sim.topic}`,
     description: sim.description, icon: sim.icon, subjectKeywords: EP_SUBJECT_KEYWORDS, unit: sim.unit, topic: sim.topic,
   })) : [];
-  /** Catalogue entry (CN / EP) for a simulation key, so backend-listed sims keep their unit, topic and subject tags. */
+  /* Engineering Graphics (U21ME101) — 11 simulations from tools/eg-catalog.js (engine: eg-simulation.html). */
+  const EG_SUBJECT_KEYWORDS = ['engineering graphics', 'u21me101', 'u21meg01'];
+  const EG_CATALOG = (typeof window !== 'undefined' && window.EduverseEGCatalog) || null;
+  const EG_SIMULATIONS = EG_CATALOG ? EG_CATALOG.simulations.map((sim) => ({
+    id: 'sim-' + sim.id, simKey: sim.id, title: sim.title, domain: 'DSA', category: `Unit ${sim.unit} · ${sim.topic}`,
+    description: sim.description, icon: sim.icon, subjectKeywords: EG_SUBJECT_KEYWORDS, unit: sim.unit, topic: sim.topic,
+  })) : [];
+  /* Engineering Mathematics (U21MA101 · Calculus and Differential Equations) — 29 simulations from tools/ma-catalog.js (engine: ma-simulation.html). */
+  const MA_SUBJECT_KEYWORDS = ['engineering mathematics', 'u21ma101', 'calculus and differential equations'];
+  const MA_CATALOG = (typeof window !== 'undefined' && window.EduverseMACatalog) || null;
+  const MA_SIMULATIONS = MA_CATALOG ? MA_CATALOG.simulations.map((sim) => ({
+    id: 'sim-' + sim.id, simKey: sim.id, title: sim.title, domain: 'MATHEMATICS', category: `Unit ${sim.unit} · ${sim.topic}`,
+    description: sim.description, icon: sim.icon, subjectKeywords: MA_SUBJECT_KEYWORDS, unit: sim.unit, topic: sim.topic,
+  })) : [];
+  /* Basics of Electrical and Electronics Engineering (U21EEG01) — 35 simulations from tools/ee-catalog.js (engine: ee-simulation.html). */
+  const EE_SUBJECT_KEYWORDS = ['basics of electrical and electronics engineering', 'basic electrical and electronics engineering', 'u21eeg01'];
+  const EE_CATALOG = (typeof window !== 'undefined' && window.EduverseEECatalog) || null;
+  const EE_SIMULATIONS = EE_CATALOG ? EE_CATALOG.simulations.map((sim) => ({
+    id: 'sim-' + sim.id, simKey: sim.id, title: sim.title, domain: 'DSA', category: `Unit ${sim.unit} · ${sim.topic}`,
+    description: sim.description, icon: sim.icon, subjectKeywords: EE_SUBJECT_KEYWORDS, unit: sim.unit, topic: sim.topic,
+  })) : [];
+  /* Digital Electronics (U21ECG01) — 46 simulations from tools/ecg-catalog.js (engine: ecg-simulation.html). */
+  const ECG_SUBJECT_KEYWORDS = ['digital electronics', 'u21ecg01', 'digital logic', 'digital circuits', 'logic design', 'ecg01', 'de'];
+  const ECG_CATALOG = (typeof window !== 'undefined' && window.EduverseECGCatalog) || null;
+  const ECG_SIMULATIONS = ECG_CATALOG ? (ECG_CATALOG.SIMULATIONS || (ECG_CATALOG.getAllSimulations && ECG_CATALOG.getAllSimulations()) || []).map((sim) => ({
+    id: 'sim-' + sim.id, simKey: sim.id, title: sim.title, domain: 'DSA', category: `Unit ${sim.unit} · ${sim.topic}`,
+    description: sim.description, icon: sim.icon, subjectKeywords: ECG_SUBJECT_KEYWORDS, unit: sim.unit, topic: sim.topic,
+  })) : [];
+  /** Catalogue entry (PDC / CN / EP / EG / MA / EE / ECG) for a simulation key, so backend-listed sims keep their unit, topic and subject tags. */
   function catalogLabSimFor(key) {
-    return [...CN_SIMULATIONS, ...EP_SIMULATIONS].find((x) => x.simKey === key) || null;
+    return [...PDC_SIMULATIONS, ...CN_SIMULATIONS, ...EP_SIMULATIONS, ...EG_SIMULATIONS, ...MA_SIMULATIONS, ...EE_SIMULATIONS, ...ECG_SIMULATIONS].find((x) => x.simKey === key) || null;
   }
 
   const COMPREHENSIVE_SIMULATIONS = [
+    ...ECG_SIMULATIONS,
+    ...PDC_SIMULATIONS,
     ...CN_SIMULATIONS,
     ...EP_SIMULATIONS,
+    ...EG_SIMULATIONS,
+    ...MA_SIMULATIONS,
+    ...EE_SIMULATIONS,
     // ─── DATA STRUCTURES & ALGORITHMS (10 simulations, one engine, shown on the board) ───
     ...DSA_SIMULATIONS,
     // ─── OTHER COMPUTER SCIENCE ───
@@ -1388,12 +1429,50 @@
   function launchSimulation(key, title, simulationContext = {}) {
     activeResourceTitle = title || (key + ' Simulation');
 
+    // Digital Electronics (U21ECG01): open the chosen simulation on the board
+    const ecgSim = (ECG_CATALOG && ECG_CATALOG.getSimulationById && ECG_CATALOG.getSimulationById(key)) ||
+      (key && (key.startsWith('de-') || key.startsWith('ecg-')) ? { id: key, title: title || key, unit: (simulationContext && simulationContext.unit) || 1, topic: (simulationContext && simulationContext.topic) || '' } : null);
+    if (ecgSim || (session && (session.subjectCode === 'U21ECG01' || String(session.subjectName || '').toLowerCase().includes('digital electronics')) && key && (key.startsWith('de-') || key.startsWith('ecg-')))) {
+      const ecg = ecgSim || { id: key, title: title || key, unit: (simulationContext && simulationContext.unit) || 1, topic: (simulationContext && simulationContext.topic) || '' };
+      activeResourceTitle = title || ecg.title;
+      launchSmartBoardSimWidget('ecg-lab', title || ecg.title, { ...(simulationContext || {}), simId: key, unit: ecg.unit, topic: ecg.topic });
+      if (window.App && typeof window.App.showToast === 'function') window.App.showToast('🚀 ' + (title || ecg.title) + ' opened on the board', 'success');
+      return;
+    }
+
     // Computer Networks: open the chosen simulation on the board
     if (CN_CATALOG && CN_CATALOG.get(key)) {
       const cn = CN_CATALOG.get(key);
       activeResourceTitle = title || cn.title;
       launchSmartBoardSimWidget('cn-lab', title || cn.title, { ...(simulationContext || {}), simId: key, unit: cn.unit, unitTitle: cn.unitTitle, topic: cn.topic });
       if (window.App && typeof window.App.showToast === 'function') window.App.showToast('🚀 ' + (title || cn.title) + ' opened on the board', 'success');
+      return;
+    }
+
+    // Electrical & Electronics: open the chosen simulation on the board
+    if (EE_CATALOG && EE_CATALOG.get(key)) {
+      const ee = EE_CATALOG.get(key);
+      activeResourceTitle = title || ee.title;
+      launchSmartBoardSimWidget('ee-lab', title || ee.title, { ...(simulationContext || {}), simId: key, unit: ee.unit, unitTitle: ee.unitTitle, topic: ee.topic });
+      if (window.App && typeof window.App.showToast === 'function') window.App.showToast('🚀 ' + (title || ee.title) + ' opened on the board', 'success');
+      return;
+    }
+
+    // Engineering Mathematics: open the chosen simulation on the board
+    if (MA_CATALOG && MA_CATALOG.get(key)) {
+      const ma = MA_CATALOG.get(key);
+      activeResourceTitle = title || ma.title;
+      launchSmartBoardSimWidget('ma-lab', title || ma.title, { ...(simulationContext || {}), simId: key, unit: ma.unit, unitTitle: ma.unitTitle, topic: ma.topic });
+      if (window.App && typeof window.App.showToast === 'function') window.App.showToast('🚀 ' + (title || ma.title) + ' opened on the board', 'success');
+      return;
+    }
+
+    // Engineering Graphics: open the chosen simulation on the board
+    if (EG_CATALOG && EG_CATALOG.get(key)) {
+      const eg = EG_CATALOG.get(key);
+      activeResourceTitle = title || eg.title;
+      launchSmartBoardSimWidget('eg-lab', title || eg.title, { ...(simulationContext || {}), simId: key, unit: eg.unit, unitTitle: eg.unitTitle, topic: eg.topic });
+      if (window.App && typeof window.App.showToast === 'function') window.App.showToast('🚀 ' + (title || eg.title) + ' opened on the board', 'success');
       return;
     }
 
@@ -2292,8 +2371,13 @@
       existing.remove();
     }
 
-    const isEpLab = simKey === 'ep-lab';
-    const isCnLab = simKey === 'cn-lab' || isEpLab; // catalogue labs share one code path (CN / EP)
+    const isEcgLab = simKey === 'ecg-lab' || (simKey && (simKey.startsWith('de-') || simKey.startsWith('ecg-'))) || (session && (session.subjectCode === 'U21ECG01' || String(session.subjectName || '').toLowerCase().includes('digital electronics')));
+    const isPdcLab = simKey === 'pdc-lab' || (simKey && (simKey.startsWith('am-') || simKey.startsWith('fm-') || simKey.startsWith('comm-') || simKey.startsWith('ask-') || simKey.startsWith('fsk-') || simKey.startsWith('psk-') || simKey.startsWith('dpsk-') || simKey.startsWith('error-') || simKey.startsWith('rs232-') || simKey.startsWith('modem-') || simKey.startsWith('ascii-') || simKey.startsWith('barcode-') || simKey.startsWith('bandwidth-') || simKey.startsWith('analog-') || simKey.startsWith('bit-') || simKey.startsWith('waveform-') || simKey.startsWith('dcom-') || simKey.startsWith('info-') || simKey.startsWith('ber-') || simKey.startsWith('angle-') || simKey.startsWith('pm-'))) || (session && (session.subjectCode === 'U21IT201' || session.subjectCode === 'U211T201' || String(session.subjectName || '').toLowerCase().includes('data communication')));
+    const isEeLab = simKey === 'ee-lab';
+    const isMaLab = simKey === 'ma-lab';
+    const isEgLab = simKey === 'eg-lab';
+    const isEpLab = simKey === 'ep-lab' || isEgLab || isMaLab || isEeLab; // EP, EG and MA share the canvas engine (ep-simulation.js)
+    const isCnLab = simKey === 'cn-lab' || isEpLab || isPdcLab || isEcgLab; // catalogue labs share one code path (PDC / CN / EP / EG / ECG)
     const isDsaLab = simKey === 'cs-dsa-lab';
     const isOsLab = !isCnLab && (simKey === 'cs-os-lab' || simKey.startsWith('os-') || (session && (session.subjectCode === 'U21CS403' || String(session.subjectName || '').toLowerCase().includes('operating system'))));
     const isCLab = !isCnLab && !isOsLab && (simKey === 'c-lab' || simKey.startsWith('c-') || (session && (session.subjectCode === 'U21CS101' || session.subjectCode === 'U21CSG01' || String(session.subjectName || '').toLowerCase().includes('c programming') || String(session.subjectName || '').toLowerCase().includes('problem solving'))));
@@ -2301,19 +2385,23 @@
     const widget = document.createElement('div');
     widget.id = 'rbac-smartboard-sim-widget';
     const boardTop = isIframeLab ? Math.max(56, Math.round((document.getElementById('app-main') || document.body).getBoundingClientRect().top) + 8) : 0;
-    widget.style.cssText = `position:fixed;${isIframeLab ? `top:${boardTop}px;left:16px;` : 'bottom:24px;right:24px;'}width:${isIframeLab ? 'calc(100vw - 32px)' : '640px'};height:${isIframeLab ? `calc(100vh - ${boardTop + 44}px)` : 'auto'};max-width:calc(100vw - 32px);max-height:calc(100vh - 32px);background:#0b1320;color:#f8fafc;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,0.6);border:1.5px solid ${isCLab || isOsLab ? '#0284c7' : '#246B45'};z-index:9000;overflow:hidden;display:flex;flex-direction:column;font-family:"Plus Jakarta Sans","Inter",sans-serif;user-select:none;`;
+    widget.style.cssText = `position:fixed;${isIframeLab ? `top:${boardTop}px;left:16px;` : 'bottom:24px;right:24px;'}width:${isIframeLab ? 'calc(100vw - 32px)' : '640px'};height:${isIframeLab ? `calc(100vh - ${boardTop + 44}px)` : 'auto'};max-width:calc(100vw - 32px);max-height:calc(100vh - 32px);background:#0b1320;color:#f8fafc;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,0.6);border:1.5px solid ${isCLab || isOsLab ? '#0284c7' : isEcgLab ? '#6366f1' : isPdcLab ? '#10b981' : '#246B45'};z-index:9000;overflow:hidden;display:flex;flex-direction:column;font-family:"Plus Jakarta Sans","Inter",sans-serif;user-select:none;`;
 
     let labFrameUrl = '';
     if (isCnLab) {
       const cnCtx = simulationContext || {};
+      const actualSimId = cnCtx.simId || (simKey !== 'ecg-lab' && simKey !== 'pdc-lab' && simKey !== 'cn-lab' && simKey !== 'ep-lab' && simKey !== 'ee-lab' && simKey !== 'ma-lab' && simKey !== 'eg-lab' ? simKey : '') || '';
       const cnQuery = new URLSearchParams({
-        embedded: '1', lock: '1', sim: String(cnCtx.simId || ''),
-        subjectId: String(session.subjectId || ''), subjectName: String(session.subjectName || ''), subjectCode: String(session.subjectCode || ''),
+        embedded: '1', lock: '1', sim: String(actualSimId),
+        subjectId: String(session.subjectId || ''),
+        subjectName: String(session.subjectName || (isEcgLab ? 'Digital Electronics' : isPdcLab ? 'Principles of Data Communication' : '')),
+        subjectCode: String(session.subjectCode || (isEcgLab ? 'U21ECG01' : isPdcLab ? 'U21IT201' : '')),
         departmentId: String(session.departmentId || ''), departmentName: String(session.departmentName || session.programmeName || ''),
-        semesterId: String(session.semesterId || ''), semesterNumber: String(session.semesterNumber || ''), role: String(session.role || 'teacher'),
+        semesterId: String(session.semesterId || ''), semesterNumber: String(session.semesterNumber || (isEcgLab ? '2' : isPdcLab ? '2' : '')), role: String(session.role || 'teacher'),
         config: JSON.stringify(cnCtx.config || {}), state: JSON.stringify(cnCtx.state || {}),
       });
-      const cnUrl = new URL(isEpLab ? 'ep-simulation.html' : 'cn-simulation.html', window.location.href);
+      const labFile = isEcgLab ? 'ecg-simulation.html' : isPdcLab ? 'pdc-simulation.html' : isEeLab ? 'ee-simulation.html' : isMaLab ? 'ma-simulation.html' : isEgLab ? 'eg-simulation.html' : isEpLab ? 'ep-simulation.html' : 'cn-simulation.html';
+      const cnUrl = new URL(labFile, window.location.href);
       cnUrl.search = cnQuery.toString();
       labFrameUrl = cnUrl.toString();
     } else if (isIframeLab) {
@@ -2352,7 +2440,7 @@
           <span style="font-size:16px">${isCLab ? '⚡' : isOsLab ? '💻' : '🔬'}</span>
           <div>
             <h4 style="margin:0;font-size:13.5px;font-weight:800;color:#ffffff">${escapeHtml(title || (isCLab ? 'C Programming Simulation Lab' : isOsLab ? 'Operating Systems Simulation Lab' : 'Interactive Academic Simulation'))}</h4>
-            <span style="font-size:10px;color:${isCLab || isOsLab ? '#bae6fd' : '#a7f3d0'};font-weight:600">${isCnLab ? escapeHtml(`${session.subjectCode || (isEpLab ? 'U21PH101' : 'U21CSG05')} · Unit ${simulationContext.unit || ''} · ${simulationContext.topic || ''}`) : isCLab ? escapeHtml(`${session.subjectCode || 'U21CS101'} · Problem Solving & C Programming`) : 'Smart Board Live Widget • Stylus Ready'}</span>
+            <span style="font-size:10px;color:${isCLab || isOsLab ? '#bae6fd' : '#a7f3d0'};font-weight:600">${isCnLab ? escapeHtml(`${session.subjectCode || (isEeLab ? 'U21EEG01' : isMaLab ? 'U21MA101' : isEgLab ? 'U21ME101' : isEpLab ? 'U21PH101' : 'U21CSG05')} · Unit ${simulationContext.unit || ''} · ${simulationContext.topic || ''}`) : isCLab ? escapeHtml(`${session.subjectCode || 'U21CS101'} · Problem Solving & C Programming`) : 'Smart Board Live Widget • Stylus Ready'}</span>
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:6px">
@@ -2366,7 +2454,7 @@
 
       <div id="rbac-sim-w-body" style="${isIframeLab ? 'padding:0;display:flex;flex:1;min-height:0;' : 'padding:14px;display:flex;flex-direction:column;gap:10px;'}">
         ${isIframeLab
-          ? `<iframe id="rbac-sim-w-dsa-frame" title="${isEpLab ? 'Engineering Physics interactive simulation' : isCnLab ? 'Computer Networks interactive simulation' : isOsLab ? 'Operating Systems interactive simulation' : 'Data Structures & Algorithms interactive simulation'}" src="${escapeHtml(labFrameUrl)}" allow="fullscreen" style="display:block;width:100%;height:100%;min-height:0;border:0;background:${isOsLab ? '#f8fafc' : '#f4f7f3'}"></iframe><canvas id="rbac-sim-w-canvas" width="960" height="520" aria-hidden="true" style="display:none"></canvas>`
+          ? `<iframe id="rbac-sim-w-dsa-frame" title="${isEeLab ? 'Electrical and Electronics interactive simulation' : isMaLab ? 'Engineering Mathematics interactive simulation' : isEgLab ? 'Engineering Graphics interactive simulation' : isEpLab ? 'Engineering Physics interactive simulation' : isCnLab ? 'Computer Networks interactive simulation' : isOsLab ? 'Operating Systems interactive simulation' : 'Data Structures & Algorithms interactive simulation'}" src="${escapeHtml(labFrameUrl)}" allow="fullscreen" style="display:block;width:100%;height:100%;min-height:0;border:0;background:${isOsLab ? '#f8fafc' : '#f4f7f3'}"></iframe><canvas id="rbac-sim-w-canvas" width="960" height="520" aria-hidden="true" style="display:none"></canvas>`
           : `<div style="background:#020617;border-radius:10px;border:1px solid #1e293b;position:relative;overflow:hidden;height:240px;display:flex;align-items:center;justify-content:center"><canvas id="rbac-sim-w-canvas" width="612" height="240" style="width:100%;height:100%;display:block"></canvas></div><div id="rbac-sim-w-controls" style="background:rgba(255,255,255,0.04);border-radius:10px;padding:10px 12px;border:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:8px"><!-- Dynamic Controls --></div>`}
       </div>
     `;
@@ -2430,7 +2518,7 @@
     stampBtn.addEventListener('click', () => {
       if (isEpLab) {
         const frameEl = widget.querySelector('#rbac-sim-w-dsa-frame');
-        const png = frameEl && frameEl.contentWindow && frameEl.contentWindow.EPEngine ? frameEl.contentWindow.EPEngine.getPng() : '';
+        const png = frameEl && frameEl.contentWindow && (frameEl.contentWindow.SimLabEngine || frameEl.contentWindow.EPEngine) ? (frameEl.contentWindow.SimLabEngine || frameEl.contentWindow.EPEngine).getPng() : '';
         if (!png) return;
         if (typeof Canvas !== 'undefined' && typeof Canvas.addImageShape === 'function') {
           Canvas.addImageShape(png, 120, 100, 760, 426, title + ' — snapshot');
@@ -2495,8 +2583,13 @@
           window.EduverseSubjectContext = session;
           if (window.AIAssistant && typeof window.AIAssistant.openPanel === 'function') {
             window.AIAssistant.openPanel();
-            window.AIAssistant.askQuestion(String(message.question || 'Explain the current simulation step.'), message.selection || { type: 'Simulation state', content: JSON.stringify(session.simulationContext).slice(0, 7500), source: isEpLab ? 'ep-simulation' : 'cn-simulation' });
+            window.AIAssistant.askQuestion(String(message.question || 'Explain the current simulation step.'), message.selection || { type: 'Simulation state', content: JSON.stringify(session.simulationContext).slice(0, 7500), source: isEeLab ? 'ee-simulation' : isMaLab ? 'ma-simulation' : isEgLab ? 'eg-simulation' : isEpLab ? 'ep-simulation' : 'cn-simulation' });
           }
+          return;
+        }
+        if (message.type === 'EDUVERSE_SIM_CHALLENGE_SUBMIT') {
+          // On the classroom board the challenge is solved together; individual attempts are stored when a student submits from the subject workspace.
+          try { event.source && event.source.postMessage({ type: 'EDUVERSE_SIM_CHALLENGE_RESULT', ok: false, message: 'Checked on the board — students save their own attempts from Subject → Simulations.' }, window.location.origin); } catch (e) { /* frame closed */ }
           return;
         }
         if (message.type === 'EDUVERSE_DSA_CLOSE' || message.type === 'EDUVERSE_OS_CLOSE' || message.type === 'EDUVERSE_C_CLOSE' || message.type === 'EDUVERSE_SIM_CLOSE') {

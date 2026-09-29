@@ -363,7 +363,6 @@ export function StudentDashboardPage() {
           COURSE FILTER & SEARCH TOOLBAR (For content tabs)
       ══════════════════════════════════════════════════════════ */}
       {activeTab !== 'overview' &&
-        activeTab !== 'simulations' &&
         activeTab !== 'semesterManagement' && (
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 rounded-2xl border border-line bg-panel p-4 shadow-sm">
             <div className="flex items-center gap-2 flex-wrap">

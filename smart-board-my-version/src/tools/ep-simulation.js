@@ -21,6 +21,15 @@
  *   draw(g, S)  S = {p, c, step, st, t, dur, mode, view, playing, D}
  *   stepDuration?: number                – seconds per step while playing (default 4)
  *   view3d?: boolean                     – drag to rotate, wheel/buttons to zoom
+ *   live?: boolean                       – keep animating (S.t advances) even when the steps are paused
+ *   challenge?: { make(rand, p) → {kind, prompt, target, unit, tolerance, setup?, hint?},
+ *                 evaluate(p, c, ch) → {value, text, calculation} }   – Challenge mode (labs with learningModes)
+ *
+ * Labs with EduverseSimLabConfig.learningModes get Learn / Experiment / Challenge modes:
+ *   Learn      – teacher drives the steps (students' inputs are locked to the teacher's settings)
+ *   Experiment – every input is live; readouts show ▲/▼ against the previous values
+ *   Challenge  – an interactive task; Submit posts EDUVERSE_SIM_CHALLENGE_SUBMIT to the host page,
+ *                which stores the attempt through the existing backend and replies EDUVERSE_SIM_CHALLENGE_RESULT.
  */
 (function () {
   const params = new URLSearchParams(window.location.search);
@@ -56,6 +65,9 @@
   let view = VIEW0(); let autoRotate = false; let exampleIndex = -1; let panMode = false; let ui = {}; let teacherConfig = {};
   let showFormula = true; let showExplain = true; let toastTimer = null; let postTimer = null;
   let g = null; let canvas = null;
+  const LEARN_MODES = LAB.learningModes ? [['learn', '📘', 'Learn'], ['experiment', '🧪', 'Experiment'], ['challenge', '🏆', 'Challenge']] : null;
+  let learnMode = LEARN_MODES ? (['learn', 'experiment', 'challenge'].includes(params.get('learn')) ? params.get('learn') : (ctx.role === 'student' ? 'experiment' : 'learn')) : '';
+  let challenge = null; let attempts = []; let lastReadouts = {}; let pendingSubmit = null;
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
   function toast(msg) { const el = $('ep-toast'); el.textContent = msg; el.classList.add('visible'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('visible'), 3200); }
@@ -118,6 +130,7 @@
       const d = spec.params.find((x) => x.key === el.dataset.num);
       el.addEventListener('change', () => setParam(d, el.value, true));
     });
+    applyLearnLock();
   }
   function setParam(d, value, rerender) {
     const before = visibleParams().map((x) => x.key).join();
@@ -164,7 +177,16 @@
     renderReadouts(); renderFormulas(); renderExplain(); renderSteps(); draw(); schedulePost();
   }
   function renderReadouts() {
-    $('ep-readouts').innerHTML = (calc.readouts || []).map((r) => `<div class="ep-chip ${r.tone ? 'tone-' + r.tone : ''}"><span>${esc(r.label)}</span><b>${esc(r.value)}</b></div>`).join('');
+    const num = (v) => { const m = /^[−-]?\d+(\.\d+)?/.exec(String(v).replace('−', '-')); return m ? Number(m[0].replace('−', '-')) : NaN; };
+    $('ep-readouts').innerHTML = (calc.readouts || []).map((r) => {
+      let delta = '';
+      if (learnMode === 'experiment' && lastReadouts[r.label] != null && lastReadouts[r.label] !== r.value) {
+        const a = num(lastReadouts[r.label]), b = num(r.value);
+        delta = Number.isFinite(a) && Number.isFinite(b) && a !== b ? `<i class="ep-delta ${b > a ? 'up' : 'down'}" title="was ${esc(lastReadouts[r.label])}">${b > a ? '▲' : '▼'}</i>` : '<i class="ep-delta" title="changed">●</i>';
+      }
+      return `<div class="ep-chip ${r.tone ? 'tone-' + r.tone : ''}"><span>${esc(r.label)}</span><b>${esc(r.value)}</b>${delta}</div>`;
+    }).join('');
+    lastReadouts = {}; (calc.readouts || []).forEach((r) => { lastReadouts[r.label] = r.value; });
   }
   function renderFormulas() {
     const list = calc.formulas || [];
@@ -216,7 +238,9 @@
   function loop(now) {
     raf = 0;
     const dt = Math.min(0.1, (now - last) / 1000); last = now;
-    const running = playing || transient || autoRotate;
+    const live = Boolean(spec && spec.live);
+    const running = playing || transient || autoRotate || live;
+    if (live && !playing && !transient) t += dt * speed;
     if (playing || transient) {
       t += dt * speed; st += dt * speed;
       if (playing && st >= dur() && step < steps.length - 1) { step++; st = 0; renderSteps(); schedulePost(); }
@@ -394,6 +418,13 @@
     recompute(false);
     if (stt.step) { step = Math.max(0, Math.min(steps.length - 1, Number(stt.step) - 1)); }
     st = dur(); renderSteps();
+    if (LEARN_MODES) {
+      const want = stt.learnMode || params.get('learn') || cfg.learningMode;
+      challenge = null; attempts = []; renderChallenge();
+      setLearnMode(['learn', 'experiment', 'challenge'].includes(want) ? want : learnMode, true);
+    }
+    lastReadouts = {};
+    if (spec.live) ensureLoop();
     requestAnimationFrame(fitCanvas);
   }
 
@@ -423,6 +454,8 @@
       currentState: Object.assign({}, readouts, calc.state || {}),
       formulas: (calc.formulas || []).map((f) => `${f.name}: ${f.formula}; ${f.given ? 'given ' + f.given + '; ' : ''}${f.calc ? f.calc + '; ' : ''}result ${f.result} ${f.unit || ''}`.trim()),
       explanation: calc.explain || {},
+      learningMode: learnMode || undefined,
+      challenge: learnMode === 'challenge' && challenge ? { task: challenge.prompt, target: `${challenge.target} ${challenge.unit || ''}`.trim(), tolerance: challenge.tolerance, lastAttempt: attempts[0] ? { answer: attempts[0].answerText, result: attempts[0].result } : undefined } : undefined,
     };
   }
   function schedulePost() { clearTimeout(postTimer); postTimer = setTimeout(postState, 120); }
@@ -453,12 +486,12 @@
     } catch (e) { answer.textContent = e.message || 'Could not contact the AI service.'; }
     finally { $('ep-ask-ai').disabled = false; }
   }
-  function configFor() { return { defaultParameters: Object.assign({}, p), visualizationMode: p.mode || '' }; }
+  function configFor() { return Object.assign({ defaultParameters: Object.assign({}, p), visualizationMode: p.mode || '' }, learnMode ? { learningMode: learnMode } : {}); }
   function launchBoard(id) {
     const s = CAT.get(id || (sim && sim.id)); if (!s) return;
     const same = sim && sim.id === s.id;
     const uiState = same && spec.saveUi ? spec.saveUi(ui) : undefined;
-    const context = { topic: s.topic, category: s.id, config: same ? configFor() : {}, state: same ? Object.assign({ step: step + 1, mode: p.mode || '' }, uiState ? { ui: uiState } : {}, spec.view3d || spec.view2d ? { view: Object.assign({}, view) } : {}) : {} };
+    const context = { topic: s.topic, category: s.id, config: same ? configFor() : {}, state: same ? Object.assign({ step: step + 1, mode: p.mode || '', parameters: Object.assign({}, p) }, learnMode ? { learnMode } : {}, uiState ? { ui: uiState } : {}, spec.view3d || spec.view2d ? { view: Object.assign({}, view) } : {}) : {} };
     if (window.parent !== window) window.parent.postMessage({ type: 'EDUVERSE_SIM_LAUNCH_SMARTBOARD', simKey: s.id, title: s.title, context }, window.location.origin);
     else {
       const q = new URLSearchParams({ subjectId: ctx.subjectId, subjectName: ctx.subjectName, subjectCode: ctx.subjectCode, departmentName: ctx.departmentName, semesterNumber: ctx.semesterNumber, role: ctx.role, preset: s.id, title: s.title, topic: s.topic, config: JSON.stringify(context.config), state: JSON.stringify(context.state) });
@@ -470,6 +503,92 @@
     $('ep-publish').disabled = true;
     window.parent.postMessage({ type: 'EDUVERSE_SIM_PUBLISH', simKey: sim.id, title: sim.title, unit: sim.unit, topic: sim.topic, config: Object.assign({ simulationType: CAT.simulationType, simulationSubtype: sim.subtype }, configFor(), { steps: steps.map((s) => s.title) }) }, window.location.origin);
     setTimeout(() => { $('ep-publish').disabled = false; }, 2500);
+  }
+
+  // ─── Learn / Experiment / Challenge ───
+  function setupLearnModes() {
+    if (!LEARN_MODES) return;
+    const bar = document.createElement('div'); bar.className = 'ep-learn ep-player-only hidden'; bar.id = 'ep-learn'; bar.setAttribute('role', 'group'); bar.setAttribute('aria-label', 'Learning mode');
+    bar.innerHTML = LEARN_MODES.map(([k, ic, lab]) => `<button type="button" class="ep-seg" data-learn="${k}" aria-pressed="false" title="${lab} mode">${ic} ${lab}</button>`).join('');
+    const actions = document.querySelector('.ep-header-actions'); actions.insertBefore(bar, actions.firstChild);
+    bar.querySelectorAll('[data-learn]').forEach((b) => b.addEventListener('click', () => setLearnMode(b.dataset.learn)));
+    const card = $('ep-challenge-card');
+    if (card) {
+      $('ep-ch-new').addEventListener('click', () => newChallenge());
+      $('ep-ch-submit').addEventListener('click', submitChallenge);
+    }
+    window.addEventListener('message', (e) => {
+      if (e.origin !== window.location.origin || !e.data || e.data.type !== 'EDUVERSE_SIM_CHALLENGE_RESULT' || !pendingSubmit) return;
+      finishSubmit(e.data);
+    });
+  }
+  function applyLearnLock() {
+    if (!LEARN_MODES) return;
+    const lock = learnMode === 'learn' && !isTeacher;
+    $('ep-params').querySelectorAll('input,select,textarea').forEach((el) => { el.disabled = lock; });
+    ['ep-examples', 'ep-reset-params'].forEach((id) => { const b = $(id); if (b) b.disabled = lock; });
+    const note = $('ep-student-note');
+    if (note) { note.textContent = lock ? 'Learn mode — follow the steps; switch to 🧪 Experiment to change the values yourself.' : 'Your changes stay on this device — the teacher\'s settings are not changed.'; note.classList.toggle('hidden', isTeacher && !lock); }
+  }
+  function setLearnMode(k, silent) {
+    if (!LEARN_MODES) return;
+    learnMode = k;
+    document.querySelectorAll('[data-learn]').forEach((b) => { const on = b.dataset.learn === k; b.classList.toggle('active', on); b.setAttribute('aria-pressed', String(on)); });
+    const card = $('ep-challenge-card'); if (card) card.classList.toggle('hidden', k !== 'challenge');
+    applyLearnLock();
+    if (k === 'challenge' && !challenge) newChallenge(true);
+    if (k === 'learn' && !silent) { pause(); goStep(0, false); }
+    if (window.SimulationShell && window.SimulationShell.activate) window.SimulationShell.activate(k === 'challenge' ? 'Challenge' : k === 'learn' ? 'Steps' : 'Inputs');
+    lastReadouts = {}; renderReadouts(); schedulePost();
+  }
+  function renderChallenge() {
+    const body = $('ep-ch-body'); if (!body) return;
+    if (!spec || !spec.challenge) { body.innerHTML = '<p class="ep-hint">This simulation has no challenge — use 🧪 Experiment to explore it.</p>'; $('ep-ch-submit').disabled = true; $('ep-ch-new').disabled = true; $('ep-ch-result').innerHTML = ''; $('ep-ch-history').innerHTML = ''; return; }
+    $('ep-ch-new').disabled = false; $('ep-ch-submit').disabled = !challenge;
+    body.innerHTML = challenge ? `<p class="ep-ch-task">${esc(challenge.prompt)}</p><div class="ep-ch-target"><span>Target</span><b>${esc(D.fmt(challenge.target, 4))} ${esc(challenge.unit || '')}</b><small>± ${esc(D.fmt(challenge.tolerance, 3))}</small></div>${challenge.hint ? `<p class="ep-hint">💡 ${esc(challenge.hint)}</p>` : ''}` : '';
+    $('ep-ch-history').innerHTML = attempts.map((a) => `<li class="${a.result === 'CORRECT' ? 'ok' : 'no'}"><b>#${a.attempt}</b> ${esc(a.answerText)} — ${a.result === 'CORRECT' ? '✅ correct' : '❌ not yet'}${a.saved ? '' : ' <small>(not saved)</small>'}</li>`).join('');
+  }
+  function newChallenge(quiet) {
+    if (!spec || !spec.challenge) { challenge = null; renderChallenge(); return; }
+    let seed = Math.floor(Math.random() * 1e9); const rand = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
+    try { challenge = spec.challenge.make(rand, Object.assign({}, p)); } catch (e) { console.error(e); challenge = null; }
+    if (challenge) {
+      challenge.id = `${sim.id}:${challenge.kind}:${D.fmt(challenge.target, 4)}`;
+      if (challenge.setup) { (spec.params || []).forEach((d) => { if (challenge.setup[d.key] != null) p[d.key] = clampParam(d, challenge.setup[d.key]); }); if (challenge.setup.mode && spec.modes && spec.modes.some((m) => m.key === challenge.setup.mode)) { p.mode = challenge.setup.mode; $('ep-mode').value = p.mode; } renderParams(); recompute(true); }
+    }
+    $('ep-ch-result').innerHTML = ''; renderChallenge(); schedulePost();
+    if (!quiet && challenge) toast('New challenge ready — change the circuit, then press Submit.');
+  }
+  function submitChallenge() {
+    if (!challenge || !spec.challenge || pendingSubmit) return;
+    let ev;
+    try { ev = spec.challenge.evaluate(Object.assign({}, p), calc, challenge) || {}; } catch (e) { ev = {}; }
+    if (!Number.isFinite(ev.value) && !ev.text) { $('ep-ch-result').innerHTML = '<p class="ep-ch-res no">This configuration cannot be evaluated — check the values.</p>'; return; }
+    const correct = Number.isFinite(ev.value) && Math.abs(ev.value - challenge.target) <= challenge.tolerance;
+    const configuration = {}; (spec.params || []).forEach((d) => { configuration[d.key] = p[d.key]; }); if (spec.modes && p.mode != null) configuration.mode = p.mode;
+    const entry = { attempt: attempts.length + 1, answerText: ev.text || `${D.fmt(ev.value, 4)} ${challenge.unit || ''}`, result: correct ? 'CORRECT' : 'INCORRECT', saved: false, calculation: ev.calculation || '' };
+    const payload = {
+      type: 'EDUVERSE_SIM_CHALLENGE_SUBMIT', simKey: sim.id, title: sim.title, unit: sim.unit, topic: sim.topic,
+      challenge: Object.assign({ id: challenge.id, kind: challenge.kind, prompt: challenge.prompt, target: challenge.target, unit: challenge.unit || '', tolerance: challenge.tolerance }, challenge.meta ? { meta: challenge.meta } : {}),
+      configuration, answer: { value: Number.isFinite(ev.value) ? ev.value : null, text: entry.answerText }, calculation: entry.calculation, clientResult: entry.result, mode: 'CHALLENGE',
+    };
+    showVerdict(entry, 'Submitting…');
+    if (window.parent === window) { entry.note = 'Checked on this device — open the simulation from your subject to save attempts.'; attempts.unshift(entry); showVerdict(entry); renderChallenge(); return; }
+    $('ep-ch-submit').disabled = true;
+    pendingSubmit = { entry, timer: setTimeout(() => finishSubmit({ ok: false, message: 'No response — the result was checked here but not saved.' }), 9000) };
+    try { window.parent.postMessage(payload, window.location.origin); } catch (e) { finishSubmit({ ok: false, message: 'Could not reach the subject page.' }); }
+  }
+  function finishSubmit(msg) {
+    const ps = pendingSubmit; if (!ps) return; pendingSubmit = null; clearTimeout(ps.timer);
+    const entry = ps.entry;
+    if (msg.ok && msg.result) { entry.saved = true; if (msg.result.result) entry.result = msg.result.result; if (msg.result.attempt) entry.attempt = msg.result.attempt; entry.note = msg.result.verified === false ? 'Saved (checked on this device).' : 'Saved to your record and verified by the server.'; }
+    else entry.note = msg.message || 'Checked here but not saved.';
+    attempts.unshift(entry); showVerdict(entry); renderChallenge(); $('ep-ch-submit').disabled = false; schedulePost();
+  }
+  function showVerdict(entry, pendingText) {
+    const box = $('ep-ch-result'); if (!box) return;
+    const ok = entry.result === 'CORRECT';
+    box.innerHTML = pendingText ? `<p class="ep-ch-res">${esc(pendingText)}</p>` : `<div class="ep-ch-res ${ok ? 'ok' : 'no'}"><b>${ok ? '✅ Correct!' : '❌ Not yet — adjust and try again'}</b><span>Your answer: ${esc(entry.answerText)} · attempt ${entry.attempt}</span>${entry.calculation ? `<code>${esc(entry.calculation)}</code>` : ''}<small>${esc(entry.note || '')}</small></div>`;
   }
 
   // ─── Wire up ───
@@ -515,6 +634,7 @@
       if (e.origin !== window.location.origin || !e.data || e.data.type !== 'EDUVERSE_SIM_PUBLISH_RESULT') return;
       toast(e.data.ok ? `Published — students now start from these settings.` : (e.data.message || 'Could not publish.'));
     });
+    setupLearnModes();
     setSpeed(1); applyPanels();
     renderLibrary();
     const id = params.get('sim') || params.get('simulationId') || params.get('category') || '';

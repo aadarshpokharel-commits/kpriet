@@ -486,6 +486,18 @@ export class AcademicService {
     return res.data;
   }
 
+  /** Student: submit a Challenge-mode attempt (verified and stored by the backend). */
+  static async submitSimulationChallenge(subjectId: string, simulationId: string, payload: Record<string, unknown>): Promise<any> {
+    const res = await api.post<any>(`/academic/subjects/${subjectId}/simulations/${simulationId}/challenge-attempts`, payload);
+    return res.data;
+  }
+
+  /** Teacher: every student's attempts for a published simulation (student: own attempts). */
+  static async getSimulationChallengeAttempts(subjectId: string, simulationId: string): Promise<any> {
+    const res = await api.get<any>(`/academic/subjects/${subjectId}/simulations/${simulationId}/challenge-attempts`);
+    return res.data;
+  }
+
   static async deleteSimulation(
     subjectId: string,
     simulationId: string

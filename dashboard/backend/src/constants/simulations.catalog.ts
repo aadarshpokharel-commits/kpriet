@@ -677,7 +677,223 @@ export const MA_SIMULATION_TEMPLATES: ISimulationCatalogItem[] = [
   maTemplate("ma-variation-params", 5, "ode", "Variation of Parameters", "Variation of Parameters Simulator", "y₁, y₂, Wronskian, u₁ = −∫y₂f/W, u₂ = ∫y₁f/W, particular solution and the final curve."),
 ];
 
-SIMULATION_CATALOG.push(...EP_SIMULATION_TEMPLATES, ...EG_SIMULATION_TEMPLATES, ...MA_SIMULATION_TEMPLATES);
+/**
+ * Principles of Data Communication (U21IT201) — 42 Smart Board simulations (engine: smartboard/pdc-simulation.html).
+ */
+const PDC_SUBJECT_KEYWORDS = ['principles of data communication', 'data communication', 'u21it201', 'u211t201', 'pdc'];
+function pdcTemplate(id: string, unit: number, topic: string, title: string, description: string): ISimulationCatalogItem {
+  return {
+    id,
+    domain: 'COMPUTER_SCIENCE',
+    category: 'principles of data communication',
+    title,
+    description,
+    suggestedUnits: [unit],
+    smartboardPresetKey: id,
+    defaultParams: { simulationType: 'pdc', defaultParameters: {}, visualizationMode: '', steps: [] },
+    tags: ['Principles of Data Communication', 'PDC', topic],
+    subjectKeywords: PDC_SUBJECT_KEYWORDS,
+    unit,
+    topic,
+  };
+}
+
+export const PDC_SIMULATION_TEMPLATES: ISimulationCatalogItem[] = [
+  // Unit 1: Introduction
+  pdcTemplate('comm-elements', 1, 'Communication System Elements', 'Communication System Elements Visualizer', 'Signal flow through Information Source → Transmitter → Channel (Noise) → Receiver → Destination.'),
+  pdcTemplate('bandwidth-sim', 1, 'Bandwidth & Spectrum', 'Bandwidth Simulator', 'Analyze signal spectrum, harmonic frequency range, and bandwidth B = f_max - f_min dynamically.'),
+  pdcTemplate('comm-channel', 1, 'Communication Channels', 'Communication Channel Simulator', 'Visualize channel distortion, attenuation, AWGN noise, and bandwidth limitation on transmitted waveforms.'),
+  pdcTemplate('comm-class', 1, 'Classification of Communication', 'Classification of Communication Systems', 'Interactive visual hierarchy: Analog vs Digital, Baseband vs Bandpass, Guided (Wired) vs Unguided (Wireless).'),
+  pdcTemplate('comm-types', 1, 'Types of Communication', 'Types of Communication (Simplex / Duplex)', 'Simulate Simplex (Broadcasting), Half-Duplex (Walkie-Talkie), and Full-Duplex (Telephone) data exchange flows.'),
+  pdcTemplate('mod-process', 1, 'Modulation Process', 'Modulation Process Visualizer', 'Observe real-time synthesis: Baseband Message m(t) + High Frequency Carrier c(t) → Modulated Wave.'),
+  pdcTemplate('analog-vs-digital', 1, 'Analog vs Digital', 'Analog vs Digital Communication Comparison', 'Side-by-side comparison of continuous sinusoidal signals vs discrete pulse trains under noise and repeaters.'),
+  pdcTemplate('comm-limits', 1, 'Limitations of Communication', 'Fundamental Limitations (Nyquist & Shannon)', 'Interactive boundary calculator for Shannon-Hartley Capacity and Nyquist Maximum Data Rate with thermal noise.'),
+  pdcTemplate('comm-apps', 1, 'Applications of Communication', 'Applications of Electronic Communication Map', 'Interactive electromagnetic spectrum map linking LF, MF, HF, VHF, UHF, Satellite, and Fiber to real-world applications.'),
+
+  // Unit 2: Amplitude Modulation
+  pdcTemplate('am-fdm', 2, 'Frequency Division Multiplexing', 'Frequency Division Multiplexing (FDM)', 'Multiplex multiple baseband signals onto separate RF subcarrier bands with customizable guard bands.'),
+  pdcTemplate('am-tdm', 2, 'Time Division Multiplexing', 'Time Division Multiplexing (TDM)', 'Commutator & De-commutator time slot visualization interleaving samples from multiple digital/analog channels.'),
+  pdcTemplate('am-principle', 2, 'AM Principle & Waveforms', 'AM Principle Simulator ⭐ (Flagship)', 'Flagship AM laboratory displaying simultaneous Message m(t), Carrier c(t), and Envelope-Modulated s_AM(t).'),
+  pdcTemplate('am-spectrum', 2, 'AM Frequency Spectrum', 'Spectrum of AM Wave (Carrier & Sidebands)', 'Interactive frequency spectrum showing Carrier frequency fc, Upper Sideband fc+fm, Lower Sideband fc-fm.'),
+  pdcTemplate('am-mod-index', 2, 'Modulation Index & Percentage', 'Modulation Index & Percentage Modulation', 'Calculate modulation index m = (Vmax-Vmin)/(Vmax+Vmin) and visualize under, critical, and over-modulation envelope distortion.'),
+  pdcTemplate('am-power', 2, 'Power Content in AM', 'Power Content in AM Wave', 'Step-by-step interactive breakdown of Carrier Power Pc, Sideband Power Psb, Total Power Pt, and Power Efficiency η.'),
+  pdcTemplate('am-tx-low', 2, 'Low-Level AM Transmitter', 'Low-Level AM Transmitter Block Diagram', 'Follow audio message → low-power modulator → Class B/C linear RF power amplifiers → Antenna output.'),
+  pdcTemplate('am-tx-high', 2, 'High-Level AM Transmitter', 'High-Level AM Transmitter Block Diagram', 'Trace high-efficiency Class-C RF power carrier amplification with high-power audio collector modulation at the final stage.'),
+  pdcTemplate('am-superhet', 2, 'Superheterodyne Receiver', 'Basic Superheterodyne Receiver Architecture', 'Interactive stage-by-stage RF tuning, Local Oscillator mixing fLO = fRF + fIF, 455 kHz IF filtering, and Envelope Detector.'),
+
+  // Unit 3: Angle Modulation
+  pdcTemplate('angle-mod', 3, 'Angle Modulation', 'Angle Modulation Simulator ⭐', 'Unified visual simulator for constant-amplitude angle modulation: Frequency Modulation (FM) vs Phase Modulation (PM).'),
+  pdcTemplate('fm-vs-pm', 3, 'FM vs PM Comparison', 'FM vs PM Phase-Frequency Relationship', 'Explore the mathematical derivative/integral link: FM frequency deviation is ∝ m(t), while PM is ∝ dm(t)/dt.'),
+  pdcTemplate('fm-wave', 3, 'FM Wave Simulator', 'FM Wave Simulator (Deviation & Mod Index)', 'Interactive control over Frequency Deviation Δf = kf·Am, Modulation Index β = Δf / fm, and Carson Bandwidth.'),
+  pdcTemplate('pm-wave', 3, 'PM Wave Simulator', 'PM Wave Simulator (Phase Deviation)', 'Visualize phase deviation Δθ = kp·Am and phase transitions in the time domain under sinusoidal and triangular signals.'),
+  pdcTemplate('fm-types', 3, 'Types of FM (NBFM vs WBFM)', 'FM Types Visualizer (Narrowband vs Wideband)', 'Compare Narrowband FM (β ≤ 0.3, BW ≈ 2fm) with Wideband FM (β > 1, infinite Bessel sidebands Jn(β)).'),
+  pdcTemplate('fm-vs-am', 3, 'FM vs AM Comparison', 'FM vs AM Comprehensive Side-by-Side Comparison', 'Direct comparison of AM and FM: Noise immunity, transmitter power efficiency, required bandwidth, and capture effect.'),
+  pdcTemplate('fm-direct', 3, 'Direct FM Generation', 'Direct FM Generation (Varactor Modulator)', 'Interactive Hartley/Colpitts oscillator with Varactor diode showing tank capacitance C(v) varying frequency directly.'),
+  pdcTemplate('fm-indirect', 3, 'Indirect FM (Armstrong Method)', 'Indirect FM Generation (Armstrong Method)', 'Trace Crystal Oscillator → Phase Modulator with Integrated Audio → Frequency Multiplier chain to generate stable WBFM.'),
+
+  // Unit 4: Digital Modulation
+  pdcTemplate('info-capacity', 4, 'Information Capacity', 'Information Capacity Simulator (Hartley & Shannon)', 'Calculate information measure I = log2(1/P), entropy H = -∑ Pi log2 Pi, and maximum channel capacity C.'),
+  pdcTemplate('bit-baud', 4, 'Bit vs Baud Rate', 'Bit / Bit Rate / Baud Visualizer', 'Interactive timeline distinguishing Bit Rate Rb = N × Baud from Symbol Rate S across Binary, QPSK, and 16-QAM.'),
+  pdcTemplate('waveform-coding', 4, 'Line Coding / Waveform Coding', 'Waveform Coding Simulator (Line Codes)', 'Compare Unipolar NRZ, Polar NRZ-L, NRZ-I, Bipolar AMI, Pseudoternary, and Manchester encoding for DC balance and clock recovery.'),
+  pdcTemplate('ask-mod', 4, 'Amplitude Shift Keying (ASK)', 'Amplitude Shift Keying — ASK Simulator ⭐ (Flagship)', 'Digital Amplitude Modulation: Carrier ON for Bit 1, Carrier OFF for Bit 0 (OOK). Coherent and envelope demodulation.'),
+  pdcTemplate('fsk-mod', 4, 'Frequency Shift Keying (FSK)', 'Frequency Shift Keying — FSK Simulator ⭐ (Flagship)', 'Binary FSK: Bit 1 transmitted at Mark Frequency f1, Bit 0 transmitted at Space Frequency f0. Phase-continuous BFSK.'),
+  pdcTemplate('psk-mod', 4, 'Phase Shift Keying (PSK)', 'Phase Shift Keying — PSK Simulator ⭐ (Flagship)', 'BPSK (0° for 1, 180° for 0) and QPSK constellation mapping with I/Q vector decomposition and phase shifts.'),
+  pdcTemplate('dpsk-mod', 4, 'Differential PSK (DPSK)', 'Differential Phase Shift Keying — DPSK Simulator', 'Non-coherent differential encoding: Bit 1 induces a 180° phase change from previous bit, Bit 0 maintains current phase.'),
+  pdcTemplate('ber-calc', 4, 'Probability of Error / BER', 'Probability of Error & Bit Error Rate (BER)', 'Monte Carlo bit transmission across AWGN channel with Waterfall BER vs Eb/N0 curves for ASK, FSK, and BPSK.'),
+
+  // Unit 5: Data Communication
+  pdcTemplate('ascii-vis', 5, 'Character Codes (ASCII)', 'ASCII Code Interactive Visualizer', 'Convert characters to 7-bit/8-bit ASCII, Binary, Hexadecimal, and transmission waveforms with Start/Stop framing.'),
+  pdcTemplate('barcode-vis', 5, 'Barcode Technology', 'Barcode Visualizer (1D Code 39 & UPC / 2D QR)', 'Encode alphanumeric strings into optical barcode bar/space widths and simulate laser/CCD scanning and decoding.'),
+  pdcTemplate('error-detect', 5, 'Error Detection Techniques', 'Error Detection Simulator ⭐ (Flagship)', 'Comprehensive error detection lab: Simple Parity (VRC), Longitudinal (LRC), Checksum, and CRC-8 / CRC-16 Polynomial Division.'),
+  pdcTemplate('error-correct', 5, 'Error Correction (Hamming Codes)', 'Error Correction Simulator ⭐ (Flagship)', 'Flagship Hamming (7,4) Code laboratory: Encode 4 data bits + 3 parity bits, inject single-bit channel corruption, calculate syndrome vector, and auto-correct.'),
+  pdcTemplate('dcom-hardware', 5, 'Data Communication Hardware', 'Data Communication Hardware (DTE / DCE / Hubs)', 'Explore roles and interconnections of Data Terminal Equipment (DTE), Data Circuit-Terminating Equipment (DCE), repeaters, and multiplexers.'),
+  pdcTemplate('rs232-serial', 5, 'RS-232 Serial Interface', 'RS-232 Serial Interface Simulator', 'Pinout & timing analyzer for DB-9 / DB-25 connectors: TXD, RXD, RTS, CTS, DTR, DSR, and inverted bipolar voltage levels (-12V = 1, +12V = 0).'),
+  pdcTemplate('dcom-circuits', 5, 'Data Communication Circuits', 'Data Communication Circuit Visualizer', 'Interactive signal circuit paths: Point-to-point, Multipoint/Multidrop, Two-wire vs Four-wire telephone circuits, and echo cancellation.'),
+  pdcTemplate('modem-sim', 5, 'Modems (Modulator-Demodulator)', 'Modem Simulator (Digital ↔ Analog ↔ Digital)', 'Complete digital data transmission through a phone line: TX UART → FSK/QAM Modulator → Bandpass Channel → Demodulator → RX UART.'),
+];
+
+/**
+ * Basics of Electrical and Electronics Engineering (U21EEG01) — 35 Smart Board simulations (engine: smartboard/ee-simulation.html)
+ * with Learn / Experiment / Challenge modes. Published configuration: simulationConfig.type = template id,
+ * initialParams = { simulationType: 'electrical-electronics', simulationSubtype, defaultParameters, visualizationMode, learningMode, steps }.
+ * Challenge attempts are verified with constants/ee-challenge.evaluator.ts. Keep in sync with smart-board-my-version/src/tools/ee-catalog.js.
+ */
+const EE_SUBJECT_KEYWORDS = ['basics of electrical and electronics engineering', 'basic electrical and electronics engineering', 'u21eeg01'];
+function eeTemplate(id: string, unit: number, subtype: string, topic: string, title: string, description: string): ISimulationCatalogItem {
+  return {
+    id,
+    domain: 'COMPUTER_SCIENCE',
+    category: 'electrical & electronics',
+    title,
+    description,
+    suggestedUnits: [unit],
+    smartboardPresetKey: id,
+    defaultParams: { simulationType: 'electrical-electronics', simulationSubtype: subtype, defaultParameters: {}, visualizationMode: '', learningMode: 'learn', steps: [] },
+    tags: ['Electrical & Electronics', topic],
+    subjectKeywords: EE_SUBJECT_KEYWORDS,
+    unit,
+    topic,
+  };
+}
+
+export const EE_SIMULATION_TEMPLATES: ISimulationCatalogItem[] = [
+  eeTemplate("ee-ohms-law", 1, "electric-circuits", "Ohm's Law", "Ohm's Law Simulator", "Essential: Change V, I or R and watch the other values and the circuit update: V = IR."),
+  eeTemplate("ee-series", 1, "electric-circuits", "Series Circuit", "Series Circuit Simulator", "Essential: Add or remove resistors in series: equivalent resistance, one current, voltage across each resistor."),
+  eeTemplate("ee-parallel", 1, "electric-circuits", "Parallel Circuit", "Parallel Circuit Simulator", "Essential: Resistor branches in parallel: branch currents, total current and equivalent resistance."),
+  eeTemplate("ee-kcl", 1, "electric-circuits", "KCL", "Kirchhoff's Current Law (KCL)", "Essential: Currents entering and leaving a junction — add branches and see ΣI_in = ΣI_out balance."),
+  eeTemplate("ee-kvl", 1, "electric-circuits", "KVL", "Kirchhoff's Voltage Law (KVL)", "Essential: Trace a closed loop: voltage rises and drops step by step until ΣV = 0."),
+  eeTemplate("ee-star-delta", 1, "electric-circuits", "Star–Delta Conversion", "Star–Delta Conversion", "Essential: Convert Star ↔ Delta resistor networks with the equivalent-resistance formulas."),
+  eeTemplate("ee-nodal", 1, "electric-circuits", "Nodal Analysis", "Nodal Analysis Visualizer", "Essential: Reference node → unknown node voltages → KCL equations → solve → node voltages on the circuit."),
+  eeTemplate("ee-mesh", 1, "electric-circuits", "Mesh Analysis", "Mesh Analysis Visualizer", "Advanced: Identify meshes, assign mesh currents, apply KVL, solve and show the currents in each branch."),
+  eeTemplate("ee-dc-construction", 2, "dc-motor", "Construction", "DC Motor Construction", "Tap a part of the motor — armature, field winding, commutator, brushes, shaft, poles — to learn its job."),
+  eeTemplate("ee-dc-working", 2, "dc-motor", "Working Principle", "DC Motor Working Principle", "Essential: Current in a magnetic field → force → torque → rotation; reverse the field or the current."),
+  eeTemplate("ee-dc-types", 2, "dc-motor", "Motor Types", "DC Motor Types", "Shunt, series and compound connections of the field and armature, compared visually."),
+  eeTemplate("ee-dc-torque", 2, "dc-motor", "Torque", "DC Motor Torque Simulator", "Advanced: T = K·Φ·Ia — change flux and armature current and see the torque respond."),
+  eeTemplate("ee-dc-characteristics", 2, "dc-motor", "Characteristics", "DC Motor Characteristics", "Torque–current, speed–current and speed–torque curves for shunt and series motors."),
+  eeTemplate("ee-dc-starters", 2, "dc-motor", "Starters", "DC Motor Starters", "Move the starter handle: OFF → start → resistance cut out → running (two-point and three-point)."),
+  eeTemplate("ee-dc-speed", 2, "dc-motor", "Speed Control", "DC Motor Speed Control", "Advanced: Armature control and field control — which way the speed moves and why (N ∝ Eb/Φ)."),
+  eeTemplate("ee-transformer", 3, "transformer-ac-motor", "Single-Phase Transformer", "Single-Phase Transformer", "Essential: AC source → alternating flux in the core → induced secondary voltage → load."),
+  eeTemplate("ee-turns-ratio", 3, "transformer-ac-motor", "Turns Ratio", "Transformer Turns Ratio", "Advanced: V₁/V₂ = N₁/N₂ = I₂/I₁ — the turns on each winding set the output voltage."),
+  eeTemplate("ee-step-up-down", 3, "transformer-ac-motor", "Step-Up / Step-Down", "Transformer Step-Up / Step-Down", "More secondary turns step the voltage up, fewer step it down."),
+  eeTemplate("ee-im-construction", 3, "transformer-ac-motor", "Induction Motor Construction", "Three-Phase Induction Motor Construction", "Stator, rotor, air gap, windings and shaft — tap each part."),
+  eeTemplate("ee-im-working", 3, "transformer-ac-motor", "Induction Motor Working", "Three-Phase Induction Motor Working", "Essential: Three phase currents → rotating magnetic field → induced rotor current → rotation with slip."),
+  eeTemplate("ee-im-characteristics", 3, "transformer-ac-motor", "Characteristics", "Induction Motor Characteristics", "Advanced: Torque–slip and torque–speed curves with starting, maximum and full-load torque."),
+  eeTemplate("ee-im-starters", 3, "transformer-ac-motor", "Starters", "Induction Motor Starters", "DOL and Star–Delta starters: arrangement, starting sequence and why the starting current matters."),
+  eeTemplate("ee-pn-junction", 4, "semiconductor-devices", "PN Junction", "PN Junction Simulator", "Essential: Forward and reverse bias: carriers, depletion region width and current."),
+  eeTemplate("ee-pn-vi", 4, "semiconductor-devices", "PN Junction V-I", "PN Junction V-I Characteristics", "Forward knee, reverse saturation and breakdown on the diode V-I curve."),
+  eeTemplate("ee-zener", 4, "semiconductor-devices", "Zener Diode", "Zener Diode", "Essential: Reverse breakdown at Vz — the Zener holds its voltage as the input changes."),
+  eeTemplate("ee-bjt", 4, "semiconductor-devices", "BJT", "BJT Simulator", "Advanced: NPN / PNP: base current controls collector current — cut-off, active and saturation."),
+  eeTemplate("ee-bjt-characteristics", 4, "semiconductor-devices", "BJT Characteristics", "BJT Characteristics", "Input and output characteristics for CE / CB configurations with the operating point."),
+  eeTemplate("ee-fet", 4, "semiconductor-devices", "FET", "FET Simulator", "Advanced: Gate voltage narrows the channel: I_D = I_DSS(1 − V_GS/V_P)²."),
+  eeTemplate("ee-half-wave", 5, "semiconductor-applications", "Half-Wave Rectifier", "Half-Wave Rectifier", "Essential: AC source → diode → load: conduction only on positive half cycles."),
+  eeTemplate("ee-full-wave", 5, "semiconductor-applications", "Full-Wave Rectifier", "Full-Wave Rectifier", "Essential: Centre-tapped and bridge rectifiers — which diodes conduct in each half cycle."),
+  eeTemplate("ee-rectifier-compare", 5, "semiconductor-applications", "Rectifier Comparison", "Rectifier Comparison", "Half-wave vs full-wave: waveform, average value, ripple factor and output frequency side by side."),
+  eeTemplate("ee-filter", 5, "semiconductor-applications", "Filter", "Filter Simulator", "Advanced: A capacitor filter smooths the rectified output — ripple Vr = I/(f·C)."),
+  eeTemplate("ee-regulator", 5, "semiconductor-applications", "Voltage Regulator", "Voltage Regulator", "Advanced: Input → regulator → load: the output stays at its set value as input and load change."),
+  eeTemplate("ee-series-shunt", 5, "semiconductor-applications", "Series / Shunt Regulator", "Series and Shunt Voltage Regulators", "Advanced: Series-pass and shunt regulators: arrangement and how each keeps the output steady."),
+  eeTemplate("ee-configurations", 5, "semiconductor-applications", "CE / CB / CC", "CE / CB / CC Configurations", "Advanced: Common emitter, base and collector: terminals, current path, gains and characteristics."),
+];
+
+/**
+ * Digital Electronics (U21ECG01) — 46 Smart Board simulations (engine: smartboard/ecg-simulation.html).
+ */
+const ECG_SUBJECT_KEYWORDS = [
+  'digital electronics',
+  'u21ecg01',
+  'digital logic',
+  'digital circuits',
+  'logic design',
+  'ecg01',
+  'de',
+];
+
+function ecgTemplate(id: string, unit: number, topic: string, title: string, description: string): ISimulationCatalogItem {
+  return {
+    id,
+    domain: 'COMPUTER_SCIENCE',
+    category: 'digital electronics',
+    title,
+    description,
+    suggestedUnits: [unit],
+    smartboardPresetKey: id,
+    defaultParams: { simulationType: 'digital-electronics', defaultParameters: {}, visualizationMode: '', steps: [] },
+    tags: ['Digital Electronics', 'DE', 'U21ECG01', topic],
+    subjectKeywords: ECG_SUBJECT_KEYWORDS,
+    unit,
+    topic,
+  };
+}
+
+export const ECG_SIMULATION_TEMPLATES: ISimulationCatalogItem[] = [
+  ecgTemplate("de-number-system", 1, "Number Systems", "Number System Simulator", "Convert between Binary, Decimal, Octal, and Hexadecimal with step-by-step division/multiplication conversion traces."),
+  ecgTemplate("de-complements", 1, "Complements", "Complements Simulator", "Visualize 1's complement (bit inversion) and 2's complement (invert + 1) operations with step-by-step binary representation."),
+  ecgTemplate("de-boolean-theorem", 1, "Boolean Theorems", "Boolean Theorem Visualizer", "Enter Boolean expressions, apply Boolean laws (Commutative, Associative, Distributive, De Morgan's, Absorption), and show each simplification step side-by-side."),
+  ecgTemplate("de-logic-gates", 1, "Logic Gates", "Logic Gate Simulator ⭐ (Flagship)", "Interactive AND, OR, NOT, NAND, NOR, XOR, XNOR gates. Change inputs and immediately see gate output, truth table row highlighting, and logic expression."),
+  ecgTemplate("de-universal-gates", 1, "NAND/NOR Universal Gates", "NAND/NOR Universal Gate Simulator", "Demonstrate how NOT, AND, OR, XOR can be constructed using only NAND or only NOR gates with equivalent Boolean expression and circuit."),
+  ecgTemplate("de-sop-pos", 1, "SOP/POS Representation", "SOP/POS Representation Simulator", "Enter a Boolean function and display Sum of Products (SOP), Product of Sums (POS), canonical forms, and the corresponding truth table."),
+  ecgTemplate("de-kmap", 1, "K-Map Simplification", "K-Map Simplification Simulator ⭐ (Flagship)", "Interactive Karnaugh Map: 2/3/4 variable K-Maps. Enter minterms/maxterms, populate the K-map, select groups interactively, visualize grouping, and generate simplified expression with Truth Table → K-Map → Grouping → Simplified Expression pipeline."),
+  ecgTemplate("de-quine-mccluskey", 1, "Quine-McCluskey", "Quine-McCluskey Simulator", "Step-by-step Quine-McCluskey minimization: Minterms → Binary Representation → Grouping by 1-count → Prime Implicants → Essential Prime Implicants → Simplified Expression."),
+  ecgTemplate("de-half-adder", 2, "Half Adder", "Half Adder Simulator", "Show inputs A, B, Sum (XOR), Carry (AND) with truth table and gate-level implementation diagram."),
+  ecgTemplate("de-full-adder", 2, "Full Adder", "Full Adder Simulator", "A, B, Carry-in → Sum, Carry-out with gate-level implementation showing two half adders and an OR gate."),
+  ecgTemplate("de-adder-subtractor", 2, "1-Bit Adder/Subtractor", "1-Bit Adder/Subtractor Simulator", "Interactive circuit supporting addition and subtraction with mode selection, carry/borrow visualization, and XOR-based B-complement control."),
+  ecgTemplate("de-parallel-adder", 2, "Parallel Adder", "Parallel Adder Simulator", "Connect multiple full-adder stages showing input bits, ripple carry propagation through each stage, output sum, and final carry."),
+  ecgTemplate("de-twos-comp-adder", 2, "2's Complement Adder/Subtractor", "2's Complement Adder/Subtractor ⭐ (Flagship)", "Visualize subtraction using 2's complement: Input A, Input B → 2's Complement of B → Binary Addition → Result. Every binary operation shown step-by-step."),
+  ecgTemplate("de-mux", 2, "Multiplexer", "Multiplexer Simulator ⭐ (Flagship)", "Interactive 2:1 and 4:1 MUX. Change selection lines and see selected input, output, and internal signal path animation."),
+  ecgTemplate("de-decoder", 2, "Decoder", "Decoder Simulator", "Interactive 2-to-4 and 3-to-8 decoder showing input combination, active output line, truth table, and internal AND gate logic."),
+  ecgTemplate("de-encoder", 2, "Encoder", "Encoder Simulator", "Select an active input line and see the corresponding encoded binary output. Priority encoder handles multiple active inputs."),
+  ecgTemplate("de-demux", 2, "Demultiplexer", "Demultiplexer Simulator", "Show input, select lines, active output, and signal path animation. 1-to-4 and 1-to-8 DEMUX configurations."),
+  ecgTemplate("de-code-converter", 2, "Code Converter", "Code Converter Simulator", "Interactive conversion environment: BCD ↔ Excess-3, BCD ↔ Gray Code, Binary ↔ Gray with truth table and conversion logic."),
+  ecgTemplate("de-error-detection", 2, "Error Detection and Correction", "Error Detection & Correction Code Simulator", "Interactive data transmission: Data → Hamming Encoding → Transmission → Error Injection → Detection / Correction → Recovered Data."),
+  ecgTemplate("de-parity", 2, "Parity Generator/Checker", "Parity Generator & Checker ⭐ (Flagship)", "Even and Odd parity: Enter data bits, see generated parity bit, transmitted data, insert errors, receive data, check parity, and error indication."),
+  ecgTemplate("de-nor-latch", 3, "NOR Latch", "NOR Latch Simulator", "Interactive SR latch using cross-coupled NOR gates. Show S, R, Q, Q̅, state changes, invalid state, and complete truth table."),
+  ecgTemplate("de-nand-latch", 3, "NAND Latch", "NAND Latch Simulator", "Interactive NAND-based S̅R̅ latch with active-low inputs, cross-coupled gate visualization, and state transition table."),
+  ecgTemplate("de-digital-pulse", 3, "Digital Pulses", "Digital Pulse Simulator", "Interactive clock/pulse generator with adjustable frequency and duty cycle. Visual timing waveform showing period, rise/fall edges."),
+  ecgTemplate("de-clocked-ff", 3, "Clocked Flip-Flops", "Clocked Flip-Flop Simulator", "Interactive SR, D, JK, and T flip-flops with clock edge triggering. Show clock, inputs, outputs, state changes, and timing diagram."),
+  ecgTemplate("de-master-slave", 3, "Master-Slave Flip-Flop", "Master-Slave Flip-Flop ⭐ (Flagship)", "Visualize Master → Slave → Output: Master captures on clock HIGH, Slave transfers on clock LOW. Shows how the two stages prevent race conditions."),
+  ecgTemplate("de-async-inputs", 3, "Asynchronous Inputs", "Asynchronous Inputs Simulator", "Demonstrate Preset and Clear asynchronous input behavior that overrides clock-controlled operation."),
+  ecgTemplate("de-ff-timing", 3, "Flip-Flop Timing", "Flip-Flop Timing Simulator", "Interactive timing diagrams showing Clock, Input, Output, propagation delay, setup time, hold time, and timing relationships."),
+  ecgTemplate("de-ff-conversion", 3, "Flip-Flop Conversion", "Flip-Flop Conversion Simulator", "Convert between SR, D, JK, T flip-flop types. Show existing FF → required logic → converted FF → verification truth table."),
+  ecgTemplate("de-seq-model", 4, "Sequential Circuit Model", "Sequential Circuit Model Visualizer", "General sequential circuit model: Input → Combinational Logic → State/Memory → Output. Visualize feedback and state relationships."),
+  ecgTemplate("de-mealy", 4, "Mealy Machine", "Mealy Machine Simulator", "Create a simple Mealy state machine: define states, inputs, outputs on transitions, and trace current state with input sequences."),
+  ecgTemplate("de-moore", 4, "Moore Machine", "Moore Machine Simulator", "Create a Moore state machine: define states with associated outputs, transitions based on inputs, and trace state/output sequences."),
+  ecgTemplate("de-excitation-table", 4, "Excitation Table", "Excitation Table Simulator", "Select a flip-flop type (SR, D, JK, T) and display its excitation table showing required inputs for each state transition."),
+  ecgTemplate("de-state-table", 4, "State Table / State Diagram", "State Table & State Diagram Simulator", "Create states, define transitions, enter outputs, generate state table and interactive state diagram with animated transitions."),
+  ecgTemplate("de-sync-design", 4, "Synchronous Sequential Circuit Design", "Synchronous Sequential Circuit Designer ⭐ (Flagship)", "Interactive workflow: Problem → State Definition → State Table → Excitation Table → Logic Simplification (K-Map) → Circuit → Simulation."),
+  ecgTemplate("de-sync-up", 4, "Synchronous Up Counter", "Synchronous Up Counter", "Interactive counter showing clock, current state, binary count, flip-flop states, and timing sequence for synchronous up counting."),
+  ecgTemplate("de-sync-down", 4, "Synchronous Down Counter", "Synchronous Down Counter", "Reverse counting sequence with clock, state, and timing visualization. Shows J/K inputs for down-counting logic."),
+  ecgTemplate("de-sync-updown", 4, "Synchronous Up/Down Counter", "Synchronous Up/Down Counter", "Up/Down control input changes counting direction immediately. Visualize mode switching and bidirectional counting."),
+  ecgTemplate("de-mod-counter", 4, "Modulus Counter", "Modulus Counter Simulator", "Select a modulus (MOD-N). Show state sequence, counter states, reset condition, and identify unused states."),
+  ecgTemplate("de-async-counter", 4, "Asynchronous Counter", "Asynchronous (Ripple) Counter Simulator", "Visualize ripple propagation through cascaded flip-flops. Clock enters first stage, state changes ripple through subsequent stages with propagation delay."),
+  ecgTemplate("de-sequence-detector", 4, "Sequence Detector", "Sequence Detector ⭐ (Flagship)", "Enter a target sequence (e.g., 1011). Create the state-machine visualization with state diagram, input stream, current state, transitions, and detection output."),
+  ecgTemplate("de-shift-register", 5, "Shift Registers", "Shift Register Simulator ⭐ (Flagship)", "Interactive SISO, SIPO, PISO, PIPO shift register. Visualize data movement through Q3→Q2→Q1→Q0 on every clock pulse. Support left/right shift."),
+  ecgTemplate("de-ring-counter", 5, "Ring Counter", "Ring Counter Simulator", "Circulating bit pattern (single 1 among 0s) through the register. Visualize the walking 1 with timing diagram."),
+  ecgTemplate("de-johnson-counter", 5, "Johnson Counter", "Johnson Counter Simulator", "Inverted feedback (Q̅_last → Q_first) mechanism with 2N unique states from N flip-flops. Show state sequence and decode logic."),
+  ecgTemplate("de-hazard", 5, "Hazards", "Hazard Simulator ⭐ (Flagship)", "Interactive static and dynamic hazard demonstration: input transition, propagation delay through different gate paths, temporary unwanted output glitch."),
+  ecgTemplate("de-essential-hazard", 5, "Essential Hazards", "Essential Hazard Simulator", "Demonstrate essential hazards in asynchronous sequential circuits caused by unequal delays in feedback paths."),
+  ecgTemplate("de-hazard-free", 5, "Hazard-Free Circuits", "Hazard-Free Circuit Designer", "Modify logic circuits to remove hazards: Hazardous Circuit → Identify Hazard → Add Redundant Logic (consensus term) → Hazard-Free Circuit → Verify."),
+];
+
+SIMULATION_CATALOG.push(...ECG_SIMULATION_TEMPLATES, ...PDC_SIMULATION_TEMPLATES, ...EP_SIMULATION_TEMPLATES, ...EG_SIMULATION_TEMPLATES, ...MA_SIMULATION_TEMPLATES, ...EE_SIMULATION_TEMPLATES);
 
 export function resolveSubjectDomain(subject: {
   subjectCode?: string;

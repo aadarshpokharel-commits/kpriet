@@ -251,6 +251,24 @@ export const recordSimulationActivitySchema = z.object({
   topic: z.string().trim().max(120).optional(),
 });
 
+const challengeScalar = z.union([z.string().max(200), z.number().finite(), z.boolean(), z.null()]);
+export const submitSimulationChallengeSchema = z.object({
+  challenge: z.object({
+    id: z.string().trim().min(1).max(200),
+    kind: z.string().trim().min(1).max(60),
+    prompt: z.string().trim().min(1).max(600),
+    target: z.number().finite(),
+    unit: z.string().trim().max(60).optional().default(''),
+    tolerance: z.number().finite().min(0).max(1e9),
+    meta: z.object({ key: z.string().trim().max(60), expected: challengeScalar }).optional(),
+  }),
+  configuration: z.record(challengeScalar).refine((o) => Object.keys(o).length <= 60, 'Too many parameters.'),
+  answer: z.object({ value: z.number().finite().nullable().optional(), text: z.string().trim().max(300).optional() }),
+  calculation: z.string().trim().max(600).optional(),
+  clientResult: z.enum(['CORRECT', 'INCORRECT']).optional(),
+  mode: z.string().trim().max(20).optional(),
+});
+
 // ─── ADMIN & INSTITUTION CONFIGURATION VALIDATORS ───
 export const createDepartmentSchema = z.object({
   name: z.string().trim().min(2).max(150),

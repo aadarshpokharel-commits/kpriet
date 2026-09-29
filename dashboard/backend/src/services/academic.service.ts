@@ -48,6 +48,7 @@ import { ProgrammeService } from './programme.service.js';
 import { AiRagService } from './ai-rag.service.js';
 import { NotificationService } from './notification.service.js';
 import { SIMULATION_CATALOG, resolveSubjectDomain, isTemplateForSubject } from '../constants/simulations.catalog.js';
+import { evaluateSimulationChallenge } from '../constants/ee-challenge.evaluator.js';
 import type {
   assignTeacherSchema,
   chapterSchema,
@@ -3489,6 +3490,58 @@ export class AcademicService {
       ];
     }
 
+    // Basics of Electrical and Electronics Engineering (U21EEG01): its own formulas and the 35 Smart Board simulations
+    if (subNameLower.includes('electrical and electronics engineering') || subCodeUpper === 'U21EEG01') {
+      formulas = [
+        { title: "Ohm's law", latex: 'V = I R', category: 'Electric Circuits', description: 'Voltage across a resistor equals current times resistance.' },
+        { title: 'Series and parallel resistance', latex: 'R_s = R_1 + R_2 + \\cdots,\\quad \\frac{1}{R_p} = \\frac{1}{R_1} + \\frac{1}{R_2} + \\cdots', category: 'Electric Circuits', description: 'Equivalent resistance of series and parallel combinations.' },
+        { title: "Kirchhoff's laws", latex: '\\sum I_{node} = 0,\\quad \\sum V_{loop} = 0', category: 'Electric Circuits', description: 'KCL at every node, KVL around every closed loop.' },
+        { title: 'Delta to star', latex: 'R_A = \\frac{R_{AB} R_{CA}}{R_{AB} + R_{BC} + R_{CA}}', category: 'Electric Circuits', description: 'Equivalent star arm connected to terminal A.' },
+        { title: 'DC motor torque and back EMF', latex: 'T = K \\Phi I_a,\\quad E_b = V - I_a R_a,\\quad N \\propto E_b/\\Phi', category: 'DC Motor', description: 'Torque, back EMF and speed relations.' },
+        { title: 'Transformer', latex: '\\frac{V_1}{V_2} = \\frac{N_1}{N_2} = \\frac{I_2}{I_1},\\quad E = 4.44 f N \\Phi_m', category: 'Transformer', description: 'Ideal transformer ratios and EMF equation.' },
+        { title: 'Induction motor speed', latex: 'N_s = \\frac{120 f}{P},\\quad N_r = N_s (1 - s)', category: 'AC Motor', description: 'Synchronous speed and slip.' },
+        { title: 'Diode and BJT', latex: 'I = I_s (e^{V/V_T} - 1),\\quad I_C = \\beta I_B,\\quad I_E = I_B + I_C', category: 'Semiconductor Devices', description: 'Shockley diode equation and transistor currents.' },
+        { title: 'Rectifiers', latex: 'V_{dc,HW} = \\frac{V_m}{\\pi},\\quad V_{dc,FW} = \\frac{2V_m}{\\pi},\\quad V_r = \\frac{I_{dc}}{f_r C}', category: 'Applications', description: 'Average output and capacitor-filter ripple.' },
+      ];
+      defaultSimulations = [
+          { title: "Ohm's Law Simulator", key: "ee-ohms-law", type: 'EE_BOARD_SIM', category: "Unit 1 · Ohm's Law" },
+          { title: "Series Circuit Simulator", key: "ee-series", type: 'EE_BOARD_SIM', category: "Unit 1 · Series Circuit" },
+          { title: "Parallel Circuit Simulator", key: "ee-parallel", type: 'EE_BOARD_SIM', category: "Unit 1 · Parallel Circuit" },
+          { title: "Kirchhoff's Current Law (KCL)", key: "ee-kcl", type: 'EE_BOARD_SIM', category: "Unit 1 · KCL" },
+          { title: "Kirchhoff's Voltage Law (KVL)", key: "ee-kvl", type: 'EE_BOARD_SIM', category: "Unit 1 · KVL" },
+          { title: "Star–Delta Conversion", key: "ee-star-delta", type: 'EE_BOARD_SIM', category: "Unit 1 · Star–Delta Conversion" },
+          { title: "Nodal Analysis Visualizer", key: "ee-nodal", type: 'EE_BOARD_SIM', category: "Unit 1 · Nodal Analysis" },
+          { title: "Mesh Analysis Visualizer", key: "ee-mesh", type: 'EE_BOARD_SIM', category: "Unit 1 · Mesh Analysis" },
+          { title: "DC Motor Construction", key: "ee-dc-construction", type: 'EE_BOARD_SIM', category: "Unit 2 · Construction" },
+          { title: "DC Motor Working Principle", key: "ee-dc-working", type: 'EE_BOARD_SIM', category: "Unit 2 · Working Principle" },
+          { title: "DC Motor Types", key: "ee-dc-types", type: 'EE_BOARD_SIM', category: "Unit 2 · Motor Types" },
+          { title: "DC Motor Torque Simulator", key: "ee-dc-torque", type: 'EE_BOARD_SIM', category: "Unit 2 · Torque" },
+          { title: "DC Motor Characteristics", key: "ee-dc-characteristics", type: 'EE_BOARD_SIM', category: "Unit 2 · Characteristics" },
+          { title: "DC Motor Starters", key: "ee-dc-starters", type: 'EE_BOARD_SIM', category: "Unit 2 · Starters" },
+          { title: "DC Motor Speed Control", key: "ee-dc-speed", type: 'EE_BOARD_SIM', category: "Unit 2 · Speed Control" },
+          { title: "Single-Phase Transformer", key: "ee-transformer", type: 'EE_BOARD_SIM', category: "Unit 3 · Single-Phase Transformer" },
+          { title: "Transformer Turns Ratio", key: "ee-turns-ratio", type: 'EE_BOARD_SIM', category: "Unit 3 · Turns Ratio" },
+          { title: "Transformer Step-Up / Step-Down", key: "ee-step-up-down", type: 'EE_BOARD_SIM', category: "Unit 3 · Step-Up / Step-Down" },
+          { title: "Three-Phase Induction Motor Construction", key: "ee-im-construction", type: 'EE_BOARD_SIM', category: "Unit 3 · Induction Motor Construction" },
+          { title: "Three-Phase Induction Motor Working", key: "ee-im-working", type: 'EE_BOARD_SIM', category: "Unit 3 · Induction Motor Working" },
+          { title: "Induction Motor Characteristics", key: "ee-im-characteristics", type: 'EE_BOARD_SIM', category: "Unit 3 · Characteristics" },
+          { title: "Induction Motor Starters", key: "ee-im-starters", type: 'EE_BOARD_SIM', category: "Unit 3 · Starters" },
+          { title: "PN Junction Simulator", key: "ee-pn-junction", type: 'EE_BOARD_SIM', category: "Unit 4 · PN Junction" },
+          { title: "PN Junction V-I Characteristics", key: "ee-pn-vi", type: 'EE_BOARD_SIM', category: "Unit 4 · PN Junction V-I" },
+          { title: "Zener Diode", key: "ee-zener", type: 'EE_BOARD_SIM', category: "Unit 4 · Zener Diode" },
+          { title: "BJT Simulator", key: "ee-bjt", type: 'EE_BOARD_SIM', category: "Unit 4 · BJT" },
+          { title: "BJT Characteristics", key: "ee-bjt-characteristics", type: 'EE_BOARD_SIM', category: "Unit 4 · BJT Characteristics" },
+          { title: "FET Simulator", key: "ee-fet", type: 'EE_BOARD_SIM', category: "Unit 4 · FET" },
+          { title: "Half-Wave Rectifier", key: "ee-half-wave", type: 'EE_BOARD_SIM', category: "Unit 5 · Half-Wave Rectifier" },
+          { title: "Full-Wave Rectifier", key: "ee-full-wave", type: 'EE_BOARD_SIM', category: "Unit 5 · Full-Wave Rectifier" },
+          { title: "Rectifier Comparison", key: "ee-rectifier-compare", type: 'EE_BOARD_SIM', category: "Unit 5 · Rectifier Comparison" },
+          { title: "Filter Simulator", key: "ee-filter", type: 'EE_BOARD_SIM', category: "Unit 5 · Filter" },
+          { title: "Voltage Regulator", key: "ee-regulator", type: 'EE_BOARD_SIM', category: "Unit 5 · Voltage Regulator" },
+          { title: "Series and Shunt Voltage Regulators", key: "ee-series-shunt", type: 'EE_BOARD_SIM', category: "Unit 5 · Series / Shunt Regulator" },
+          { title: "CE / CB / CC Configurations", key: "ee-configurations", type: 'EE_BOARD_SIM', category: "Unit 5 · CE / CB / CC" },
+      ];
+    }
+
     const sessionId = `sb_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     const boardTeacherId = role === UserRole.TEACHER ? String(user._id) : '';
     const boardTeacherName = role === UserRole.TEACHER ? user.name : 'Faculty Member';
@@ -3874,6 +3927,84 @@ export class AcademicService {
       await Content.updateOne({ _id: simulationId }, { $inc: { viewCount: 1 } });
     }
     return { event, activity };
+  }
+
+  /**
+   * Challenge mode: verifies a student's attempt on the server (re-evaluating their configuration with the
+   * same formulas the simulation uses) and appends it to the student's SimulationActivity for that simulation.
+   */
+  static async submitSimulationChallenge(
+    studentId: string,
+    subjectId: string,
+    simulationId: string,
+    input: {
+      challenge: { id: string; kind: string; prompt: string; target: number; unit?: string; tolerance: number; meta?: { key: string; expected: unknown } };
+      configuration: Record<string, unknown>;
+      answer: { value?: number | null; text?: string };
+      calculation?: string;
+      clientResult?: 'CORRECT' | 'INCORRECT';
+      mode?: string;
+    }
+  ) {
+    if (!mongoose.isValidObjectId(simulationId)) throw ApiError.badRequest('Invalid simulation.');
+    const simulation = await Content.findOne({ _id: simulationId, subject: subjectId, contentType: ContentType.SIMULATIONS });
+    if (!simulation) throw ApiError.notFound('Simulation not found in this subject.');
+    if (simulation.status !== ContentStatus.PUBLISHED) throw ApiError.forbidden('This simulation is not currently available to students.');
+
+    const { challenge } = input;
+    const serverValue = evaluateSimulationChallenge(challenge.kind, input.configuration, challenge.meta);
+    const verified = serverValue !== null;
+    let result: 'CORRECT' | 'INCORRECT';
+    if (verified) result = Number.isFinite(serverValue) && Math.abs((serverValue as number) - challenge.target) <= challenge.tolerance + 1e-9 ? 'CORRECT' : 'INCORRECT';
+    else result = input.clientResult === 'CORRECT' ? 'CORRECT' : 'INCORRECT';
+
+    const existing = await SimulationActivity.findOne({ student: studentId, simulation: simulationId }).select('challengeAttempts.challengeId').lean();
+    const attemptNo = ((existing as any)?.challengeAttempts || []).filter((a: any) => a.challengeId === challenge.id).length + 1;
+    const now = new Date();
+    const attempt = {
+      challengeId: challenge.id,
+      kind: challenge.kind,
+      prompt: challenge.prompt,
+      target: challenge.target,
+      unit: challenge.unit || '',
+      tolerance: challenge.tolerance,
+      ...(challenge.meta ? { meta: challenge.meta } : {}),
+      configuration: input.configuration,
+      answer: { ...(Number.isFinite(input.answer?.value as number) ? { value: input.answer.value } : {}), text: input.answer?.text || '' },
+      calculation: input.calculation || '',
+      attempt: attemptNo,
+      result,
+      verified,
+      ...(verified && Number.isFinite(serverValue as number) ? { serverValue } : {}),
+      mode: 'CHALLENGE',
+      submittedAt: now,
+    };
+    await SimulationActivity.updateOne(
+      { student: studentId, subject: subjectId, simulation: simulationId },
+      {
+        $push: { challengeAttempts: { $each: [attempt], $slice: -200 } },
+        $set: { lastOpenedAt: now, lastMode: 'CHALLENGE', ...(simulation.topic ? { topic: String(simulation.topic).slice(0, 120) } : {}), ...(result === 'CORRECT' ? { completedAt: now } : {}) },
+        $setOnInsert: { firstOpenedAt: now },
+      },
+      { upsert: true }
+    );
+    return { result, attempt: attemptNo, verified, serverValue: verified && Number.isFinite(serverValue as number) ? serverValue : null, target: challenge.target, tolerance: challenge.tolerance, submittedAt: now };
+  }
+
+  /** Challenge attempts for one simulation: all students for staff of the subject, only their own for a student. */
+  static async getSimulationChallengeAttempts(subjectId: string, simulationId: string, user: { id: string; role: UserRole }) {
+    if (!mongoose.isValidObjectId(simulationId)) throw ApiError.badRequest('Invalid simulation.');
+    const simulation = await Content.findOne({ _id: simulationId, subject: subjectId, contentType: ContentType.SIMULATIONS }).select('_id title status').lean();
+    if (!simulation) throw ApiError.notFound('Simulation not found in this subject.');
+    const filter: Record<string, unknown> = { subject: subjectId, simulation: simulationId };
+    if (user.role === UserRole.STUDENT) filter.student = user.id;
+    const activities = await SimulationActivity.find(filter).populate('student', 'name email profile.rollNumber').lean();
+    const attempts = activities
+      .flatMap((a: any) => (a.challengeAttempts || []).map((x: any) => ({ ...x, student: a.student })))
+      .sort((a: any, b: any) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
+    const students = new Set(attempts.map((a: any) => String(a.student?._id || a.student)));
+    const solved = new Set(attempts.filter((a: any) => a.result === 'CORRECT').map((a: any) => String(a.student?._id || a.student)));
+    return { simulation: { _id: simulation._id, title: (simulation as any).title, status: (simulation as any).status }, summary: { attempts: attempts.length, students: students.size, studentsCorrect: solved.size }, attempts };
   }
 
   static async assignSimulationToSubject(

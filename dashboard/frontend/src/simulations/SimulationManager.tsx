@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { ISimulationDefinition, IAssignedSimulation, ISimulationLaunchContext, SimulationDomain } from './types';
-import { getDomainColor, resolveSubjectDomain, isSmartBoardDsaSimulation, isSmartBoardOsSimulation, isSmartBoardCSimulation, isSmartBoardEpSimulation, isSmartBoardEgSimulation, isSmartBoardMaSimulation } from './types';
+import { getDomainColor, resolveSubjectDomain, isSmartBoardDsaSimulation, isSmartBoardOsSimulation, isSmartBoardCSimulation, isSmartBoardEpSimulation, isSmartBoardEgSimulation, isSmartBoardMaSimulation, isSmartBoardPdcSimulation, isSmartBoardEeSimulation, isSmartBoardEcgSimulation } from './types';
+import type { ISimulationChallengeAttempt } from './types';
+import { AcademicService } from '../services/academic.service';
 import type { IEpPublishedConfig } from './types';
 import { getSimulationsForSubject } from './registry';
 import { SimulationModal } from './SimulationModal';
@@ -60,7 +62,14 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
   const domainStyle = getDomainColor(domain);
 
   // Only the simulations that belong to this subject
-  const simulations = useMemo(() => getSimulationsForSubject(subject), [subject]);
+  // Only the simulations that belong to this subject. Students see the Electrical & Electronics
+  // simulations only once the subject teacher has published them (the backend also returns only published records).
+  const simulations = useMemo(() => {
+    const list = getSimulationsForSubject(subject);
+    if (isTeacher) return list;
+    const published = new Set((assignedSimulations || []).filter((a) => a && (a.status || 'PUBLISHED') === 'PUBLISHED').map((a) => a.simulationConfig?.type || ''));
+    return list.filter((s) => !isSmartBoardEeSimulation(s) || published.has(s.id));
+  }, [subject, isTeacher, assignedSimulations]);
   const byUnit = simulations.length > 0 && simulations.every((s) => s.unit != null);
 
   // Filter chips: units for a syllabus-mapped library, otherwise categories
@@ -103,6 +112,20 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
     } finally { setBusy(''); }
   };
 
+  /** Teacher: Challenge-mode results for one published simulation. */
+  const [results, setResults] = useState<{ sim: ISimulationDefinition; loading: boolean; error?: string; attempts: ISimulationChallengeAttempt[] } | null>(null);
+  const openResults = async (sim: ISimulationDefinition) => {
+    const rec = savedRecord.get(sim.id);
+    if (!rec) { setResults({ sim, loading: false, error: 'Publish this simulation first — results appear once students submit challenges.', attempts: [] }); return; }
+    setResults({ sim, loading: true, attempts: [] });
+    try {
+      const res: any = await AcademicService.getSimulationChallengeAttempts(subject._id, rec._id);
+      setResults({ sim, loading: false, attempts: (res?.data?.attempts || res?.attempts || []) as ISimulationChallengeAttempt[] });
+    } catch (err: any) {
+      setResults({ sim, loading: false, error: err?.response?.data?.message || err?.message || 'Could not load results.', attempts: [] });
+    }
+  };
+
   const [selected, setSelected] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [preview, setPreview] = useState<ISimulationDefinition | null>(null);
@@ -137,9 +160,11 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
   const contextFor = (sim: ISimulationDefinition, extra: Partial<ISimulationLaunchContext> = {}): ISimulationLaunchContext => {
     if (isSmartBoardDsaSimulation(sim)) return { topic: sim.title, category: sim.dsaCategory, config: { category: sim.dsaCategory, topic: sim.title }, ...extra };
     if (sim.boardEngine === 'cn') return { topic: sim.topic, category: sim.id, config: {}, ...extra };
-    if (isSmartBoardEpSimulation(sim) || isSmartBoardEgSimulation(sim) || isSmartBoardMaSimulation(sim)) return { topic: sim.topic, category: sim.id, config: (publishedConfig.get(sim.id) as Record<string, unknown>) || {}, ...extra };
+    if (isSmartBoardEpSimulation(sim) || isSmartBoardEgSimulation(sim) || isSmartBoardMaSimulation(sim) || isSmartBoardEeSimulation(sim)) return { topic: sim.topic, category: sim.id, config: (publishedConfig.get(sim.id) as Record<string, unknown>) || {}, ...extra };
     if (isSmartBoardOsSimulation(sim)) return { topic: sim.title, category: sim.osCategory, config: { simulationId: sim.id, osCategory: sim.osCategory, topic: sim.title }, ...extra };
     if (isSmartBoardCSimulation(sim)) return { topic: sim.title, category: sim.cCategory, config: { simulationId: sim.id, cCategory: sim.cCategory, topic: sim.title }, ...extra };
+    if (isSmartBoardPdcSimulation(sim)) return { topic: sim.title, category: sim.id, unit: sim.unit, config: { simulationId: sim.id, unit: sim.unit, topic: sim.title }, ...extra };
+    if (isSmartBoardEcgSimulation(sim)) return { topic: sim.title, category: sim.id, unit: sim.unit, config: { simulationId: sim.id, unit: sim.unit, topic: sim.title }, ...extra };
     return { topic: sim.title, category: sim.category, config: {}, ...extra };
   };
 
@@ -177,6 +202,17 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
         launchOnSmartBoard(sim, { config: msg.context?.config || {}, state: msg.context?.state || undefined });
       }
       if (msg.type === 'EDUVERSE_SIM_CLOSE' || msg.type === 'EDUVERSE_DSA_CLOSE') setPreview(null);
+      if (msg.type === 'EDUVERSE_SIM_CHALLENGE_SUBMIT') {
+        const reply = (ok: boolean, extra: Record<string, unknown>) => { try { (event.source as Window | null)?.postMessage({ type: 'EDUVERSE_SIM_CHALLENGE_RESULT', ok, ...extra }, window.location.origin); } catch { /* preview closed */ } };
+        const sim = (msg.simKey && simulations.find((s) => s.id === msg.simKey)) || preview;
+        const rec = sim ? savedRecord.get(sim.id) : undefined;
+        if (isTeacher) { reply(false, { message: 'Checked here — only students’ attempts are stored (see 📊 Results).' }); return; }
+        if (!sim || !rec || (rec.status || 'PUBLISHED') !== 'PUBLISHED') { reply(false, { message: 'This simulation is not published for your class, so the attempt was not saved.' }); return; }
+        const m = msg as any;
+        AcademicService.submitSimulationChallenge(subject._id, rec._id, { challenge: m.challenge, configuration: m.configuration, answer: m.answer, calculation: m.calculation, clientResult: m.clientResult, mode: 'CHALLENGE' })
+          .then((res: any) => reply(true, { result: res?.data || res }), (err: any) => reply(false, { message: err?.response?.data?.message || err?.message || 'Could not save the attempt.' }));
+        return;
+      }
       if (msg.type === 'EDUVERSE_SIM_PUBLISH') {
         // Teacher: save the current parameters as the class default (reuses the existing Simulation/Content model)
         const reply = (ok: boolean, message?: string) => { try { (event.source as Window | null)?.postMessage({ type: 'EDUVERSE_SIM_PUBLISH_RESULT', ok, message }, window.location.origin); } catch { /* preview closed */ } };
@@ -196,13 +232,15 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [preview, publishedConfig]);
+  }, [preview, publishedConfig, savedRecord, simulations]);
 
   const previewUrl = (sim: ISimulationDefinition): string | null => {
+    if (isSmartBoardEcgSimulation(sim)) return `/smartboard/ecg-simulation.html?${subjectQuery({ sim: sim.id, unit: String(sim.unit || 1), title: sim.title, topic: sim.title })}`;
+    if (isSmartBoardPdcSimulation(sim)) return `/smartboard/pdc-simulation.html?${subjectQuery({ sim: sim.id, unit: String(sim.unit || 1), title: sim.title, topic: sim.title })}`;
     if (sim.boardEngine === 'cn') return `/smartboard/cn-simulation.html?${subjectQuery({ sim: sim.id, preview: '1' })}`;
-    if (isSmartBoardEpSimulation(sim) || isSmartBoardEgSimulation(sim) || isSmartBoardMaSimulation(sim)) {
+    if (isSmartBoardEpSimulation(sim) || isSmartBoardEgSimulation(sim) || isSmartBoardMaSimulation(sim) || isSmartBoardEeSimulation(sim)) {
       const cfg = publishedConfig.get(sim.id);
-      const page = isSmartBoardMaSimulation(sim) ? 'ma-simulation.html' : isSmartBoardEgSimulation(sim) ? 'eg-simulation.html' : 'ep-simulation.html';
+      const page = isSmartBoardEeSimulation(sim) ? 'ee-simulation.html' : isSmartBoardMaSimulation(sim) ? 'ma-simulation.html' : isSmartBoardEgSimulation(sim) ? 'eg-simulation.html' : 'ep-simulation.html';
       return `/smartboard/${page}?${subjectQuery({ sim: sim.id, preview: '1', ...(cfg ? { config: JSON.stringify(cfg) } : {}) })}`;
     }
     if (isSmartBoardOsSimulation(sim)) return `/smartboard/os-simulation.html?${subjectQuery({ simulationId: sim.id, category: String(sim.osCategory || ''), title: sim.title, topic: sim.title })}`;
@@ -244,7 +282,7 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
           <span className="inline-block rounded-md bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">📌 {isTeacher ? 'Published class settings' : 'Teacher’s settings'}</span>
         )}
       </div>
-      {isTeacher && isSmartBoardMaSimulation(sim) && (
+      {isTeacher && (isSmartBoardMaSimulation(sim) || isSmartBoardEeSimulation(sim)) && (
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
@@ -263,6 +301,15 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
             {savedRecord.get(sim.id) && (savedRecord.get(sim.id)?.status || 'PUBLISHED') === 'PUBLISHED' ? '⏸ Unpublish' : '📢 Publish'}
           </button>
         </div>
+      )}
+      {isTeacher && isSmartBoardEeSimulation(sim) && (
+        <button
+          type="button"
+          onClick={() => { void openResults(sim); }}
+          className="w-full py-2 rounded-xl border border-line bg-surface-elevated hover:border-primary/50 text-ink text-xs font-semibold transition cursor-pointer"
+        >
+          📊 Challenge results
+        </button>
       )}
       <div className="grid grid-cols-2 gap-2">
         <button
@@ -362,6 +409,45 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
             </div>
           </section>
         ))
+      )}
+
+      {/* Challenge results (teacher) */}
+      {results && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 sm:p-6" role="dialog" aria-modal="true" aria-label={`${results.sim.title} challenge results`}>
+          <div className="flex max-h-[90dvh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-2xl">
+            <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-2.5">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold text-ink">📊 {results.sim.title} — Challenge results</p>
+                <p className="truncate text-[11px] text-muted">{subject.subjectCode} · Unit {results.sim.unit} · {results.sim.topic}</p>
+              </div>
+              <button type="button" onClick={() => setResults(null)} className="rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-muted hover:text-ink">Close</button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-auto p-3">
+              {results.loading && <p className="p-4 text-sm text-muted">Loading…</p>}
+              {results.error && <p className="p-4 text-sm text-muted">{results.error}</p>}
+              {!results.loading && !results.error && results.attempts.length === 0 && <p className="p-4 text-sm text-muted">No challenge attempts yet.</p>}
+              {results.attempts.length > 0 && (
+                <table className="w-full text-left text-xs">
+                  <thead className="text-[11px] uppercase text-muted">
+                    <tr><th className="p-2">Student</th><th className="p-2">Challenge</th><th className="p-2">Answer</th><th className="p-2">Result</th><th className="p-2">Attempt</th><th className="p-2">Submitted</th></tr>
+                  </thead>
+                  <tbody>
+                    {results.attempts.map((a, i) => (
+                      <tr key={a._id || i} className="border-t border-line align-top">
+                        <td className="p-2 font-semibold text-ink">{typeof a.student === 'object' ? a.student?.name || a.student?.email : '—'}</td>
+                        <td className="p-2 text-muted"><span className="line-clamp-2">{a.prompt}</span><span className="block text-[10px]">target {a.target} {a.unit} ± {a.tolerance}</span></td>
+                        <td className="p-2"><span className="block">{a.answer?.text || a.answer?.value}</span>{a.calculation && <span className="block text-[10px] text-muted">{a.calculation}</span>}</td>
+                        <td className="p-2"><span className={`rounded-md px-2 py-0.5 text-[11px] font-bold ${a.result === 'CORRECT' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>{a.result === 'CORRECT' ? '✅ Correct' : '❌ Incorrect'}</span>{!a.verified && <span className="block text-[10px] text-muted">client-checked</span>}</td>
+                        <td className="p-2">#{a.attempt}</td>
+                        <td className="p-2 text-muted">{new Date(a.submittedAt).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Preview */}

@@ -497,6 +497,25 @@ export class AcademicController {
     ApiResponse.ok(res, 'Simulation activity recorded successfully.', result);
   }
 
+  static async submitSimulationChallenge(req: Request, res: Response) {
+    const result = await AcademicService.submitSimulationChallenge(
+      String(req.user!._id),
+      String(req.params.id),
+      String(req.params.simulationId),
+      req.validated?.body as any
+    );
+    ApiResponse.created(res, result.result === 'CORRECT' ? 'Correct — challenge attempt saved.' : 'Challenge attempt saved.', result);
+  }
+
+  static async getSimulationChallengeAttempts(req: Request, res: Response) {
+    const data = await AcademicService.getSimulationChallengeAttempts(
+      String(req.params.id),
+      String(req.params.simulationId),
+      { id: String(req.user!._id), role: req.user!.role }
+    );
+    ApiResponse.ok(res, 'Challenge attempts retrieved successfully.', data);
+  }
+
   static async assignSimulation(req: Request, res: Response) {
     const teacherId = String(req.user!._id);
     const subjectId = String(req.params.id || req.params.subjectId);
