@@ -416,9 +416,6 @@ export function HomePage() {
             <a href="#programmes" className="hover:text-[#247D4C] transition-colors">Programmes ({PROGRAMMES.length})</a>
             <a href="#students" className="hover:text-[#247D4C] transition-colors">Students</a>
             <a href="#teachers" className="hover:text-[#247D4C] transition-colors">Teachers</a>
-            <a href="/smartboard" className="text-[#247D4C] hover:text-[#1B5E39] font-semibold flex items-center gap-1.5">
-              <span>🖥</span> Smart Board
-            </a>
             <a href="#about" className="hover:text-[#247D4C] transition-colors">About</a>
           </nav>
 
@@ -862,12 +859,12 @@ export function HomePage() {
                 <span className="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-medium">🔬 Simulations</span>
                 <span className="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 font-medium">📁 Subject Resources</span>
               </div>
-              <a
-                href="/smartboard"
+              <Link
+                to={isAuthenticated && user ? getDashboardPathForRole(user.role) : paths.signin}
                 className="inline-flex items-center gap-2 rounded-xl bg-[#247D4C] hover:bg-[#1B5E39] text-white px-5 py-2.5 text-xs font-bold transition-all shadow-md"
               >
-                <span>📄</span> Share Notes to Portal / Explore Smart Learning →
-              </a>
+                <span>🔐</span> {isAuthenticated ? 'Open Dashboard Workspace →' : 'Sign In to Access Smart Board →'}
+              </Link>
             </div>
           </div>
         </div>
@@ -1354,7 +1351,6 @@ export function HomePage() {
                 <li><a href="#features" className="hover:text-[#247D4C]">Features</a></li>
                 <li><a href="#students" className="hover:text-[#247D4C]">Students</a></li>
                 <li><a href="#teachers" className="hover:text-[#247D4C]">Teachers</a></li>
-                <li><a href="/smartboard" className="hover:text-[#247D4C]">Smart Board</a></li>
               </ul>
             </div>
 

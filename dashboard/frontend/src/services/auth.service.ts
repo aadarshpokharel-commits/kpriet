@@ -14,8 +14,14 @@ export class AuthService {
   static setAuthHeader(token?: string | null) {
     if (token) {
       httpClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      try {
+        localStorage.setItem('eduverse_token', token);
+      } catch (_) {}
     } else {
       delete httpClient.defaults.headers.common['Authorization'];
+      try {
+        localStorage.removeItem('eduverse_token');
+      } catch (_) {}
     }
   }
 
@@ -81,6 +87,11 @@ export class AuthService {
       await api.post('/auth/logout');
     } finally {
       AuthService.setAuthHeader(null);
+      try {
+        localStorage.removeItem('eduverse_token');
+        localStorage.removeItem('eduverse_smartboard_active_session');
+        sessionStorage.removeItem('eduverse_rbac_session');
+      } catch (_) {}
     }
   }
 

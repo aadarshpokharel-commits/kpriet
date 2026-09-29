@@ -3084,9 +3084,120 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     10. INITIALIZATION
+     10. AUTHENTICATION GUARD & INITIALIZATION
      ══════════════════════════════════════════════════════════ */
-  function init() {
+  function showAuthRequiredBarrier() {
+    let barrier = document.getElementById('sb-auth-barrier');
+    if (!barrier) {
+      barrier = document.createElement('div');
+      barrier.id = 'sb-auth-barrier';
+      barrier.style.cssText = `
+        position: fixed;
+        inset: 0;
+        z-index: 9999999;
+        background: radial-gradient(circle at 50% 30%, #0f172a 0%, #020617 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: #f8fafc;
+        user-select: none;
+      `;
+      barrier.innerHTML = `
+        <div style="max-width: 480px; width: 100%; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.25); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 40px rgba(36, 125, 76, 0.25); border-radius: 20px; padding: 38px 32px; text-align: center; backdrop-filter: blur(20px);">
+          <div style="width: 64px; height: 64px; margin: 0 auto 20px; background: rgba(36, 125, 76, 0.15); border: 1px solid rgba(36, 125, 76, 0.4); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 32px;">
+            🔒
+          </div>
+          <div style="font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: #34d399; margin-bottom: 8px;">
+            KPRIET Eduverse • Protected Workspace
+          </div>
+          <h2 style="font-size: 22px; font-weight: 800; color: #ffffff; margin: 0 0 12px; line-height: 1.3;">
+            Authentication Required
+          </h2>
+          <p style="font-size: 13.5px; color: #94a3b8; line-height: 1.6; margin: 0 0 24px;">
+            The interactive Smart Board is restricted to authenticated students and faculty. Please sign in to your Eduverse account to access classroom boards, interactive simulations, and digital notes.
+          </p>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <a href="/signin" id="sb-auth-login-btn" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px 20px; background: #247D4C; color: #ffffff; font-weight: 700; font-size: 14px; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 14px rgba(36, 125, 76, 0.4); transition: all 0.2s ease;">
+              <span>🔑</span> Sign In with College ID
+            </a>
+            <a href="/" style="display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 10px 16px; background: transparent; color: #94a3b8; font-size: 12.5px; border-radius: 10px; text-decoration: none; transition: all 0.2s ease;">
+              Return to Home Page
+            </a>
+          </div>
+          <div id="sb-auth-countdown" style="margin-top: 20px; font-size: 11.5px; color: #64748b;">
+            Redirecting to sign-in in <span id="sb-countdown-sec" style="font-weight: 700; color: #e2e8f0;">5</span>s...
+          </div>
+        </div>
+      `;
+      document.body.appendChild(barrier);
+
+      // Disable whiteboard background interaction
+      document.body.style.overflow = 'hidden';
+
+      let countdown = 5;
+      const secEl = document.getElementById('sb-countdown-sec');
+      const timer = setInterval(() => {
+        countdown--;
+        if (secEl) secEl.textContent = String(countdown);
+        if (countdown <= 0) {
+          clearInterval(timer);
+          window.location.href = '/signin';
+        }
+      }, 1000);
+    }
+  }
+
+  async function verifyAuthenticatedUser() {
+    let token = session.token || localStorage.getItem('eduverse_token') || sessionStorage.getItem('token') || paramToken;
+    const headers = { 'Content-Type': 'application/json' };
+    if (token && /^[\w-]+\.[\w-]+\.[\w-]+$/.test(String(token))) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    try {
+      let meRes = await apiFetch('/auth/me', { headers, credentials: 'include' });
+      if (!meRes.ok) {
+        // Attempt session refresh
+        const refreshRes = await apiFetch('/auth/refresh', { method: 'POST', headers, credentials: 'include' });
+        if (refreshRes.ok) {
+          const refreshJson = await refreshRes.json().catch(() => ({}));
+          const newToken = refreshJson.data?.accessToken || refreshJson.accessToken;
+          if (newToken) {
+            token = newToken;
+            try { localStorage.setItem('eduverse_token', newToken); } catch (_) {}
+            headers['Authorization'] = `Bearer ${newToken}`;
+            meRes = await apiFetch('/auth/me', { headers, credentials: 'include' });
+          }
+        }
+      }
+
+      if (meRes.ok) {
+        const meData = await meRes.json().catch(() => ({}));
+        const user = meData.data?.user || meData.user;
+        if (user) {
+          session.user = user;
+          if (user.role) session.role = String(user.role).toLowerCase();
+          if (user.name) session.teacherName = user.name;
+          return true;
+        }
+      }
+    } catch (e) {
+      console.warn('[SmartBoard RBAC] Auth check failed:', e);
+    }
+
+    return false;
+  }
+
+  async function init() {
+    // Enforce authentication: students and teachers must be logged in
+    const isAuthenticated = await verifyAuthenticatedUser();
+    if (!isAuthenticated) {
+      showAuthRequiredBarrier();
+      return;
+    }
+
     document.body.classList.add('rbac-session-active');
     injectSessionBar();
     hydrateBackendContext();
