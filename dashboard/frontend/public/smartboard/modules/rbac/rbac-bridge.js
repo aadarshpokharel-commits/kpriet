@@ -27,12 +27,29 @@
   const DASHBOARD_URL = '/teacher/dashboard';
 
   function resolveDashboardUrl() {
-    if (session && session.returnUrl && !session.returnUrl.includes('dashboard/index.html')) {
-      return session.returnUrl;
+    // Priority 1: explicit returnUrl passed from the Dashboard when launching.
+    // Accept both full absolute URLs (https://kpriet.vercel.app/teacher/dashboard)
+    // and plain paths (/teacher/dashboard). Reject stale file-path references.
+    if (session && session.returnUrl) {
+      const ru = String(session.returnUrl);
+      if (!ru.includes('dashboard/index.html') && !ru.includes('smartboard')) {
+        return ru; // may be an absolute URL or a path — both work fine for location.href
+      }
     }
-    if (document.referrer && (document.referrer.includes('/teacher') || document.referrer.includes('/student') || document.referrer.includes('/hod') || document.referrer.includes('/admin')) && !document.referrer.includes('dashboard/index.html')) {
-      return document.referrer;
+
+    // Priority 2: referrer (only works when NOT opened in a new tab)
+    if (document.referrer) {
+      const ref = document.referrer;
+      if (
+        (ref.includes('/teacher') || ref.includes('/student') || ref.includes('/hod') || ref.includes('/admin')) &&
+        !ref.includes('dashboard/index.html') &&
+        !ref.includes('smartboard')
+      ) {
+        return ref;
+      }
     }
+
+    // Priority 3: role-based fallback
     const role = String(session.role || session.user?.role || '').toLowerCase();
     if (role === 'student') {
       if (session.subjectId) {
@@ -71,6 +88,7 @@
   const paramUnitNumber    = urlParams.get('unitNumber') || urlParams.get('unit');
   const paramUnitTitle     = urlParams.get('unitTitle');
   const paramTopic         = urlParams.get('topic');
+  const paramReturnUrl     = urlParams.get('returnUrl');
 
   /** Escapes text before it is placed into innerHTML (values can come from the URL). */
   function escapeHtml(value) {
@@ -228,6 +246,9 @@
   if (urlParams.has('role')) session.role = paramRole;
   if (paramToken) session.token = paramToken;
   if (paramSessionId) session.sessionId = paramSessionId;
+  // Always honour a fresh returnUrl from the URL — this is how the Dashboard tells
+  // the Smart Board which page launched it, even when opened as a new tab.
+  if (paramReturnUrl) session.returnUrl = paramReturnUrl;
   if (paramProgrammeId) session.programmeId = paramProgrammeId;
   if (paramProgrammeName) {
     session.programmeName = paramProgrammeName;

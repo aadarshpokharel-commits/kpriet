@@ -32,17 +32,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<IAuthUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Attempt automatic session restoration on app load using httpOnly refresh cookie
+  // Attempt automatic session restoration on app load.
+  // Priority: 1) In-memory header (already set), 2) localStorage token backup,
+  // 3) httpOnly refresh cookie via /auth/refresh.
   const refreshUser = useCallback(async () => {
+    // Restore the access token from localStorage if the in-memory header was
+    // lost due to a full page reload (e.g. returning from Smart Board new-tab).
+    try {
+      const storedToken = localStorage.getItem('eduverse_token');
+      if (storedToken) {
+        AuthService.setAuthHeader(storedToken);
+      }
+    } catch (_) {}
+
     try {
       const data = await AuthService.getMe();
       setUser(data.user);
     } catch {
-      // Try refresh endpoint once
+      // Token may be expired — try refresh endpoint once (uses httpOnly cookie).
       try {
         const refreshData = await AuthService.refresh();
         setUser(refreshData.user);
       } catch {
+        // Both failed — clear stale token and treat as unauthenticated.
         setUser(null);
         AuthService.setAuthHeader(null);
       }

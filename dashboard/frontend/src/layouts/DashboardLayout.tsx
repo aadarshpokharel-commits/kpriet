@@ -112,13 +112,23 @@ export function DashboardLayout() {
 
   const getSmartBoardUrl = () => {
     if (!user) return '/smartboard/index.html';
+    // Build the return URL that the Smart Board "← Portal" button will navigate to.
+    // We use the role-specific dashboard path instead of the current location so
+    // that coming from any page (e.g. overview, subjects list, etc.) always returns
+    // to the correct teacher/student dashboard.
+    const roleReturn =
+      user.role === 'TEACHER' ? '/teacher/dashboard' :
+      user.role === 'STUDENT' ? '/student/dashboard' :
+      user.role === 'HOD'     ? '/hod/dashboard' :
+      '/teacher/dashboard';
+    const returnUrl = window.location.origin + roleReturn;
     const params = new URLSearchParams({
       role: (user.role || 'teacher').toLowerCase(),
       teacherName: user.name || '',
       name: user.name || '',
       teacherId: (user as any).id || (user as any)._id || '',
       departmentName: (user as any).departmentName || (user as any).department?.name || '',
-      returnUrl: window.location.pathname + window.location.search,
+      returnUrl,
     });
     return `/smartboard/index.html?${params.toString()}`;
   };
