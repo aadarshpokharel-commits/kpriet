@@ -15,10 +15,73 @@
   const D = window.EPDraw;
   const { C, fmt, clamp, lerp, rad } = D;
 
+  // ─── Step-by-Step HUD & Animation Helper ───
+  function drawStepHUD(g, S, customNote) {
+    const step = S.step || 0;
+    const steps = S.steps || [];
+    const cur = steps[step] || { title: 'Step ' + (step + 1), text: '' };
+    const total = steps.length || 1;
+    const t = S.t || 0;
+
+    g.save();
+    const hudW = 440;
+    const hudH = 68;
+    const hudX = 1000 - hudW - 24;
+    const hudY = 18;
+
+    g.fillStyle = 'rgba(15, 23, 42, 0.88)';
+    g.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+    g.lineWidth = 1.5;
+    g.beginPath();
+    if (g.roundRect) g.roundRect(hudX, hudY, hudW, hudH, 10);
+    else g.rect(hudX, hudY, hudW, hudH);
+    g.fill();
+    g.stroke();
+
+    const glow = 0.5 + 0.5 * Math.sin(t * 3.5);
+    g.fillStyle = '#38bdf8';
+    g.font = 'bold 11px system-ui, sans-serif';
+    g.fillText('STEP ' + (step + 1) + ' OF ' + total, hudX + 16, hudY + 22);
+
+    for (let i = 0; i < total; i++) {
+      const dx = hudX + 115 + i * 16;
+      const dy = hudY + 18;
+      g.beginPath();
+      g.arc(dx, dy, i === step ? 5 : 3.5, 0, Math.PI * 2);
+      if (i === step) {
+        g.fillStyle = 'rgba(56, 189, 248, ' + (0.7 + 0.3 * glow) + ')';
+        g.fill();
+        g.strokeStyle = '#ffffff';
+        g.lineWidth = 1.2;
+        g.stroke();
+      } else if (i < step) {
+        g.fillStyle = '#10b981';
+        g.fill();
+      } else {
+        g.fillStyle = '#475569';
+        g.fill();
+      }
+    }
+
+    g.fillStyle = '#f8fafc';
+    g.font = 'bold 13px system-ui, sans-serif';
+    const cleanTitle = (cur.title || '').replace(/^\d+\.\s*/, '');
+    g.fillText(cleanTitle.length > 44 ? cleanTitle.slice(0, 42) + '...' : cleanTitle, hudX + 16, hudY + 43);
+
+    g.fillStyle = '#94a3b8';
+    g.font = '11px system-ui, sans-serif';
+    const sub = customNote || cur.text || '';
+    g.fillText(sub.length > 60 ? sub.slice(0, 58) + '...' : sub, hudX + 16, hudY + 59);
+
+    g.restore();
+  }
+
+
   // ═════════════════════════════════════════════════════════════════
   // 9. POLYMER CHAIN GROWTH (ADDITION VS CONDENSATION) & Mn, Mw, PDI
   // ═════════════════════════════════════════════════════════════════
   S['chem-polymer-chain-growth'] = {
+    live: true,
     approx: 'Step-growth follows the Carothers equation Xn = 1/(1-p) with Flory-Schulz most probable distribution. Chain-growth modeled via steady-state radical kinetics.',
     modes: [
       { key: 'step_growth', label: 'Step-Growth (Condensation: Nylon 6,6 / PET)' },
@@ -148,9 +211,13 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
 
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Initiator thermal decomposition into active radicals (R·)' : step === 1 ? 'Continuous chain propagation & monomer addition' : 'Chain termination & molecular weight distribution (Mn, Mw, PDI)');
 
       // Header Banner
       D.text(g, st.mode === 'step_growth' ? 'STEP-GROWTH (CONDENSATION) POLYMERIZATION & KINETICS' : 'CHAIN-GROWTH (FREE RADICAL ADDITION) POLYMERIZATION', 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
@@ -286,6 +353,7 @@
   // 10. Tg / Tm THERMAL TRANSITION CURVE & DSC THERMOGRAM
   // ═════════════════════════════════════════════════════════════════
   S['chem-polymer-thermal-transitions'] = {
+    live: true,
     approx: 'Heat capacity jump ΔCp at Tg modeled as 2nd-order thermodynamic transition; melting peak at Tm modeled via Gaussian latent heat ΔHm = Tm·ΔSm. Fox equation applies to plasticizer blends.',
     modes: [
       { key: 'amorphous', label: 'Amorphous Polymer (Atactic Polystyrene / PMMA)' },
@@ -399,9 +467,13 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
 
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Glassy state (T < Tg): rigid chains with local vibrational motion only' : step === 1 ? 'Glass transition (Tg): sudden jump in heat capacity (ΔCp) & segmental crawl' : 'Rubbery plateau & melting (Tm): crystallites melt into viscous polymer fluid');
 
       // Header Banner
       D.text(g, 'POLYMER THERMAL TRANSITIONS: DSC THERMOGRAM & STATE DIAGRAM', 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
@@ -511,6 +583,7 @@
   // 11. POLYMER PROCESSING & MOLDING (INJECTION, EXTRUSION, COMPRESSION)
   // ═════════════════════════════════════════════════════════════════
   S['chem-molding-processes'] = {
+    live: true,
     approx: 'Polymer melt rheology modeled via power-law non-Newtonian shear thinning (Ostwald-de Waele: η = K·γ^(n-1)). Cycle cooling time follow Fourier thermal diffusion t_cool = (h^2 / (π^2 α))·ln(4/π · (Tm - Tw)/(Te - Tw)).',
     modes: [
       { key: 'injection', label: 'Injection Molding (Thermoplastics: High Speed & Complex Parts)' },
@@ -635,9 +708,13 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
 
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Clamping & plasticizing: rotating screw melts hopper pellets' : step === 1 ? 'High-pressure cavity injection & pack-cooling phase' : 'Mold opening, part demolding & conveyor ejection cycle');
 
       // Header Banner
       D.text(g, `POLYMERS PROCESSING: ${st.processTitle.toUpperCase()}`, 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
@@ -779,6 +856,7 @@
   // 12. CRYSTAL FIELD SPLITTING (OCTAHEDRAL/TETRAHEDRAL, COLOR & MAGNETISM)
   // ═════════════════════════════════════════════════════════════════
   S['chem-crystal-field-theory'] = {
+    live: true,
     approx: 'Calculates orbital splitting Δo and Δt = (4/9)Δo based on spectrochemical series. Spin-only magnetic moment μs = √(n(n+2)) μB. d-d transition absorption λ = hc / Δo.',
     modes: [
       { key: 'octahedral', label: 'Octahedral Geometry [ML₆] (Oh Splitting: t2g & eg)' },
@@ -980,9 +1058,13 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
 
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Degenerate 3d-orbitals in isolated spherical gaseous metal ion' : step === 1 ? 'Ligands approach along Cartesian axes: electrostatic repulsion splits d-orbitals' : 'Electronic d-d transition: complementary visible photon absorbed');
 
       // Header Banner
       D.text(g, st.mode === 'octahedral' ? 'CRYSTAL FIELD THEORY: OCTAHEDRAL [ML₆] d-ORBITAL SPLITTING' : 'CRYSTAL FIELD THEORY: TETRAHEDRAL [ML₄] INVERTED SPLITTING', 30, 36, { color: '#38bdf8', size: 20, weight: 800 });

@@ -14,10 +14,73 @@
   const D = window.EPDraw;
   const { C, fmt, clamp, lerp, rad } = D;
 
+  // ─── Step-by-Step HUD & Animation Helper ───
+  function drawStepHUD(g, S, customNote) {
+    const step = S.step || 0;
+    const steps = S.steps || [];
+    const cur = steps[step] || { title: 'Step ' + (step + 1), text: '' };
+    const total = steps.length || 1;
+    const t = S.t || 0;
+
+    g.save();
+    const hudW = 440;
+    const hudH = 68;
+    const hudX = 1000 - hudW - 24;
+    const hudY = 18;
+
+    g.fillStyle = 'rgba(15, 23, 42, 0.88)';
+    g.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+    g.lineWidth = 1.5;
+    g.beginPath();
+    if (g.roundRect) g.roundRect(hudX, hudY, hudW, hudH, 10);
+    else g.rect(hudX, hudY, hudW, hudH);
+    g.fill();
+    g.stroke();
+
+    const glow = 0.5 + 0.5 * Math.sin(t * 3.5);
+    g.fillStyle = '#38bdf8';
+    g.font = 'bold 11px system-ui, sans-serif';
+    g.fillText('STEP ' + (step + 1) + ' OF ' + total, hudX + 16, hudY + 22);
+
+    for (let i = 0; i < total; i++) {
+      const dx = hudX + 115 + i * 16;
+      const dy = hudY + 18;
+      g.beginPath();
+      g.arc(dx, dy, i === step ? 5 : 3.5, 0, Math.PI * 2);
+      if (i === step) {
+        g.fillStyle = 'rgba(56, 189, 248, ' + (0.7 + 0.3 * glow) + ')';
+        g.fill();
+        g.strokeStyle = '#ffffff';
+        g.lineWidth = 1.2;
+        g.stroke();
+      } else if (i < step) {
+        g.fillStyle = '#10b981';
+        g.fill();
+      } else {
+        g.fillStyle = '#475569';
+        g.fill();
+      }
+    }
+
+    g.fillStyle = '#f8fafc';
+    g.font = 'bold 13px system-ui, sans-serif';
+    const cleanTitle = (cur.title || '').replace(/^\d+\.\s*/, '');
+    g.fillText(cleanTitle.length > 44 ? cleanTitle.slice(0, 42) + '...' : cleanTitle, hudX + 16, hudY + 43);
+
+    g.fillStyle = '#94a3b8';
+    g.font = '11px system-ui, sans-serif';
+    const sub = customNote || cur.text || '';
+    g.fillText(sub.length > 60 ? sub.slice(0, 58) + '...' : sub, hudX + 16, hudY + 59);
+
+    g.restore();
+  }
+
+
   // ═════════════════════════════════════════════════════════════════
   // 6. SN1 vs SN2 REACTION MECHANISM & ENERGY PROFILE
   // ═════════════════════════════════════════════════════════════════
   S['chem-sn1-sn2-mechanism'] = {
+    live: true,
     approx: 'Kinetics modeled via transition state theory with Arrhenius rate constant k = A·exp(−Ea/RT). Relative rates normalized to methyl bromide SN2 and tert-butyl bromide SN1.',
     modes: [
       { key: 'sn2', label: 'SN2 (Concerted Bimolecular, Walden Inversion)' },
@@ -186,11 +249,25 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
 
       const mode = p.mode || 'sn2';
       const st = c.state;
-      const xi = (p.progress != null ? p.progress : 35) / 100;
+
+      // Animate progress xi continuously when playing or based on active step
+      let xi = (p.progress != null ? p.progress : 35) / 100;
+      if (S.playing || S.transient) {
+        const stepTarget = step === 0 ? 0.12 : step === 1 ? 0.50 : 0.92;
+        const wiggle = 0.04 * Math.sin(t * 3.5);
+        xi = clamp(stepTarget + wiggle, 0.05, 0.98);
+      } else {
+        // Subtle resting vibration
+        xi = clamp(xi + 0.015 * Math.sin(t * 3), 0.02, 0.98);
+      }
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Nucleophile approach along 180° trajectory' : step === 1 ? (mode === 'sn2' ? 'Trigonal bipyramidal transition state [Nu···C···X]‡' : 'Planar carbocation intermediate & leaving group departure') : (mode === 'sn2' ? 'Walden inversion: stereochemical configuration inverted' : 'Racemic nucleophile attack from both faces'));
 
       // Header Banner
       D.text(g, mode === 'sn2' ? 'SN2 BIMOLECULAR NUCLEOPHILIC SUBSTITUTION' : 'SN1 UNIMOLECULAR NUCLEOPHILIC SUBSTITUTION', 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
@@ -377,6 +454,7 @@
   // 7. ELIMINATION & ELECTROPHILIC AROMATIC SUBSTITUTION (SEAr)
   // ═════════════════════════════════════════════════════════════════
   S['chem-elimination-substitution'] = {
+    live: true,
     approx: 'Zaitsev vs Hofmann regioselectivity calculated via alkene thermodynamic stability and base cone angle. SEAr resonance energies based on Arenium σ-complex (Wheland intermediate).',
     modes: [
       { key: 'e2', label: 'E2 Elimination (Zaitsev vs Hofmann Alkene)' },
@@ -531,9 +609,13 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
 
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Reactant substrate & electrophile/base setup' : step === 1 ? (st.mode === 'e2' ? 'Anti-periplanar proton abstraction & C=C formation' : 'Electrophilic attack forming arenium/carbocation intermediate') : (st.mode === 'e2' ? 'Zaitsev alkene major product separation' : 'Proton elimination restoring aromatic 6π sextet'));
 
       if (st.mode === 'e2') {
         // E2 Canvas Layout
@@ -717,6 +799,7 @@
   // 8. AZO DYE SYNTHESIS FLOW (DIAZOTIZATION TO COUPLING)
   // ═════════════════════════════════════════════════════════════════
   S['chem-azo-dye-synthesis'] = {
+    live: true,
     approx: 'Diazonium stability modeled via thermal decomposition: k_decomp = 1.2e-4 * exp(0.12 * (T - 5)). Coupling kinetics follow electrophilic aromatic substitution rate r = k [ArN₂⁺] [ArO⁻].',
     modes: [
       { key: 'beta_naphthol', label: 'Sudan I / 1-(Phenyldiazenyl)naphthalen-2-ol (β-Naphthol Coupler)' },
@@ -867,9 +950,13 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
 
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Primary aromatic amine in ice bath (0–5 °C) with NaNO₂/HCl' : step === 1 ? 'Diazonium salt formation (Ar-N₂⁺ Cl⁻) with low-T stability' : 'Electrophilic azo coupling with β-naphthol forming bright dye');
 
       // Header Banner
       D.text(g, 'AZO DYE SYNTHESIS: DIAZOTIZATION & COUPLING FLOW', 30, 36, { color: '#38bdf8', size: 20, weight: 800 });

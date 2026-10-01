@@ -16,6 +16,68 @@
   const D = window.EPDraw;
   const { C, fmt, clamp, lerp, rad } = D;
 
+  // ─── Step-by-Step HUD & Animation Helper ───
+  function drawStepHUD(g, S, customNote) {
+    const step = S.step || 0;
+    const steps = S.steps || [];
+    const cur = steps[step] || { title: 'Step ' + (step + 1), text: '' };
+    const total = steps.length || 1;
+    const t = S.t || 0;
+
+    g.save();
+    const hudW = 440;
+    const hudH = 68;
+    const hudX = 1000 - hudW - 24;
+    const hudY = 18;
+
+    g.fillStyle = 'rgba(15, 23, 42, 0.88)';
+    g.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+    g.lineWidth = 1.5;
+    g.beginPath();
+    if (g.roundRect) g.roundRect(hudX, hudY, hudW, hudH, 10);
+    else g.rect(hudX, hudY, hudW, hudH);
+    g.fill();
+    g.stroke();
+
+    const glow = 0.5 + 0.5 * Math.sin(t * 3.5);
+    g.fillStyle = '#38bdf8';
+    g.font = 'bold 11px system-ui, sans-serif';
+    g.fillText('STEP ' + (step + 1) + ' OF ' + total, hudX + 16, hudY + 22);
+
+    for (let i = 0; i < total; i++) {
+      const dx = hudX + 115 + i * 16;
+      const dy = hudY + 18;
+      g.beginPath();
+      g.arc(dx, dy, i === step ? 5 : 3.5, 0, Math.PI * 2);
+      if (i === step) {
+        g.fillStyle = 'rgba(56, 189, 248, ' + (0.7 + 0.3 * glow) + ')';
+        g.fill();
+        g.strokeStyle = '#ffffff';
+        g.lineWidth = 1.2;
+        g.stroke();
+      } else if (i < step) {
+        g.fillStyle = '#10b981';
+        g.fill();
+      } else {
+        g.fillStyle = '#475569';
+        g.fill();
+      }
+    }
+
+    g.fillStyle = '#f8fafc';
+    g.font = 'bold 13px system-ui, sans-serif';
+    const cleanTitle = (cur.title || '').replace(/^\d+\.\s*/, '');
+    g.fillText(cleanTitle.length > 44 ? cleanTitle.slice(0, 42) + '...' : cleanTitle, hudX + 16, hudY + 43);
+
+    g.fillStyle = '#94a3b8';
+    g.font = '11px system-ui, sans-serif';
+    const sub = customNote || cur.text || '';
+    g.fillText(sub.length > 60 ? sub.slice(0, 58) + '...' : sub, hudX + 16, hudY + 59);
+
+    g.restore();
+  }
+
+
   const R_GAS = 8.314462618; // J/(mol·K)
   const FARADAY = 96485.33212; // C/mol
 
@@ -23,6 +85,7 @@
   // 13. GIBBS FREE ENERGY (ΔG = ΔH − TΔS) & SPONTANEITY
   // ═════════════════════════════════════════════════════════════════
   S['chem-gibbs-free-energy'] = {
+    live: true,
     approx: 'Standard free energy relation ΔG° = ΔH° − TΔS°. Thermodynamic equilibrium constant calculated via ΔG° = −RT ln K_eq.',
     modes: [
       { key: 'enthalpy_entropy_cases', label: 'Four Thermodynamic Cases (Signs of ΔH & ΔS)' },
@@ -171,9 +234,13 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
 
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Enthalpy (ΔH) & Entropy (ΔS) fundamental contributions' : step === 1 ? 'Temperature modulation: T·ΔS entropy driving factor' : 'Thermodynamic spontaneity: ΔG < 0 (spontaneous downhill process)');
 
       // Header Banner
       D.text(g, 'THERMODYNAMICS: GIBBS FREE ENERGY & SPONTANEITY DYNAMICS', 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
@@ -284,6 +351,7 @@
   // 14. GALVANIC CELL & NERNST EQUATION (CALOMEL & GLASS ELECTRODES)
   // ═════════════════════════════════════════════════════════════════
   S['chem-galvanic-nernst-cell'] = {
+    live: true,
     approx: 'EMF calculated via Nernst equation E = E° − (2.303 RT / nF) log10(Q). Saturated Calomel Electrode E_SCE = +0.2422 V. Combined glass electrode E = E°_glass − 0.05916 pH at 25°C.',
     modes: [
       { key: 'daniell_cell', label: 'Daniell Galvanic Cell (Zn | Zn²⁺ || Cu²⁺ | Cu)' },
@@ -442,9 +510,13 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
 
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Anodic oxidation: Zn(s) → Zn²⁺(aq) + 2e⁻ with zinc mass loss' : step === 1 ? 'Continuous electron flux through wire & ion migration through salt bridge' : 'Cathodic reduction: Cu²⁺(aq) + 2e⁻ → Cu(s) & Nernst equilibrium EMF');
 
       if (st.mode === 'daniell_cell') {
         // Daniell Cell
@@ -619,6 +691,7 @@
   // 15. PHASE RULE & PHASE DIAGRAMS (WATER & Pb-Ag EUTECTIC)
   // ═════════════════════════════════════════════════════════════════
   S['chem-water-phase-eutectic'] = {
+    live: true,
     approx: 'Gibbs Phase Rule F = C − P + 2 (one-component water) and reduced phase rule F = C − P + 1 (condensed two-component eutectic Pb-Ag system at constant 1 atm).',
     modes: [
       { key: 'water', label: 'Water One-Component System (H₂O P-T Phase Diagram)' },
@@ -806,9 +879,13 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
 
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Single-phase state space: degrees of freedom F = 2 (bivariant)' : step === 1 ? 'Two-phase equilibrium coexistence boundary curves: F = 1 (univariant)' : 'Invariant triple point / eutectic solidification: F = 0');
 
       if (st.mode === 'water') {
         // Water Phase Diagram
@@ -944,6 +1021,7 @@
   // 16. REACTION KINETICS & ORDER ANALYSIS (ZERO, 1ST, 2ND, HALF-LIFE)
   // ═════════════════════════════════════════════════════════════════
   S['chem-reaction-kinetics'] = {
+    live: true,
     approx: 'Integrated rate laws: 0-order [A] = [A]0 - kt; 1st-order ln[A] = ln[A]0 - kt; 2nd-order 1/[A] = 1/[A]0 + kt. Arrhenius equation k = A·exp(-Ea/RT).',
     modes: [
       { key: 'first_order', label: '1st Order Kinetics (ln[A] vs t linear, e.g. Ester Hydrolysis)' },
@@ -1068,9 +1146,13 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
 
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Initial reactant diffusion & Maxwell-Boltzmann collision frequency' : step === 1 ? 'High-energy collisions overcoming activation energy barrier (E ≥ Ea)' : 'Concentration decay curve & integrated rate law half-life (t½)');
 
       // Header Banner
       D.text(g, `REACTION KINETICS: ${st.rateLawStr.toUpperCase()}`, 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
@@ -1156,6 +1238,7 @@
   // 17. MICHAELIS-MENTEN ENZYME KINETICS & LINEWEAVER-BURK PLOT
   // ═════════════════════════════════════════════════════════════════
   S['chem-michaelis-menten'] = {
+    live: true,
     approx: 'Michaelis-Menten steady-state model v0 = (Vmax · [S]) / (Km + [S]). Lineweaver-Burk double reciprocal 1/v0 = (Km/Vmax)(1/[S]) + 1/Vmax. Inhibition models: competitive (Km increases), non-competitive (Vmax decreases).',
     modes: [
       { key: 'uninhibited', label: 'Uninhibited Enzyme Kinetics (Standard MM)' },
@@ -1282,9 +1365,13 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
 
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Free enzyme (E) & substrate (S) random thermal diffusion' : step === 1 ? 'Enzyme-substrate active site complex formation [ES]' : 'Catalytic turnover (kcat), product release (P) & enzyme regeneration');
 
       // Header Banner
       D.text(g, `MICHAELIS-MENTEN ENZYME KINETICS: ${st.mode.toUpperCase()}`, 30, 36, { color: '#38bdf8', size: 20, weight: 800 });

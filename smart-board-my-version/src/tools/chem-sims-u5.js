@@ -16,10 +16,73 @@
   const D = window.EPDraw;
   const { C, fmt, clamp, lerp, rad } = D;
 
+  // ─── Step-by-Step HUD & Animation Helper ───
+  function drawStepHUD(g, S, customNote) {
+    const step = S.step || 0;
+    const steps = S.steps || [];
+    const cur = steps[step] || { title: 'Step ' + (step + 1), text: '' };
+    const total = steps.length || 1;
+    const t = S.t || 0;
+
+    g.save();
+    const hudW = 440;
+    const hudH = 68;
+    const hudX = 1000 - hudW - 24;
+    const hudY = 18;
+
+    g.fillStyle = 'rgba(15, 23, 42, 0.88)';
+    g.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+    g.lineWidth = 1.5;
+    g.beginPath();
+    if (g.roundRect) g.roundRect(hudX, hudY, hudW, hudH, 10);
+    else g.rect(hudX, hudY, hudW, hudH);
+    g.fill();
+    g.stroke();
+
+    const glow = 0.5 + 0.5 * Math.sin(t * 3.5);
+    g.fillStyle = '#38bdf8';
+    g.font = 'bold 11px system-ui, sans-serif';
+    g.fillText('STEP ' + (step + 1) + ' OF ' + total, hudX + 16, hudY + 22);
+
+    for (let i = 0; i < total; i++) {
+      const dx = hudX + 115 + i * 16;
+      const dy = hudY + 18;
+      g.beginPath();
+      g.arc(dx, dy, i === step ? 5 : 3.5, 0, Math.PI * 2);
+      if (i === step) {
+        g.fillStyle = 'rgba(56, 189, 248, ' + (0.7 + 0.3 * glow) + ')';
+        g.fill();
+        g.strokeStyle = '#ffffff';
+        g.lineWidth = 1.2;
+        g.stroke();
+      } else if (i < step) {
+        g.fillStyle = '#10b981';
+        g.fill();
+      } else {
+        g.fillStyle = '#475569';
+        g.fill();
+      }
+    }
+
+    g.fillStyle = '#f8fafc';
+    g.font = 'bold 13px system-ui, sans-serif';
+    const cleanTitle = (cur.title || '').replace(/^\d+\.\s*/, '');
+    g.fillText(cleanTitle.length > 44 ? cleanTitle.slice(0, 42) + '...' : cleanTitle, hudX + 16, hudY + 43);
+
+    g.fillStyle = '#94a3b8';
+    g.font = '11px system-ui, sans-serif';
+    const sub = customNote || cur.text || '';
+    g.fillText(sub.length > 60 ? sub.slice(0, 58) + '...' : sub, hudX + 16, hudY + 59);
+
+    g.restore();
+  }
+
+
   // ═════════════════════════════════════════════════════════════════
   // 18. LANGMUIR & FREUNDLICH ADSORPTION ISOTHERMS
   // ═════════════════════════════════════════════════════════════════
   S['chem-adsorption-isotherms'] = {
+    live: true,
     approx: 'Langmuir monolayer model θ = KP/(1+KP) assumes homogeneous equivalent sites. Freundlich empirical multilayer model x/m = k·P^(1/n) applies to heterogeneous surfaces.',
     modes: [
       { key: 'langmuir', label: 'Langmuir Isotherm (Homogeneous Monolayer: θ = KP/(1+KP))' },
@@ -134,9 +197,13 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
 
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Clean adsorbent solid surface with active vacant sites' : step === 1 ? 'Dynamic adsorption-desorption equilibrium & fractional coverage θ' : 'Surface saturation plateau: Langmuir monolayer vs Freundlich multilayer');
 
       // Header Banner
       D.text(g, st.mode === 'langmuir' ? 'LANGMUIR ADSORPTION ISOTHERM (MONOLAYER COVERAGE)' : 'FREUNDLICH ADSORPTION ISOTHERM (HETEROGENEOUS SURFACE)', 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
@@ -242,6 +309,7 @@
   // 19. MICELLE FORMATION & CRITICAL MICELLE CONCENTRATION (CMC)
   // ═════════════════════════════════════════════════════════════════
   S['chem-micelle-cmc'] = {
+    live: true,
     approx: 'Surface tension γ modeled via Gibbs adsorption isotherm γ = γ0 − 2.303 nRT Γ_max log(c/cmc) below CMC; constant γ_min above CMC. Conductivity κ shows sharp slope inflection at CMC.',
     modes: [
       { key: 'anionic_sds', label: 'Anionic Surfactant: Sodium Dodecyl Sulfate (SDS, CMC = 8.2 mM)' },
@@ -363,9 +431,13 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
 
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Sub-CMC surfactant monomers reducing liquid-air surface tension' : step === 1 ? 'Surface monolayer saturation at Critical Micelle Concentration (CMC)' : 'Post-CMC spontaneous spherical micelle aggregation in bulk water');
 
       // Header Banner
       D.text(g, 'SURFACE CHEMISTRY: MICELLE FORMATION & CMC TRANSITION', 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
@@ -486,6 +558,7 @@
   // 20. BEER-LAMBERT LAW & UV-VIS SPECTROPHOTOMETER
   // ═════════════════════════════════════════════════════════════════
   S['chem-beer-lambert-spec'] = {
+    live: true,
     approx: 'Beer-Lambert law A = log10(I0/I) = ε·c·l. Transmittance T = 10^(-A). Non-linear deviation modeled at c > 0.02 M due to chromophore electrostatic interaction.',
     modes: [
       { key: 'kmno4', label: 'Potassium Permanganate (KMnO₄: λ_max = 525 nm, Purple)' },
@@ -599,9 +672,13 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
 
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Incident monochromatic radiation (I₀) passing through entrance slit' : step === 1 ? 'Exponential photon absorption in cuvette sample path: I = I₀·10^(-εbc)' : 'Transmitted light detection (I) & linear Beer-Lambert calibration graph');
 
       // Header Banner
       D.text(g, 'SPECTROSCOPY: BEER-LAMBERT LAW & UV-VIS SPECTROPHOTOMETER', 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
@@ -685,6 +762,7 @@
   // 21. IR & 1H-NMR SPECTRUM INTERPRETER
   // ═════════════════════════════════════════════════════════════════
   S['chem-spectroscopy-interpreter'] = {
+    live: true,
     approx: 'IR vibrational frequencies based on Hooke\'s law ν = (1/2πc)√(k/μ). 1H-NMR chemical shifts and (n+1) scalar spin-spin multiplet splitting.',
     modes: [
       { key: 'ethanol', label: 'Ethanol (CH₃CH₂OH: Triplet, Quartet, Broad Singlet)' },
@@ -797,9 +875,13 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
 
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Molecular dipole moment & quantized vibrational stretching/bending modes' : step === 1 ? 'Diagnostic functional group absorption frequency identification' : 'Structural elucidation: confirming molecular connectivity & symmetry');
 
       // Header Banner
       D.text(g, st.spec === 'ir' ? `FT-IR VIBRATIONAL SPECTRUM: ${st.cmpName.toUpperCase()}` : `¹H-NMR RESONANCE SPECTRUM: ${st.cmpName.toUpperCase()}`, 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
@@ -898,6 +980,7 @@
   // 22. THIN LAYER (TLC) & HPLC/GC CHROMATOGRAM SIMULATOR
   // ═════════════════════════════════════════════════════════════════
   S['chem-chromatography-tlc'] = {
+    live: true,
     approx: 'TLC retention factor Rf = d_spot / d_solvent. HPLC resolution Rs = 2(tR2 - tR1)/(w1 + w2). Van Deemter equation HETP = A + B/u + C·u.',
     modes: [
       { key: 'tlc', label: 'Thin Layer Chromatography (TLC: Silica Gel Plate Rf Analysis)' },
@@ -999,9 +1082,13 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
 
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Sample spotting on origin line of polar stationary silica gel' : step === 1 ? 'Capillary ascent of mobile phase & differential component partitioning' : 'Solvent front detection & retention factor (Rf = spot_dist / solvent_dist)');
 
       if (st.mode === 'tlc') {
         // TLC Plate Simulation

@@ -19,6 +19,68 @@
   const D = window.EPDraw;
   const { C, fmt, clamp, lerp, rad } = D;
 
+  // ─── Step-by-Step HUD & Animation Helper ───
+  function drawStepHUD(g, S, customNote) {
+    const step = S.step || 0;
+    const steps = S.steps || [];
+    const cur = steps[step] || { title: 'Step ' + (step + 1), text: '' };
+    const total = steps.length || 1;
+    const t = S.t || 0;
+
+    g.save();
+    const hudW = 440;
+    const hudH = 68;
+    const hudX = 1000 - hudW - 24;
+    const hudY = 18;
+
+    g.fillStyle = 'rgba(15, 23, 42, 0.88)';
+    g.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+    g.lineWidth = 1.5;
+    g.beginPath();
+    if (g.roundRect) g.roundRect(hudX, hudY, hudW, hudH, 10);
+    else g.rect(hudX, hudY, hudW, hudH);
+    g.fill();
+    g.stroke();
+
+    const glow = 0.5 + 0.5 * Math.sin(t * 3.5);
+    g.fillStyle = '#38bdf8';
+    g.font = 'bold 11px system-ui, sans-serif';
+    g.fillText('STEP ' + (step + 1) + ' OF ' + total, hudX + 16, hudY + 22);
+
+    for (let i = 0; i < total; i++) {
+      const dx = hudX + 115 + i * 16;
+      const dy = hudY + 18;
+      g.beginPath();
+      g.arc(dx, dy, i === step ? 5 : 3.5, 0, Math.PI * 2);
+      if (i === step) {
+        g.fillStyle = 'rgba(56, 189, 248, ' + (0.7 + 0.3 * glow) + ')';
+        g.fill();
+        g.strokeStyle = '#ffffff';
+        g.lineWidth = 1.2;
+        g.stroke();
+      } else if (i < step) {
+        g.fillStyle = '#10b981';
+        g.fill();
+      } else {
+        g.fillStyle = '#475569';
+        g.fill();
+      }
+    }
+
+    g.fillStyle = '#f8fafc';
+    g.font = 'bold 13px system-ui, sans-serif';
+    const cleanTitle = (cur.title || '').replace(/^\d+\.\s*/, '');
+    g.fillText(cleanTitle.length > 44 ? cleanTitle.slice(0, 42) + '...' : cleanTitle, hudX + 16, hudY + 43);
+
+    g.fillStyle = '#94a3b8';
+    g.font = '11px system-ui, sans-serif';
+    const sub = customNote || cur.text || '';
+    g.fillText(sub.length > 60 ? sub.slice(0, 58) + '...' : sub, hudX + 16, hudY + 59);
+
+    g.restore();
+  }
+
+
   // ─── Interactive Laboratory Simulation Engines Shared State ───
   let _pkaStirActive = true;
   let _pkaFlowActive = false;
@@ -170,8 +232,12 @@
   },
   draw(g, S) {
     const { p, c, t } = S;
+    const step = S.step || 0;
     D.clear(g, '#0b1120');
     const st = c.state;
+
+    // Step HUD
+    drawStepHUD(g, S, step === 0 ? 'Initial acid reading & burette standardization' : step === 1 ? 'Half-neutralization buffer point: pH = pKa (buffer plateau)' : 'Equivalence end-point inflection & sharp indicator transition');
 
     // Continuous flow handling
     if (_pkaFlowActive && st.v < 30.0) {
@@ -654,6 +720,7 @@
   // 24. AZO DYE PREPARATION VIA DIAZOTIZATION COUPLING
   // ═════════════════════════════════════════════════════════════════
   S['chem-lab-azo-coupling'] = {
+    live: true,
     approx: 'Stoichiometric synthesis: 1 mol Aniline (93.13 g/mol) + 1 mol NaNO2 + 1 mol beta-Naphthol (144.17 g/mol) -> 1 mol Sudan I dye (248.28 g/mol).',
     modes: [
       { key: 'lab_protocol', label: 'Laboratory Synthetic Protocol & Mass Yield Calculation' },
@@ -728,8 +795,12 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Primary aromatic amine dissolution in ice-cold HCl (0–5 °C)' : step === 1 ? 'Diazotization reaction with sodium nitrite forming diazonium chloride' : 'Alkaline coupling with β-naphthol & scarlet azo dye precipitation');
 
       D.text(g, 'EXPERIMENT 2: LABORATORY SYNTHESIS OF AZO DYE VIA DIAZOTIZATION', 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
       D.text(g, `Aniline (${st.mAniline} g) → Sudan I Dye · Theo: ${st.theoYield.toFixed(2)} g · Actual: ${st.mDye} g · Yield: ${st.pctYield.toFixed(1)}%`, 30, 62, { color: '#94a3b8', size: 13, weight: 600 });
@@ -803,6 +874,7 @@
   // 25. QUALITATIVE TESTS FOR ORGANIC FUNCTIONAL GROUPS
   // ═════════════════════════════════════════════════════════════════
   S['chem-lab-qualitative-tests'] = {
+    live: true,
     approx: 'Functional group identification: NaHCO3 effervescence (RCOOH), Tollens silver mirror (RCHO), Hinsberg / Carbylamine (RNH2).',
     modes: [
       { key: 'acid', label: 'Carboxylic Acid Test (Sodium Bicarbonate Brisk Effervescence CO₂↑)' },
@@ -866,8 +938,26 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Add diagnostic analytical reagent to organic test specimen' : step === 1 ? 'Thermal activation / water bath incubation & intermediate formation' : 'Characteristic observation: effervescence, silver mirror, or azo dye');
+
+      // Animated rising effervescence bubbles or silver precipitate sparkles
+      g.save();
+      const testX = 220;
+      const testY = 320;
+      for (let b = 0; b < 14; b++) {
+        const bx = testX - 18 + ((b * 19 + t * 25) % 36);
+        const by = testY + 60 - ((b * 22 + t * 45) % 110);
+        g.beginPath();
+        g.arc(bx, by, 2 + (b % 3), 0, Math.PI * 2);
+        g.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        g.fill();
+      }
+      g.restore();
 
       D.text(g, 'EXPERIMENT 3: QUALITATIVE TESTS FOR ACIDS, ALDEHYDES & AMINES', 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
       D.text(g, `${st.name} · Reagent: ${st.reagent} · ${st.observation}`, 30, 62, { color: '#94a3b8', size: 13, weight: 600 });
@@ -1053,8 +1143,12 @@
   },
   draw(g, S) {
     const { p, c, t } = S;
+    const step = S.step || 0;
     D.clear(g, '#0b1120');
     const st = c.state;
+
+    // Step HUD
+    drawStepHUD(g, S, step === 0 ? 'Pure solvent efflux time measurement between upper (A) & lower (B) marks' : step === 1 ? 'Polymer solutions of graded concentration: relative & specific viscosity' : 'Huggins-Kraemer extrapolation to intrinsic viscosity [η] & Mark-Houwink Mw');
 
     if (_viscRunning) {
       const drainRate = 0.0035 / (1.0 + st.etaSp * 0.7);
@@ -1344,6 +1438,7 @@
   // 27. RATE CONSTANT OF ACID-CATALYSED HYDROLYSIS OF AN ESTER
   // ═════════════════════════════════════════════════════════════════
   S['chem-lab-ester-hydrolysis'] = {
+    live: true,
     approx: 'Pseudo-first-order ester hydrolysis k = (2.303 / t) * log10((V_inf - V0) / (V_inf - Vt)). Water in vast excess [H2O] ~ 55.5 M.',
     modes: [
       { key: 'methyl_acetate', label: 'Methyl Acetate Hydrolysis (0.5 N HCl catalyst at 30°C)' },
@@ -1420,8 +1515,12 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Ethyl acetate & HCl reaction mixture in constant temperature thermostat' : step === 1 ? 'Periodic aliquot withdrawal, ice quenching & standard NaOH titration' : 'Logarithmic kinetic plot: pseudo-first-order rate constant (k)');
 
       D.text(g, 'EXPERIMENT 5: KINETICS OF ACID-CATALYSED ESTER HYDROLYSIS', 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
       D.text(g, `t = ${st.t} min · Titre Vt = ${st.vt.toFixed(2)} mL (V₀ = ${st.v0} mL, V_inf = ${st.vInf} mL) · k = ${st.k.toFixed(4)} min⁻¹`, 30, 62, { color: '#94a3b8', size: 13, weight: 600 });
@@ -1490,6 +1589,7 @@
   // 28. EMF MEASUREMENT USING CALOMEL & GLASS ELECTRODE
   // ═════════════════════════════════════════════════════════════════
   S['chem-lab-emf-electrodes'] = {
+    live: true,
     approx: 'Glass electrode potential E = E0_glass - 0.05916 pH. Calomel electrode ESCE = +0.2422 V.',
     modes: [
       { key: 'buffer_calibration', label: 'Electrode Calibration with Standard Buffers (pH 4.00 & 7.00)' },
@@ -1549,8 +1649,12 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Saturated calomel reference electrode conditioning (E = +0.2422 V)' : step === 1 ? 'Glass indicator electrode calibration against standard pH buffers' : 'Cell EMF measurement of test analyte & potentiometric pH determination');
 
       D.text(g, 'EXPERIMENT 6: EMF MEASUREMENT USING CALOMEL & GLASS ELECTRODE', 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
       D.text(g, `Measured Cell EMF = ${st.emf.toFixed(3)} V · Deduced pH = ${st.calcPH.toFixed(2)} · Combined Assembly`, 30, 62, { color: '#94a3b8', size: 13, weight: 600 });
@@ -1612,6 +1716,7 @@
   // 29. DISTRIBUTION COEFFICIENT OF IODINE (WATER / CCl₄)
   // ═════════════════════════════════════════════════════════════════
   S['chem-lab-partition-iodine'] = {
+    live: true,
     approx: 'Nernst distribution law KD = [I2]_org / [I2]_aq. Constant at constant temperature provided solute molecular state is identical in both solvents.',
     modes: [
       { key: 'standard_kd', label: 'Iodine Partition between Water & Carbon Tetrachloride (CCl₄)' },
@@ -1676,8 +1781,12 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Separatory funnel charging with immiscible aqueous & organic phases' : step === 1 ? 'Vigorous shaking, pressure release & liquid-liquid equilibrium equilibration' : 'Phase separation: violet organic (I₂ in CCl₄) vs yellow aqueous layer');
 
       D.text(g, 'EXPERIMENT 7: DISTRIBUTION COEFFICIENT OF IODINE (WATER / CCl₄)', 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
       D.text(g, `Total I₂ = ${st.mTotal} g · Organic [I₂] = ${st.cOrg} M · Aqueous [I₂] = ${st.cAq} M · Partition K_D = ${st.KD}`, 30, 62, { color: '#94a3b8', size: 13, weight: 600 });
@@ -1749,6 +1858,7 @@
   // 30. VERIFICATION OF BEER-LAMBERT LAW (COLORIMETRY)
   // ═════════════════════════════════════════════════════════════════
   S['chem-lab-beer-lambert'] = {
+    live: true,
     approx: 'Standard colorimetric series: 10, 20, 30, 40, 50 ppm KMnO4. Absorbance measured at 525 nm. Unknown concentration determined from standard calibration line.',
     modes: [
       { key: 'standard_series', label: 'KMnO₄ Calibration Series (10 – 50 ppm) & Unknown Sample' },
@@ -1813,8 +1923,12 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Colorimeter blank calibration (100% Transmittance at λmax = 525 nm)' : step === 1 ? 'Series of standard permanganate solutions & calibration curve slope' : 'Unknown optical density measurement & graphical concentration determination');
 
       D.text(g, 'EXPERIMENT 8: VERIFICATION OF BEER-LAMBERT LAW (COLORIMETRY)', 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
       D.text(g, `Permanganate Standard Series (10–50 ppm) · Unknown A = ${st.aUnk.toFixed(3)} → Concentration = ${st.cUnk.toFixed(1)} ppm (mg/L)`, 30, 62, { color: '#94a3b8', size: 13, weight: 600 });

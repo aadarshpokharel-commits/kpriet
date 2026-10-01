@@ -25,10 +25,77 @@
   const MASS_C60 = 1.196e-24; // kg (C60 fullerene, 720.66 u)
   const GAS_CONSTANT = 8.314462618; // J/(mol·K)
 
+  // ─── Step-by-Step HUD & Animation Helper ───
+  function drawStepHUD(g, S, customNote) {
+    const step = S.step || 0;
+    const steps = S.steps || [];
+    const cur = steps[step] || { title: 'Step ' + (step + 1), text: '' };
+    const total = steps.length || 1;
+    const t = S.t || 0;
+
+    g.save();
+    const hudW = 440;
+    const hudH = 68;
+    const hudX = 1000 - hudW - 24;
+    const hudY = 18;
+
+    // Glassmorphic translucent panel
+    g.fillStyle = 'rgba(15, 23, 42, 0.88)';
+    g.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+    g.lineWidth = 1.5;
+    g.beginPath();
+    if (g.roundRect) g.roundRect(hudX, hudY, hudW, hudH, 10);
+    else g.rect(hudX, hudY, hudW, hudH);
+    g.fill();
+    g.stroke();
+
+    // Step dots and active badge
+    const glow = 0.5 + 0.5 * Math.sin(t * 3.5);
+    g.fillStyle = '#38bdf8';
+    g.font = 'bold 11px system-ui, sans-serif';
+    g.fillText('STEP ' + (step + 1) + ' OF ' + total, hudX + 16, hudY + 22);
+
+    for (let i = 0; i < total; i++) {
+      const dx = hudX + 115 + i * 16;
+      const dy = hudY + 18;
+      g.beginPath();
+      g.arc(dx, dy, i === step ? 5 : 3.5, 0, Math.PI * 2);
+      if (i === step) {
+        g.fillStyle = 'rgba(56, 189, 248, ' + (0.7 + 0.3 * glow) + ')';
+        g.fill();
+        g.strokeStyle = '#ffffff';
+        g.lineWidth = 1.2;
+        g.stroke();
+      } else if (i < step) {
+        g.fillStyle = '#10b981';
+        g.fill();
+      } else {
+        g.fillStyle = '#475569';
+        g.fill();
+      }
+    }
+
+    // Step title
+    g.fillStyle = '#f8fafc';
+    g.font = 'bold 13px system-ui, sans-serif';
+    const cleanTitle = (cur.title || '').replace(/^\d+\.\s*/, '');
+    g.fillText(cleanTitle.length > 44 ? cleanTitle.slice(0, 42) + '...' : cleanTitle, hudX + 16, hudY + 43);
+
+    // Step note
+    g.fillStyle = '#94a3b8';
+    g.font = '11px system-ui, sans-serif';
+    const sub = customNote || cur.text || '';
+    g.fillText(sub.length > 60 ? sub.slice(0, 58) + '...' : sub, hudX + 16, hudY + 59);
+
+    g.restore();
+  }
+
+
   // ═════════════════════════════════════════════════════════════════
   // 1. ATOMIC ORBITALS & HYBRIDIZATION VIEWER
   // ═════════════════════════════════════════════════════════════════
   S['chem-orbitals-hybridization'] = {
+    live: true,
     approx: 'Orbital boundary surfaces show ~90% electron probability isosurfaces. Wavefunctions Ψnlm are qualitative hydrogenic representations.',
     modes: [
       { key: 'atomic', label: 'Atomic Orbitals (s, p, d)' },
@@ -198,11 +265,18 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a'); // deep dark slate background for brilliant orbital visualization
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Ground state configuration & quantum numbers' : step === 1 ? 'Valence electron promotion & excitation' : step === 2 ? 'Linear combination of atomic wavefunctions' : 'VSEPR geometric equilibrium & bond angles');
+
+      // Continuous quantum orbital rotation & electron probability sparkles
+      const autoRot = (p.autoRotate !== false ? t * 0.35 : 0);
+      const rot = rad(p.rotAngle != null ? p.rotAngle : 35) + autoRot;
 
       const cx = 500;
       const cy = 270;
-      const rot = rad(p.rotAngle != null ? p.rotAngle : 35);
       const cosR = Math.cos(rot);
       const sinR = Math.sin(rot);
 
@@ -245,8 +319,23 @@
           lobes.push({ angle: Math.PI / 2 + 0.35, length: 120, color: '#6366f1', label: 'sp³ (rear)' });
         }
 
-        // Animated breathing lobe expansion
-        const pulse = 1 + 0.03 * Math.sin(t * 3);
+        // Animated breathing lobe expansion & quantum sparkles
+        const pulse = 1 + 0.04 * Math.sin(t * 3.5);
+        
+        // Quantum electron sparkles orbiting lobes
+        g.save();
+        for (let q = 0; q < 32; q++) {
+          const qAngle = (q * 1.37 + t * 1.5) % (Math.PI * 2);
+          const qDist = 40 + (Math.sin(q * 2.7 + t * 2) * 0.5 + 0.5) * 110;
+          const qx = cx + Math.cos(qAngle) * qDist;
+          const qy = cy + Math.sin(qAngle) * qDist * 0.65;
+          const qAlpha = 0.25 + 0.45 * Math.sin(q * 3.1 + t * 4);
+          g.beginPath();
+          g.arc(qx, qy, 1.8, 0, Math.PI * 2);
+          g.fillStyle = 'rgba(56, 189, 248, ' + Math.max(0, qAlpha) + ')';
+          g.fill();
+        }
+        g.restore();
 
         lobes.forEach((lb, i) => {
           const lAngle = lb.angle;
@@ -477,6 +566,7 @@
   // 2. DE BROGLIE WAVELENGTH CALCULATOR WITH PARTICLE COMPARISON
   // ═════════════════════════════════════════════════════════════════
   S['chem-de-broglie'] = {
+    live: true,
     approx: 'Relativistic mass correction ignored for non-relativistic velocities (v << c). Crystal lattice spacing d ≈ 0.2 nm.',
     modes: [
       { key: 'velocity', label: 'Specified Velocity v (m/s)' },
@@ -636,11 +726,15 @@
     },
     draw(g, S) {
       const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#090d16');
 
       const cx = 500;
       const cy = 270;
       const state = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Momentum input & de Broglie relation (λ = h/p)' : step === 1 ? 'Traveling matter wave propagation & frequency' : step === 2 ? 'Crystal lattice aperture & electron diffraction' : 'Quantum vs macroscopic particle behavior');
 
       D.text(g, 'DE BROGLIE MATTER WAVE INTERACTION', 30, 40, { color: '#38bdf8', size: 22, weight: 800 });
       D.text(g, `Particle: ${state.particleName} · λ = ${state.lambdaStr} ${state.lambdaUnit} · Momentum: ${state.momentum.toExponential(2)} kg·m/s`, 30, 68, { color: '#94a3b8', size: 14 });
@@ -742,6 +836,7 @@
   // 3. NEWMAN PROJECTION ROTATOR WITH LIVE POTENTIAL ENERGY CURVE
   // ═════════════════════════════════════════════════════════════════
   S['chem-newman-projection'] = {
+    live: true,
     approx: 'Torsional potential curves modeled using 3-fold Fourier expansion V(θ) = 0.5 V₁ (1-cos θ) + 0.5 V₂ (1-cos 2θ) + 0.5 V₃ (1-cos 3θ).',
     modes: [
       { key: 'ethane', label: 'Ethane (CH₃−CH₃)' },
@@ -889,12 +984,20 @@
       };
     },
     draw(g, S) {
-      const { p, c } = S;
+      const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
 
-      const mode = p.mode || 'ethane';
-      const thDeg = c.state.thDeg;
+      // Auto-revolve slightly or follow step
+      let thDeg = c.state.thDeg;
+      if (S.playing) {
+        thDeg = (step === 0 ? 0 : step === 1 ? 60 : step === 2 ? 120 : 180) + Math.sin(t * 2) * 5;
+      }
       const thRad = rad(thDeg);
+      const mode = p.mode || 'ethane';
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Eclipsed conformer: maximum torsional & steric strain' : step === 1 ? 'Gauche conformer: partial steric relief (60°)' : step === 2 ? 'Eclipsed methyl-H barrier (120°)' : 'Anti conformer: staggered global minimum (180°)');
 
       D.text(g, `NEWMAN PROJECTION & CONFORMATIONAL ENERGY: ${mode.toUpperCase()}`, 30, 40, { color: '#38bdf8', size: 22, weight: 800 });
       D.text(g, `Conformer: ${c.state.confName} · Energy: ${c.state.energy.toFixed(1)} kJ/mol · Dihedral: ${thDeg}°`, 30, 68, { color: '#94a3b8', size: 14 });
@@ -1020,6 +1123,7 @@
   // 4. CHIRALITY, FISCHER PROJECTION & E/Z IDENTIFIER
   // ═════════════════════════════════════════════════════════════════
   S['chem-chirality-fischer'] = {
+    live: true,
     approx: 'Standard Cahn-Ingold-Prelog (CIP) priority based on atomic numbers Z. Fischer vertical bonds point back, horizontal forward.',
     modes: [
       { key: 'chiral', label: 'Chiral Center (R / S)' },
@@ -1167,12 +1271,16 @@
       };
     },
     draw(g, S) {
-      const { p, c } = S;
+      const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
 
       const isGeom = c.state.isGeom;
       const formA = c.state.formA;
       const comp = c.state.comp;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Identify asymmetric stereocenter (C*) with 4 distinct ligands' : step === 1 ? 'Assign CIP priorities by atomic number (1 > 2 > 3 > 4)' : step === 2 ? 'Convert 3D wedge-dash to 2D planar Fischer projection' : 'Optical rotation [α] in polarimeter chamber');
 
       D.text(g, 'STEREOCHEMISTRY, CHIRALITY & FISCHER PROJECTION', 30, 40, { color: '#38bdf8', size: 22, weight: 800 });
       D.text(g, `Target: ${c.state.descriptor} · ${c.state.opticalActive}`, 30, 68, { color: '#94a3b8', size: 14 });
@@ -1285,6 +1393,28 @@
         g.stroke();
         D.tag(g, formA ? 'Clockwise → (R)' : 'Counter-Clockwise → (S)', fx, fy + 155, { bg: '#facc15', color: '#0f172a', size: 13 });
         g.restore();
+
+        // Animated polarimeter beam passing through chiral medium
+        g.save();
+        const beamY = fy + 195;
+        D.line(g, 100, beamY, 900, beamY, { color: '#334155', width: 2, dash: [4, 4] });
+        for (let ph = 0; ph < 12; ph++) {
+          const phX = 100 + ((ph * 70 + t * 140) % 800);
+          const phAngle = (phX < 450) ? 0 : (formA ? 13.5 : -13.5) * (Math.PI / 180);
+          g.beginPath();
+          g.arc(phX, beamY, 3, 0, Math.PI * 2);
+          g.fillStyle = '#38bdf8';
+          g.fill();
+          // Polarization vector
+          g.beginPath();
+          g.moveTo(phX - Math.sin(phAngle) * 12, beamY - Math.cos(phAngle) * 12);
+          g.lineTo(phX + Math.sin(phAngle) * 12, beamY + Math.cos(phAngle) * 12);
+          g.strokeStyle = '#facc15';
+          g.lineWidth = 2;
+          g.stroke();
+        }
+        D.text(g, 'Polarimeter Beam (Plane-Polarized Light Rotating Through Chiral Tube)', 500, beamY + 24, { color: '#94a3b8', size: 12, align: 'center' });
+        g.restore();
       }
     },
   };
@@ -1293,6 +1423,7 @@
   // 5. PH, PKA & HENDERSON-HASSELBALCH BUFFER EXPLORER
   // ═════════════════════════════════════════════════════════════════
   S['chem-ph-pka-buffer'] = {
+    live: true,
     approx: 'Dilute solution assumption (activity coefficients γ ≈ 1). Kw = 1.0×10⁻¹⁴ at 25 °C.',
     params: [
       {
@@ -1440,10 +1571,14 @@
       };
     },
     draw(g, S) {
-      const { p, c } = S;
+      const { p, c, t } = S;
+      const step = S.step || 0;
       D.clear(g, '#0f172a');
 
       const st = c.state;
+
+      // Step HUD
+      drawStepHUD(g, S, step === 0 ? 'Weak acid ionization equilibrium (HA ⇌ H⁺ + A⁻)' : step === 1 ? 'Common ion addition: sodium salt suppresses ionization' : step === 2 ? 'Buffer resistance: added H⁺ neutralized by conjugate base A⁻' : 'Buffer capacity & Henderson-Hasselbalch logarithmic plateau');
 
       D.text(g, 'pH, pKa & HENDERSON-HASSELBALCH BUFFER SYSTEM', 30, 40, { color: '#38bdf8', size: 22, weight: 800 });
       D.text(g, `System: ${st.sys.toUpperCase()} (pKa = ${st.pKa}) · pH = ${st.ph.toFixed(2)} · Ratio [A⁻]/[HA] = ${st.ratio.toFixed(2)}`, 30, 68, { color: '#94a3b8', size: 14 });
