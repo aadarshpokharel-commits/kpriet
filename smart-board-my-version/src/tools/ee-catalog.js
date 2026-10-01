@@ -1,12 +1,12 @@
 'use strict';
 
 /*
- * Basics of Electrical and Electronics Engineering (U21EEG01) — simulation catalogue,
+ * Basics of Electrical and Electronics Engineering (U25EEG02) — simulation catalogue,
  * organised Semester I → Subject → Unit → Topic → Simulation (authoritative 5-unit structure).
  * Keep in sync with the dashboard registry (EE_BOARD_SIMULATIONS) and backend (EE_SIMULATION_TEMPLATES).
  */
 (function () {
-  const subject = { name: 'Basics of Electrical and Electronics Engineering', code: 'U21EEG01', semester: 1, department: 'Information Technology', programme: 'B.Tech Information Technology', regulation: 'R2021 CBCS' };
+  const subject = { name: 'Basics of Electrical and Electronics Engineering', code: 'U25EEG02', semester: 1, department: 'Information Technology', programme: 'B.Tech Information Technology', regulation: 'R2025 CBCS' };
   const units = [
     { unit: 1, title: 'Basic Concepts of Electric Circuits', subtype: 'electric-circuits' },
     { unit: 2, title: 'DC Motor', subtype: 'dc-motor' },

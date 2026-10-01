@@ -16,7 +16,8 @@
     "db:check": "tsx scripts/db-check.ts",
     "db:indexes": "tsx scripts/create-indexes.ts",
     "db:seed": "tsx scripts/seed-academic-data.ts",
-    "db:seed:programmes": "tsx scripts/seed-programmes.ts"
+    "db:seed:programmes": "tsx scripts/seed-programmes.ts",
+    "db:seed:chemistry": "tsx scripts/seed-chemistry-simulations.ts"
   },
   "dependencies": {
     "@types/multer": "^2.2.0",

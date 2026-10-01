@@ -1,13 +1,13 @@
 'use strict';
 
 /*
- * Engineering Graphics (U21ME101) — simulation catalogue.
+ * Engineering Graphics (U25MEG03) — simulation catalogue.
  * Organised Semester I → Engineering Graphics → Unit → Topic → Simulation.
  * Keep in sync with dashboard/frontend/src/simulations/registry.ts (EG_BOARD_SIMULATIONS)
  * and dashboard/backend/src/constants/simulations.catalog.ts (EG_SIMULATION_TEMPLATES).
  */
 (function () {
-  const subject = { name: 'Engineering Graphics', code: 'U21ME101', semester: 1, department: 'Information Technology', programme: 'B.Tech Information Technology', regulation: 'R2021 CBCS' };
+  const subject = { name: 'Engineering Graphics', code: 'U25MEG03', semester: 1, department: 'Information Technology', programme: 'B.Tech Information Technology', regulation: 'R2025 CBCS' };
   const units = [
     { unit: 1, title: 'Drawing Basics & Geometrical Construction' },
     { unit: 3, title: 'Projection of Points, Lines and Planes' },

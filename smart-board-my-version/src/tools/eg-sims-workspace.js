@@ -903,7 +903,7 @@
       D.line(g, midX, T0[1] + rh * 2, midX, T1[1], { color: C.ink, width: 1 });
       if (ts >= 8) {
         const tx = T0[0] + 6;
-        D.text(g, 'ENGINEERING GRAPHICS · U21ME101', tx, T0[1] + rh * 0.5, { size: ts, weight: 800 });
+        D.text(g, 'ENGINEERING GRAPHICS · U25MEG03', tx, T0[1] + rh * 0.5, { size: ts, weight: 800 });
         const title = ui.genName ? `Projections of a ${ui.genName}` : step >= 1 && p.showDemo ? `Projections of a ${solidName(p)}` : 'Drawing workspace — sheet 1';
         D.text(g, title.length > 44 ? `${title.slice(0, 43)}…` : title, tx, T0[1] + rh * 1.5, { size: ts, weight: 700 });
         D.text(g, `Scale ${p.scale}`, tx, T0[1] + rh * 2.5, { size: ts, weight: 700 });

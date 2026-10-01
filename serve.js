@@ -74,9 +74,11 @@ const server = http.createServer((req, res) => {
       const clean = reqPath.replace(/^\//, '').replace(/^src\//, '');
       const candidates = [
         path.join(ROOT, clean),
+        path.join(ROOT, 'dashboard', 'frontend', 'public', clean),
+        path.join(ROOT, 'smart-board-my-version', 'src', clean),
+        path.join(ROOT, 'smart-board-my-version', 'src', clean.replace(/^smartboard\//, '')),
         path.join(ROOT, 'dashboard', 'frontend', 'dist', clean),
         path.join(ROOT, 'dashboard', 'frontend', clean),
-        path.join(ROOT, 'smart-board-my-version', 'src', clean),
         path.join(ROOT, 'smart-board-my-version', 'src', 'assets', clean),
         path.join(ROOT, 'dashboard', 'frontend', 'assets', clean)
       ];

@@ -1,6 +1,6 @@
 'use strict';
 
-/* U21EEG01 — Unit III: Transformer and AC Motor (7 simulations). Ideal-transformer and simple equivalent-circuit models. */
+/* U25EEG02 — Unit III: Transformer and AC Motor (7 simulations). Ideal-transformer and simple equivalent-circuit models. */
 (function () {
   const S = (window.EESims = window.EESims || {});
   const D = window.EPDraw; const K = window.EEKit; const KINDS = window.EEChallengeKinds; const C = D.C;

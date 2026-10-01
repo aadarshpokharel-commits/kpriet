@@ -1,7 +1,7 @@
 'use strict';
 
 /*
- * Engineering Mathematics kernel (U21MA101) — reusable engines shared by every MA simulation.
+ * Engineering Mathematics kernel (U25MA102) — reusable engines shared by every MA simulation.
  *   • Expr   : parser → AST, evaluation, symbolic differentiation, simplification, pretty printing
  *   • Poly   : polynomial roots (Durand–Kerner, complex), formatting
  *   • Mat    : determinant, characteristic polynomial (Faddeev–LeVerrier), eigen-pairs, null space, products

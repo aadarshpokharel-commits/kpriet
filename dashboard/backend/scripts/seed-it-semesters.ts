@@ -35,7 +35,7 @@ const SEMESTER_SIMULATIONS: SimulationSpec[] = [
   // ══════════════════════════════════════════════════════════════
   // Calculus and Differential Equations / Multivariable Calculus
   {
-    subjectCode: 'U21MA101',
+    subjectCode: 'U25MA102',
     title: 'Dynamic Function Plotter & Tangent Derivative Analyzer',
     description:
       'Real-time visualization of multi-variable functions, partial derivatives, local tangent planes, and critical point extrema.',
@@ -47,7 +47,7 @@ const SEMESTER_SIMULATIONS: SimulationSpec[] = [
     controls: ['Function Form', 'Amplitude', 'Frequency', 'Phase Shift', 'Tangent Slope'],
   },
   {
-    subjectCode: 'U21MA101',
+    subjectCode: 'U25MA102',
     title: 'Riemann Sums & Double Integral Region Visualizer',
     description:
       'Numerical integration visualizer computing upper, lower, and midpoint Riemann sums over continuous functional regions.',
@@ -59,7 +59,7 @@ const SEMESTER_SIMULATIONS: SimulationSpec[] = [
     controls: ['Subdivision Count', 'Sum Method', 'Integration Bounds', 'Error Residue'],
   },
   {
-    subjectCode: 'U25RMA101',
+    subjectCode: 'U25MA102',
     title: 'Taylor Series Polynomial Approximation Lab',
     description:
       'Interactive polynomial convergence sandbox demonstrating Taylor and Maclaurin series expansions up to order 12.',
@@ -72,7 +72,7 @@ const SEMESTER_SIMULATIONS: SimulationSpec[] = [
   },
   // Basics of Electrical and Electronics Engineering
   {
-    subjectCode: 'U21EEG01',
+    subjectCode: 'U25EEG02',
     title: "Ohm's Law & DC Circuit Simulator",
     description:
       'Interactive circuit analysis workbench exploring V = I × R relationships, power dissipation, and load characteristics.',
@@ -84,7 +84,7 @@ const SEMESTER_SIMULATIONS: SimulationSpec[] = [
     controls: ['DC Voltage', 'Resistance Slider', 'Ammeter', 'Voltmeter'],
   },
   {
-    subjectCode: 'U21EEG01',
+    subjectCode: 'U25EEG02',
     title: "Kirchhoff's Laws & AC/DC Waveform Analyzer",
     description:
       'Multi-loop circuit simulation validating KCL (Current Law) and KVL (Voltage Law) alongside oscilloscope sinusoidal phase plots.',
@@ -97,7 +97,7 @@ const SEMESTER_SIMULATIONS: SimulationSpec[] = [
   },
   // Engineering Physics
   {
-    subjectCode: 'U21PH101',
+    subjectCode: 'U25PH101',
     title: 'Ballistic Projectile & Trajectory Kinematics Lab',
     description:
       'Kinematic physics simulation with launch angle, muzzle velocity, gravitational acceleration, and atmospheric drag dynamics.',
@@ -109,7 +109,7 @@ const SEMESTER_SIMULATIONS: SimulationSpec[] = [
     controls: ['Launch Angle', 'Velocity', 'Air Drag Coefficient', 'Parabolic Flight Path'],
   },
   {
-    subjectCode: 'U21PH101',
+    subjectCode: 'U25PH101',
     title: 'Simple Harmonic Motion & Wave Interference Lab',
     description:
       'Double pendulum and harmonic wave interference oscillator modeling phase superposition and resonance damping.',
@@ -122,7 +122,7 @@ const SEMESTER_SIMULATIONS: SimulationSpec[] = [
   },
   // Engineering Chemistry
   {
-    subjectCode: 'U21CY101',
+    subjectCode: 'U25CY103',
     title: 'pH Scale & Acid-Base Titration Simulator',
     description:
       'Real-time electrochemical equilibrium simulator modeling strong/weak acid-base neutralization curves and indicator endpoints.',
@@ -134,7 +134,7 @@ const SEMESTER_SIMULATIONS: SimulationSpec[] = [
     controls: ['Burette Flow Rate', 'Stirrer Speed', 'pH Meter Readout', 'Equivalence Point'],
   },
   {
-    subjectCode: 'U21CY101',
+    subjectCode: 'U25CY103',
     title: 'Electrochemical Cell & Water Hardness Lab',
     description:
       'Galvanic cell potential calculation via Nernst equation and EDTA complexometric titration for total water hardness estimation.',
@@ -147,7 +147,7 @@ const SEMESTER_SIMULATIONS: SimulationSpec[] = [
   },
   // Problem Solving and C Programming
   {
-    subjectCode: 'U21CSG01',
+    subjectCode: 'U25CSG02',
     title: 'Array Memory & Stack Operations Visualizer',
     description:
       'Interactive memory layout visualizer demonstrating contiguous array indexing, stack LIFO push/pop pointers, and buffer bounds.',
@@ -159,7 +159,7 @@ const SEMESTER_SIMULATIONS: SimulationSpec[] = [
     controls: ['Push', 'Pop', 'Peek', 'Base Address Offset', 'Step Execution'],
   },
   {
-    subjectCode: 'U21CSG01',
+    subjectCode: 'U25CSG02',
     title: 'Algorithmic Sorting Step-by-Step Race',
     description:
       'Visual execution tracer comparing Bubble Sort, Selection Sort, and QuickSort with real-time pointer swaps and comparison counters.',
@@ -172,7 +172,7 @@ const SEMESTER_SIMULATIONS: SimulationSpec[] = [
   },
   // Engineering Graphics
   {
-    subjectCode: 'U21MEG01',
+    subjectCode: 'U25MEG01',
     title: 'Orthographic & Isometric Projection Lab',
     description:
       '3D geometric modeler projecting principal views (Front, Top, Side) with fold-out projection planes and line of sight vectors.',
@@ -189,7 +189,7 @@ const SEMESTER_SIMULATIONS: SimulationSpec[] = [
   // ══════════════════════════════════════════════════════════════
   // Linear Algebra
   {
-    subjectCode: 'U21MA208',
+    subjectCode: 'U25MA204',
     title: '2D Linear Transformation & Eigenvector Grid Deformer',
     description:
       'Interactive matrix transformation playground demonstrating shear, rotation, scaling, and eigenvector invariant spans.',
@@ -202,7 +202,7 @@ const SEMESTER_SIMULATIONS: SimulationSpec[] = [
   },
   // Python Programming
   {
-    subjectCode: 'U21CSG02',
+    subjectCode: 'U25CH201',
     title: 'Python Memory Graph & Control Flow Visualizer',
     description:
       'Visual execution tracer displaying stack frames, heap object references, mutability of lists/dicts, and loop step iteration.',
@@ -215,7 +215,7 @@ const SEMESTER_SIMULATIONS: SimulationSpec[] = [
   },
   // Digital Electronics
   {
-    subjectCode: 'U21ECG01',
+    subjectCode: 'U25ECG01',
     title: 'Logic Gate & Digital Circuit Builder',
     description:
       'Interactive breadboard builder for combinational circuits (AND, OR, NOT, XOR, NAND) with real-time truth table generator.',
@@ -227,7 +227,7 @@ const SEMESTER_SIMULATIONS: SimulationSpec[] = [
     controls: ['Gate Selector', 'Toggle Inputs', 'Truth Table', 'Oscilloscope Output'],
   },
   {
-    subjectCode: 'U21ECG01',
+    subjectCode: 'U25ECG01',
     title: 'Flip-Flop & Sequential Timing Diagram Simulator',
     description:
       'Clocked SR, JK, D, and T flip-flop simulation displaying clock pulse propagation, setup/hold times, and state transitions.',
@@ -240,7 +240,7 @@ const SEMESTER_SIMULATIONS: SimulationSpec[] = [
   },
   // Materials Science
   {
-    subjectCode: 'U21PH201',
+    subjectCode: 'U25PH204',
     title: 'Stress-Strain & Elastic Modulus Constitutive Lab',
     description:
       'Universal tensile testing machine simulation displaying Hooke’s region, yield point, ultimate tensile strength, and necking rupture.',

@@ -1,6 +1,6 @@
 /**
  * Problem Solving and C Programming Interactive Simulation Engine · Eduverse Smart Board
- * Course: U21CS101 / U21CSG01 · Semester I · B.Tech Information Technology (R2021 CBCS)
+ * Course: U25CSG02 · Problem Solving using C · Semester I · Regulations 2025 (R2025 CBCS)
  * Covers all 16 curriculum simulations + Flagship C Program Execution & Memory Visualizer
  */
 'use strict';
@@ -1407,7 +1407,7 @@ printf("ID:%d, Marks:%.1f", s1.id, s1.marks);`,
         if (window.parent && window.parent !== window) {
           window.parent.postMessage({
             type: 'EDUVERSE_C_ASK_AI',
-            subjectCode: 'U21CS101',
+            subjectCode: 'U25CSG02',
             simulationId: currentSimId,
             question,
             statement: activeFrame.source || '',

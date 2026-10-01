@@ -3354,7 +3354,7 @@ export class AcademicService {
       ];
 
       // Engineering Physics (U21PH101): its own syllabus formulas and the 46 Smart Board simulations
-      if (subNameLower.includes('engineering physics') || subCodeUpper === 'U21PH101') {
+      if (subNameLower.includes('engineering physics') || subCodeUpper === 'U25PH101' || subCodeUpper === 'U21PH101') {
         formulas = [
           { title: 'Photon energy', latex: 'E = h\\nu = \\frac{hc}{\\lambda}', category: 'Unit 1 · LASER', description: 'Energy of a photon; absorption and emission need E = E_2 - E_1.' },
           { title: 'Boltzmann population ratio', latex: '\\frac{N_2}{N_1} = e^{-(E_2 - E_1)/k_B T}', category: 'Unit 1 · LASER', description: 'Thermal equilibrium populations; population inversion needs N_2 > N_1 (pumping).' },
@@ -3441,7 +3441,7 @@ export class AcademicService {
     }
 
     // Engineering Graphics (U21ME101 / U21MEG01): its own drawing formulas and the 11 Smart Board simulations
-    if (subNameLower.includes('engineering graphics') || subCodeUpper === 'U21ME101' || subCodeUpper === 'U21MEG01') {
+    if (subNameLower.includes('engineering graphics') || subCodeUpper === 'U25MEG03' || subCodeUpper === 'U21ME101' || subCodeUpper === 'U21MEG01') {
       formulas = [
         { title: 'Length of a line in the front view', latex: 'l_{FV} = L\\cos\\phi', category: 'Projection of Lines', description: 'L = true length, phi = inclination to the VP.' },
         { title: 'Length of a line in the top view', latex: 'l_{TV} = L\\cos\\theta', category: 'Projection of Lines', description: 'theta = inclination to the HP.' },
@@ -3467,7 +3467,7 @@ export class AcademicService {
     }
 
     // Engineering Mathematics (U21MA101 · Calculus and Differential Equations): its own formulas and the 29 Smart Board simulations
-    if (subNameLower.includes('engineering mathematics') || subNameLower.includes('calculus and differential equations') || subCodeUpper === 'U21MA101') {
+    if (subNameLower.includes('matrices and calculus') || subNameLower.includes('engineering mathematics') || subNameLower.includes('calculus and differential equations') || subCodeUpper === 'U25MA102' || subCodeUpper === 'U21MA101') {
       formulas = [
         { title: 'Characteristic equation', latex: '\\det(A - \\lambda I) = 0', category: 'Matrices', description: 'Eigenvalues of A; sum = trace, product = det A.' },
         { title: 'Cayley-Hamilton theorem', latex: 'p(A) = 0,\\quad p(\\lambda) = \\det(A - \\lambda I)', category: 'Matrices', description: 'Every square matrix satisfies its own characteristic equation.' },
@@ -3514,7 +3514,7 @@ export class AcademicService {
     }
 
     // Basics of Electrical and Electronics Engineering (U21EEG01): its own formulas and the 35 Smart Board simulations
-    if (subNameLower.includes('electrical and electronics engineering') || subCodeUpper === 'U21EEG01') {
+    if (subNameLower.includes('electrical and electronics engineering') || subCodeUpper === 'U25EEG02' || subCodeUpper === 'U21EEG01') {
       formulas = [
         { title: "Ohm's law", latex: 'V = I R', category: 'Electric Circuits', description: 'Voltage across a resistor equals current times resistance.' },
         { title: 'Series and parallel resistance', latex: 'R_s = R_1 + R_2 + \\cdots,\\quad \\frac{1}{R_p} = \\frac{1}{R_1} + \\frac{1}{R_2} + \\cdots', category: 'Electric Circuits', description: 'Equivalent resistance of series and parallel combinations.' },

@@ -1,7 +1,7 @@
 'use strict';
 
 /*
- * Electrical & Electronics drawing kit (U21EEG01) — circuit symbols, animated current flow, SI formatting
+ * Electrical & Electronics drawing kit (U25EEG02) — circuit symbols, animated current flow, SI formatting
  * and the challenge formulas shared by every EE simulation. Canvas space is EPDraw's 1000 × 560.
  *
  * Two-terminal parts are drawn between terminal points a → b (any direction):

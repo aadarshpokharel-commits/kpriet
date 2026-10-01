@@ -2435,7 +2435,7 @@ export function HODDashboardPage() {
                     type="text"
                     value={subCode}
                     onChange={(e) => setSubCode(e.target.value.toUpperCase())}
-                    placeholder="e.g. U21IT501"
+                    placeholder="e.g. U25IT501"
                     required
                     className="w-full rounded-xl border border-line bg-surface p-2.5 font-mono text-ink placeholder-muted focus:border-indigo-500 focus:outline-none"
                   />

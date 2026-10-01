@@ -179,7 +179,7 @@ async function seedCSimulations() {
     let cSubject = await Subject.findOne({
       department: itDept._id,
       $or: [
-        { subjectCode: { $in: ['U21CS101', 'U21CSG01'] } },
+        { subjectCode: { $in: ['U25CSG02', 'U21CS101', 'U21CSG01'] } },
         { subjectName: { $regex: /c programming|problem solving/i } }
       ]
     });
@@ -187,7 +187,7 @@ async function seedCSimulations() {
     if (!cSubject) {
       cSubject = await Subject.findOne({
         $or: [
-          { subjectCode: { $in: ['U21CS101', 'U21CSG01'] } },
+          { subjectCode: { $in: ['U25CSG02', 'U21CS101', 'U21CSG01'] } },
           { subjectName: { $regex: /c programming|problem solving/i } }
         ]
       });

@@ -1,6 +1,6 @@
 'use strict';
 
-/* U21EEG01 — Unit IV: Semiconductor Devices (6 simulations). Ideal-diode / Shockley and first-order transistor models. */
+/* U25EEG02 — Unit IV: Semiconductor Devices (6 simulations). Ideal-diode / Shockley and first-order transistor models. */
 (function () {
   const S = (window.EESims = window.EESims || {});
   const D = window.EPDraw; const K = window.EEKit; const KINDS = window.EEChallengeKinds; const C = D.C;

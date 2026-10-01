@@ -145,6 +145,11 @@ export function getDefaultQuestions(context: ISimulationContext): IAIQuestionIte
     whereLabel = 'Where is it applied in physics/optics?';
     whenLabel = 'When is this principle applied?';
     appLabel = 'Physical & Experimental Applications';
+  } else if (name.includes('chem') || code.includes('CY')) {
+    whyLabel = 'Why does this reaction/property occur?';
+    whereLabel = 'Where is it used in chemical engineering & industry?';
+    whenLabel = 'When does this thermodynamic/kinetic condition apply?';
+    appLabel = 'Chemical & Material Applications';
   }
 
   return [
@@ -264,6 +269,13 @@ export function getContextualQuestions(context: ISimulationContext): IAIQuestion
     questions.push(
       { id: 'ctx_stack_heap', label: 'Memory Layout', question: 'How does local variable allocation on the stack differ from heap allocation in this execution step?', intent: 'HOW', icon: '🧱' },
       { id: 'ctx_pointer_addr', label: 'Pointer Mechanics', question: 'What does the memory address highlight represent, and why does dereferencing an invalid pointer crash the process?', intent: 'EXPLAIN_SIMULATION', icon: '🔗' },
+    );
+  } else if (id.includes('chem-') || id.includes('sn1') || id.includes('nernst') || id.includes('buffer') || id.includes('polymer') || id.includes('beer') || id.includes('dye') || id.includes('spectro')) {
+    questions.push(
+      { id: 'ctx_chem_mechanism', label: 'Reaction Mechanism', question: 'How do the electron transitions, molecular orbitals, or reaction intermediates govern this chemical process?', intent: 'HOW', icon: '⚗️' },
+      { id: 'ctx_chem_equil', label: 'Equilibrium & Kinetics', question: 'How do temperature, concentration, and pH drive the thermodynamic spontaneity and equilibrium shift in this system?', intent: 'WHY', icon: '⚖️' },
+      { id: 'ctx_chem_industry', label: 'Industrial Applications', question: 'Where is this chemical principle applied in polymer synthesis, water treatment, electrochemistry, or analytical assaying?', intent: 'APPLICATIONS', icon: '🏭' },
+      { id: 'ctx_chem_readouts', label: 'Spectral / Cell Readouts', question: 'Explain what the current computed readouts and spectral/potential curves represent in this active state.', intent: 'EXPLAIN_SIMULATION', icon: '🔬' },
     );
   } else {
     // Dynamic parameter-based contextual questions

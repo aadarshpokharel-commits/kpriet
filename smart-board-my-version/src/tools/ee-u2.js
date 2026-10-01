@@ -1,6 +1,6 @@
 'use strict';
 
-/* U21EEG01 — Unit II: DC Motor (7 simulations). Conceptual machine models, no detailed machine design. */
+/* U25EEG02 — Unit II: DC Motor (7 simulations). Conceptual machine models, no detailed machine design. */
 (function () {
   const S = (window.EESims = window.EESims || {});
   const D = window.EPDraw; const K = window.EEKit; const KINDS = window.EEChallengeKinds; const C = D.C;

@@ -1,6 +1,6 @@
 'use strict';
 
-/* U21EEG01 — Unit V: Applications of Semiconductor Devices (7 simulations). */
+/* U25EEG02 — Unit V: Applications of Semiconductor Devices (7 simulations). */
 (function () {
   const S = (window.EESims = window.EESims || {});
   const D = window.EPDraw; const K = window.EEKit; const KINDS = window.EEChallengeKinds; const C = D.C;

@@ -238,11 +238,11 @@ export const OS_BOARD_SIMULATIONS: ISimulationDefinition[] = [
 ];
 
 /**
- * Problem Solving and C Programming (U21CS101 / U21CSG01) — 16 simulations across Units 1–5.
+ * Problem Solving using C (U25CSG02 / U21CS101 / U21CSG01) — 16 simulations across Units 1–5.
  * Features the flagship C Program Execution + Memory Visualization engine.
  * Opens inside the Smart Board (engine: /smartboard/c-simulation.html).
  */
-const C_SUBJECT_KEYWORDS = ['problem solving and c', 'problem solving', 'c programming', 'c program', 'u21cs101', 'u21csg01'];
+const C_SUBJECT_KEYWORDS = ['problem solving using c', 'problem solving and c', 'problem solving', 'c programming', 'c program', 'u25csg02', 'u21cs101', 'u21csg01'];
 
 function cBoardSimulation(
   id: string,
@@ -346,7 +346,7 @@ export const C_BOARD_SIMULATIONS: ISimulationDefinition[] = [
  * Each runs inside the Smart Board (engine: /smartboard/cn-simulation.html).
  * Keep in sync with smart-board-my-version/src/tools/cn-catalog.js.
  */
-const CN_SUBJECT_KEYWORDS = ['computer network', 'data communication', 'internetwork'];
+const CN_SUBJECT_KEYWORDS = ['digital technologies', 'computer network', 'data communication', 'internetwork', 'u25csg03', 'u21csg05'];
 
 function cnBoardSimulation(id: string, unit: number, unitTitle: string, topic: string, title: string, icon: string, shortDescription: string): ISimulationDefinition {
   return {
@@ -380,11 +380,11 @@ function cnBoardSimulation(id: string, unit: number, unitTitle: string, topic: s
 }
 
 /**
- * Engineering Physics (U21PH101) — 46 simulations organised Unit → Topic.
+ * Engineering Physics (U25PH101 / U21PH101) — 46 simulations organised Unit → Topic.
  * Each runs inside the Smart Board (engine: /smartboard/ep-simulation.html).
  * Keep in sync with smart-board-my-version/src/tools/ep-catalog.js.
  */
-const EP_SUBJECT_KEYWORDS = ['engineering physics', 'u21ph101'];
+const EP_SUBJECT_KEYWORDS = ['engineering physics', 'u25ph101', 'u21ph101', 'ph101'];
 
 function epBoardSimulation(id: string, unit: number, unitTitle: string, subtype: string, topic: string, title: string, icon: string, shortDescription: string): ISimulationDefinition {
   return {
@@ -419,11 +419,11 @@ function epBoardSimulation(id: string, unit: number, unitTitle: string, subtype:
 }
 
 /**
- * Engineering Graphics (U21ME101) — 11 simulations organised Unit → Topic, with the
+ * Engineering Graphics (U25MEG03 / U21ME101) — 11 simulations organised Unit → Topic, with the
  * 3D Object → Projection Generator as the flagship. Each runs inside the Smart Board
  * (engine: /smartboard/eg-simulation.html). Keep in sync with smart-board-my-version/src/tools/eg-catalog.js.
  */
-const EG_SUBJECT_KEYWORDS = ['engineering graphics', 'u21me101', 'u21meg01'];
+const EG_SUBJECT_KEYWORDS = ['engineering graphics', 'u25meg03', 'u21me101', 'u21meg01'];
 
 function egBoardSimulation(id: string, unit: number, unitTitle: string, subtype: string, topic: string, title: string, icon: string, shortDescription: string): ISimulationDefinition {
   return {
@@ -458,12 +458,12 @@ function egBoardSimulation(id: string, unit: number, unitTitle: string, subtype:
 }
 
 /**
- * Engineering Mathematics (U21MA101 · Calculus and Differential Equations) — 29 simulations organised
+ * Matrices and Calculus (U25MA102 / U21MA101) — 29 simulations organised
  * Unit → Topic on reusable engines (matrix, multivariable, integration, vector-calculus and ODE kernels).
  * Each runs inside the Smart Board (engine: /smartboard/ma-simulation.html).
  * Keep in sync with smart-board-my-version/src/tools/ma-catalog.js.
  */
-const MA_SUBJECT_KEYWORDS = ['engineering mathematics', 'u21ma101', 'calculus and differential equations'];
+const MA_SUBJECT_KEYWORDS = ['matrices and calculus', 'engineering mathematics', 'u25ma102', 'u21ma101', 'calculus and differential equations', 'u25rma101'];
 
 function maBoardSimulation(id: string, unit: number, unitTitle: string, subtype: string, topic: string, title: string, icon: string, shortDescription: string): ISimulationDefinition {
   return {
@@ -498,11 +498,11 @@ function maBoardSimulation(id: string, unit: number, unitTitle: string, subtype:
 }
 
 /**
- * Basics of Electrical and Electronics Engineering (U21EEG01) — 35 simulations organised Unit → Topic,
+ * Basics of Electrical and Electronics Engineering (U25EEG02 / U21EEG01) — 35 simulations organised Unit → Topic,
  * each with Learn / Experiment / Challenge modes. They run inside the Smart Board
  * (engine: /smartboard/ee-simulation.html). Keep in sync with smart-board-my-version/src/tools/ee-catalog.js.
  */
-const EE_SUBJECT_KEYWORDS = ['basics of electrical and electronics engineering', 'basic electrical and electronics engineering', 'u21eeg01'];
+const EE_SUBJECT_KEYWORDS = ['basics of electrical and electronics engineering', 'basic electrical and electronics engineering', 'u25eeg02', 'u21eeg01'];
 
 function eeBoardSimulation(id: string, unit: number, unitTitle: string, subtype: string, topic: string, title: string, icon: string, shortDescription: string): ISimulationDefinition {
   return {
@@ -983,6 +983,7 @@ export const PDC_BOARD_SIMULATIONS: ISimulationDefinition[] = [
  */
 const ECG_SUBJECT_KEYWORDS = [
   'digital electronics',
+  'u25ecg01',
   'u21ecg01',
   'digital logic',
   'digital circuits',

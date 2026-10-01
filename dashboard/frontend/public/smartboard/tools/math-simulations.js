@@ -1766,7 +1766,7 @@ const MathSimulations = (() => {
         <div class="ms-brand" onclick="MathSimulations.resetView()">
           <span class="ms-brand-icon">📐</span>
           <div>
-            <div class="ms-brand-title">U21MA101 / U25RMA101 · Mathematics Simulation Suite</div>
+            <div class="ms-brand-title">U25MA102 · Matrices and Calculus (Regulations 2025) · Simulation Suite</div>
             <div class="ms-brand-sub">Units I – V Laboratory · Smart Board</div>
           </div>
         </div>

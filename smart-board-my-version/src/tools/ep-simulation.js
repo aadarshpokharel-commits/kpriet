@@ -1,7 +1,7 @@
 'use strict';
 
 /*
- * Engineering Physics simulation engine (U21PH101).
+ * Engineering Physics simulation engine (U25PH101).
  *
  * One page, 46 simulations (tools/ep-sims-u1..u5.js). Standalone it shows the
  * library (Unit → Topic → Simulation) or a preview; inside the Smart Board

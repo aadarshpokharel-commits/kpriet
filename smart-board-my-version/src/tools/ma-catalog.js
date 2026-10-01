@@ -1,12 +1,12 @@
 'use strict';
 
 /*
- * Engineering Mathematics (U21MA101) — simulation catalogue, organised
+ * Matrices and Calculus (U25MA102) — simulation catalogue, organised
  * Semester I → Engineering Mathematics → Unit → Topic → Simulation (authoritative 5-unit syllabus).
  * Keep in sync with dashboard registry (MA_BOARD_SIMULATIONS) and backend (MA_SIMULATION_TEMPLATES).
  */
 (function () {
-  const subject = { name: 'Engineering Mathematics', code: 'U21MA101', semester: 1, department: 'Information Technology', programme: 'B.Tech Information Technology', regulation: 'R2021 CBCS' };
+  const subject = { name: 'Matrices and Calculus', code: 'U25MA102', semester: 1, department: 'Information Technology', programme: 'B.Tech Information Technology', regulation: 'R2025 CBCS' };
   const units = [
     { unit: 1, title: 'Matrices', subtype: 'matrices' },
     { unit: 2, title: 'Functions of Several Variables', subtype: 'several-variables' },

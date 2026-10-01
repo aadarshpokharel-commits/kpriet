@@ -15,7 +15,7 @@
       <div class="ep-heading">
         <nav class="ep-crumbs" id="ep-crumbs" aria-label="Location">Semester I › Engineering Chemistry</nav>
         <h1><span id="ep-title">Engineering Chemistry Interactive Laboratory</span> <span class="ep-concept hidden" id="ep-concept">Conceptual Visualization</span></h1>
-        <p id="ep-subtitle">U21CY101 · 68 interactive simulations and virtual labs</p>
+        <p id="ep-subtitle">U25CY103 · Regulations 2025 · Interactive simulation library</p>
       </div>
       <div class="ep-header-actions">
         <label class="ep-mode ep-player-only hidden" id="ep-mode-wrap">Mode <select id="ep-mode" aria-label="Visualization mode"></select></label>
@@ -45,14 +45,22 @@
   </main>
   <script src="tools/chem-catalog.js"></script>
   <script src="tools/ep-draw.js"></script>
-  <script src="tools/chemistry-data.js"></script>
-  <script src="tools/chemistry-engines.js"></script>
-  <script src="tools/chem-sims.js"></script>
+  <script src="tools/chem-sims-u1.js"></script>
+  <script src="tools/chem-sims-u2.js"></script>
+  <script src="tools/chem-sims-u3.js"></script>
+  <script src="tools/chem-sims-u4.js"></script>
+  <script src="tools/chem-sims-u5.js"></script>
+  <script src="tools/chem-sims-lab.js"></script>
   <script>
     window.EduverseSimLabConfig = {
-      catalog: window.EduverseChemCatalog, sims: window.ChemSims, engine: 'engineering-chemistry', learningModes: true,
-      aiType: 'Engineering Chemistry simulation state', source: 'chem-simulation',
-      libraryTitle: 'Engineering Chemistry Interactive Laboratory', docTitle: 'Engineering Chemistry Simulations',
+      catalog: window.EduverseChemCatalog,
+      sims: window.ChemSims || {},
+      engine: 'engineering-chemistry',
+      learningModes: true,
+      aiType: 'Engineering Chemistry simulation state',
+      source: 'chem-simulation',
+      libraryTitle: 'Engineering Chemistry Interactive Laboratory',
+      docTitle: 'Engineering Chemistry Simulations',
     };
   </script>
   <script src="tools/ep-simulation.js"></script>

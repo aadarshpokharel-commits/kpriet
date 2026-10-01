@@ -1,7 +1,7 @@
 'use strict';
 
 /*
- * Engineering Graphics geometry kernel (U21ME101) — shared by every EG simulation.
+ * Engineering Graphics geometry kernel (U25MEG03) — shared by every EG simulation.
  *
  * Model coordinates (millimetres), first-angle projection:
  *   x → along the XY (reference) line, to the right

@@ -1,6 +1,6 @@
 'use strict';
 
-/* U21EEG01 — Unit I: Basic Concepts of Electric Circuits (8 simulations). */
+/* U25EEG02 — Unit I: Basic Concepts of Electric Circuits (8 simulations). */
 (function () {
   const S = (window.EESims = window.EESims || {});
   const D = window.EPDraw; const K = window.EEKit; const KINDS = window.EEChallengeKinds; const C = D.C;

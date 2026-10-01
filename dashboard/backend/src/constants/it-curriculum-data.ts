@@ -71,8 +71,8 @@ export const IT_PROGRAMME_SEED = {
 };
 
 export const IT_SEMESTERS_SEED = [
-  { semesterNumber: 1, credits: 21, academicYear: '2024-2025', regulation: 'R2021' },
-  { semesterNumber: 2, credits: 20, academicYear: '2024-2025', regulation: 'R2021' },
+  { semesterNumber: 1, credits: 21, academicYear: '2024-2025', regulation: 'R2025' },
+  { semesterNumber: 2, credits: 20, academicYear: '2024-2025', regulation: 'R2025' },
   { semesterNumber: 3, credits: 22, academicYear: '2024-2025', regulation: 'R2021' },
   { semesterNumber: 4, credits: 23, academicYear: '2024-2025', regulation: 'R2021' },
   { semesterNumber: 5, credits: 25, academicYear: '2024-2025', regulation: 'R2021' },
@@ -84,8 +84,8 @@ export const IT_SEMESTERS_SEED = [
 export const IT_SUBJECTS_SEED: ISeedSubject[] = [
   {
     "semesterNumber": 1,
-    "subjectCode": "U21GEG01",
-    "subjectName": "Heritage of Tamils",
+    "subjectCode": "U25MCC02",
+    "subjectName": "தமிழர் மரபு / Heritage of Tamils",
     "category": "HSMC",
     "credits": 1,
     "isElectiveSlot": false,
@@ -163,107 +163,11 @@ export const IT_SUBJECTS_SEED: ISeedSubject[] = [
       }
     ]
   },
+  
   {
     "semesterNumber": 1,
-    "subjectCode": "U25RMA101",
-    "subjectName": "Multivariable Calculus and Applications",
-    "category": "BSC",
-    "credits": 4,
-    "isElectiveSlot": false,
-    "electiveSlotType": null,
-    "electiveSlotCode": null,
-    "practicalInfo": "L-T-P-J-C: 3-1-0-0-4 | Total Contact Periods: 60",
-    "syllabus": [
-      {
-        "unitNumber": 1,
-        "unitCode": "UNIT I",
-        "title": "DIFFERENTIAL CALCULUS",
-        "description": "Functions of two variables; Partial derivatives; Total derivatives; Taylor's formula for functions of two variables; Extreme Values.",
-        "syllabusText": "DIFFERENTIAL CALCULUS — Functions of two variables; Partial derivatives; Total derivatives; Taylor's formula for functions of two variables; Extreme Values.",
-        "topics": [
-          "Functions of two variables",
-          "Partial derivatives",
-          "Total derivatives",
-          "Taylor's formula for functions of two variables",
-          "Extreme Values"
-        ],
-        "hours": 12
-      },
-      {
-        "unitNumber": 2,
-        "unitCode": "UNIT II",
-        "title": "INTEGRAL CALCULUS",
-        "description": "Double integrals; Double integrals over rectangles; Double integrals over general regions; Fubini's theorem (statement only); Area and Volume by double integration; Reversing the order of integration.",
-        "syllabusText": "INTEGRAL CALCULUS — Double integrals; Double integrals over rectangles; Double integrals over general regions; Fubini's theorem (statement only); Area and Volume by double integration; Reversing the order of integration.",
-        "topics": [
-          "Double integrals",
-          "Double integrals over rectangles",
-          "Double integrals over general regions",
-          "Fubini's theorem (statement only)",
-          "Area and Volume by double integration",
-          "Reversing the order of integration"
-        ],
-        "hours": 12
-      },
-      {
-        "unitNumber": 3,
-        "unitCode": "UNIT III",
-        "title": "VECTOR CALCULUS",
-        "description": "Differentiation in vector field; Gradient of a scalar field; Directional derivative; Divergence of a vector field; Curl of a vector field; Integration in vector field; Line integrals; Work; Circulation and flux; Path independence; Conservative fields; Green's theorem; Gauss divergence theorem; Stokes' theorem.",
-        "syllabusText": "VECTOR CALCULUS — Differentiation in vector field; Gradient of a scalar field; Directional derivative; Divergence of a vector field; Curl of a vector field; Integration in vector field; Line integrals; Work; Circulation and flux; Path independence; Conservative fields; Green's theorem; Gauss divergence theorem; Stokes' theorem.",
-        "topics": [
-          "Differentiation in vector field",
-          "Gradient of a scalar field",
-          "Directional derivative",
-          "Divergence of a vector field",
-          "Curl of a vector field",
-          "Integration in vector field",
-          "Line integrals",
-          "Work",
-          "Circulation and flux",
-          "Path independence",
-          "Conservative fields",
-          "Green's theorem",
-          "Gauss divergence theorem",
-          "Stokes' theorem"
-        ],
-        "hours": 12
-      },
-      {
-        "unitNumber": 4,
-        "unitCode": "UNIT IV",
-        "title": "FIRST ORDER LINEAR ORDINARY DIFFERENTIAL EQUATIONS",
-        "description": "Basic concepts of ordinary differential equations; Separable and exact differential equations; Integrating factors and first-order linear differential equations; Mathematical modelling of real-world problems.",
-        "syllabusText": "FIRST ORDER LINEAR ORDINARY DIFFERENTIAL EQUATIONS — Basic concepts of ordinary differential equations; Separable and exact differential equations; Integrating factors and first-order linear differential equations; Mathematical modelling of real-world problems.",
-        "topics": [
-          "Basic concepts of ordinary differential equations",
-          "Separable and exact differential equations",
-          "Integrating factors and first-order linear differential equations",
-          "Mathematical modelling of real-world problems"
-        ],
-        "hours": 12
-      },
-      {
-        "unitNumber": 5,
-        "unitCode": "UNIT V",
-        "title": "SECOND ORDER LINEAR DIFFERENTIAL EQUATIONS",
-        "description": "Homogeneous linear equations of second order; Linearity principle; Second order homogeneous equations with constant coefficients; Euler–Cauchy equation; Non-homogeneous linear second-order solution by variation of parameters.",
-        "syllabusText": "SECOND ORDER LINEAR DIFFERENTIAL EQUATIONS — Homogeneous linear equations of second order; Linearity principle; Second order homogeneous equations with constant coefficients; Euler–Cauchy equation; Non-homogeneous linear second-order solution by variation of parameters.",
-        "topics": [
-          "Homogeneous linear equations of second order",
-          "Linearity principle",
-          "Second order homogeneous equations with constant coefficients",
-          "Euler–Cauchy equation",
-          "Non-homogeneous linear second-order solution by variation of parameters"
-        ],
-        "hours": 12
-      }
-    ]
-  },
-  {
-    "semesterNumber": 1,
-    "subjectCode": "U21MA101",
-    "subjectName": "Calculus and Differential Equations",
+    "subjectCode": "U25MA102",
+    "subjectName": "Matrices and Calculus",
     "category": "BSC",
     "credits": 4,
     "isElectiveSlot": false,
@@ -342,7 +246,7 @@ export const IT_SUBJECTS_SEED: ISeedSubject[] = [
   },
   {
     "semesterNumber": 1,
-    "subjectCode": "U21EEG01",
+    "subjectCode": "U25EEG02",
     "subjectName": "Basics of Electrical and Electronics Engineering",
     "category": "ESC",
     "credits": 3,
@@ -416,8 +320,8 @@ export const IT_SUBJECTS_SEED: ISeedSubject[] = [
   },
   {
     "semesterNumber": 1,
-    "subjectCode": "U21EN101",
-    "subjectName": "English for Technologists",
+    "subjectCode": "U25ENG01",
+    "subjectName": "English Proficiency I",
     "category": "HSMC",
     "credits": 2,
     "isElectiveSlot": false,
@@ -484,7 +388,7 @@ export const IT_SUBJECTS_SEED: ISeedSubject[] = [
   },
   {
     "semesterNumber": 1,
-    "subjectCode": "U21PH101",
+    "subjectCode": "U25PH101",
     "subjectName": "Engineering Physics",
     "category": "BSC",
     "credits": 3,
@@ -552,7 +456,7 @@ export const IT_SUBJECTS_SEED: ISeedSubject[] = [
   },
   {
     "semesterNumber": 1,
-    "subjectCode": "U21CY101",
+    "subjectCode": "U25CY103",
     "subjectName": "Engineering Chemistry",
     "category": "BSC",
     "credits": 3,
@@ -620,8 +524,8 @@ export const IT_SUBJECTS_SEED: ISeedSubject[] = [
   },
   {
     "semesterNumber": 1,
-    "subjectCode": "U21CSG01",
-    "subjectName": "Problem Solving and C Programming",
+    "subjectCode": "U25CSG02",
+    "subjectName": "Problem Solving using C",
     "category": "ESC",
     "credits": 3,
     "isElectiveSlot": false,
@@ -688,8 +592,8 @@ export const IT_SUBJECTS_SEED: ISeedSubject[] = [
   },
   {
     "semesterNumber": 1,
-    "subjectCode": "U21MEG01",
-    "subjectName": "Engineering Graphics",
+    "subjectCode": "U25MEG01",
+    "subjectName": "Elements of Mechanical Engineering",
     "category": "ESC",
     "credits": 2,
     "isElectiveSlot": false,
@@ -756,8 +660,8 @@ export const IT_SUBJECTS_SEED: ISeedSubject[] = [
   },
   {
     "semesterNumber": 1,
-    "subjectCode": "U21MYC01",
-    "subjectName": "Induction Program",
+    "subjectCode": "U25MCC01",
+    "subjectName": "Induction Program - Universal Human Values I",
     "category": "MNC",
     "credits": 0,
     "isElectiveSlot": false,
@@ -768,8 +672,8 @@ export const IT_SUBJECTS_SEED: ISeedSubject[] = [
   },
   {
     "semesterNumber": 2,
-    "subjectCode": "U21GEG02",
-    "subjectName": "Tamils and Technology",
+    "subjectCode": "U25MCC07",
+    "subjectName": "தமிழரும் தொழில்நுட்பமும் / Tamils and Technology",
     "category": "HSMC",
     "credits": 1,
     "isElectiveSlot": false,
@@ -837,8 +741,8 @@ export const IT_SUBJECTS_SEED: ISeedSubject[] = [
   },
   {
     "semesterNumber": 2,
-    "subjectCode": "U21MA208",
-    "subjectName": "Linear Algebra",
+    "subjectCode": "U25MA204",
+    "subjectName": "Mathematical Transforms",
     "category": "BSC",
     "credits": 4,
     "isElectiveSlot": false,
@@ -905,7 +809,7 @@ export const IT_SUBJECTS_SEED: ISeedSubject[] = [
   },
   {
     "semesterNumber": 2,
-    "subjectCode": "U21PH201",
+    "subjectCode": "U25PH204",
     "subjectName": "Materials Science",
     "category": "BSC",
     "credits": 3,
@@ -1048,8 +952,8 @@ export const IT_SUBJECTS_SEED: ISeedSubject[] = [
   },
   {
     "semesterNumber": 2,
-    "subjectCode": "U21EN201",
-    "subjectName": "Personality Enhancement",
+    "subjectCode": "U25ENG02",
+    "subjectName": "English Proficiency II",
     "category": "HSMC",
     "credits": 2,
     "isElectiveSlot": false,
@@ -1116,7 +1020,7 @@ export const IT_SUBJECTS_SEED: ISeedSubject[] = [
   },
   {
     "semesterNumber": 2,
-    "subjectCode": "U21CSG02",
+    "subjectCode": "U25CH201",
     "subjectName": "Python Programming",
     "category": "ESC",
     "credits": 3,
@@ -1185,7 +1089,7 @@ export const IT_SUBJECTS_SEED: ISeedSubject[] = [
   },
   {
     "semesterNumber": 2,
-    "subjectCode": "U21ECG01",
+    "subjectCode": "U25ECG01",
     "subjectName": "Digital Electronics",
     "category": "ESC",
     "credits": 3,
@@ -1326,8 +1230,8 @@ export const IT_SUBJECTS_SEED: ISeedSubject[] = [
   },
   {
     "semesterNumber": 2,
-    "subjectCode": "U21MYC02",
-    "subjectName": "Environmental Science",
+    "subjectCode": "U25CY201",
+    "subjectName": "Environmental Science and Sustainability",
     "category": "MNC",
     "credits": 0,
     "isElectiveSlot": false,

@@ -1,13 +1,13 @@
 'use strict';
 
 /*
- * Engineering Physics (U21PH101) — simulation catalogue.
+ * Engineering Physics (U25PH101) — simulation catalogue.
  * Organised Semester I → Engineering Physics → Unit → Topic → Simulation.
  * Keep in sync with dashboard/frontend/src/simulations/registry.ts (EP_BOARD_SIMULATIONS)
  * and dashboard/backend/src/constants/simulations.catalog.ts.
  */
 (function () {
-  const subject = { name: 'Engineering Physics', code: 'U21PH101', semester: 1, department: 'Information Technology', regulation: 'R2021 CBCS', category: 'BSC', credits: 3 };
+  const subject = { name: 'Engineering Physics', code: 'U25PH101', semester: 1, department: 'Information Technology', regulation: 'R2025 CBCS', category: 'BSC', credits: 3 };
   const units = [
     { unit: 1, title: 'LASER', subtype: 'laser' },
     { unit: 2, title: 'Fiber Optics', subtype: 'fiber-optics' },

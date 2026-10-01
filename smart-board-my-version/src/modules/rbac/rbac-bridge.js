@@ -985,8 +985,8 @@
     id: 'sim-' + sim.id, simKey: sim.id, title: sim.title, domain: 'PHYSICS', category: `Unit ${sim.unit} · ${sim.topic}`,
     description: sim.description, icon: sim.icon, subjectKeywords: EP_SUBJECT_KEYWORDS, unit: sim.unit, topic: sim.topic,
   })) : [];
-  /* Engineering Chemistry (U21CY101) — 68 simulations from tools/chem-catalog.js. */
-  const CHEM_SUBJECT_KEYWORDS = ['engineering chemistry', 'u21cy101', 'chemistry'];
+  /* Engineering Chemistry (U25CY103 / U21CY101) — simulations from tools/chem-catalog.js. */
+  const CHEM_SUBJECT_KEYWORDS = ['engineering chemistry', 'u25cy103', 'u21cy101', 'chemistry', 'cy103'];
   const CHEM_CATALOG = (typeof window !== 'undefined' && window.EduverseChemCatalog) || null;
   const CHEM_SIMULATIONS = CHEM_CATALOG ? CHEM_CATALOG.simulations.map((sim) => ({
     id: 'sim-' + sim.id, simKey: sim.id, title: sim.title, domain: 'CHEMISTRY', category: `Unit ${sim.unit} · ${sim.topic}`,
@@ -1487,7 +1487,7 @@
     // Digital Electronics (U21ECG01): open the chosen simulation on the board
     const ecgSim = (ECG_CATALOG && ECG_CATALOG.getSimulationById && ECG_CATALOG.getSimulationById(key)) ||
       (key && (key.startsWith('de-') || key.startsWith('ecg-')) ? { id: key, title: title || key, unit: (simulationContext && simulationContext.unit) || 1, topic: (simulationContext && simulationContext.topic) || '' } : null);
-    if (ecgSim || (session && (session.subjectCode === 'U21ECG01' || String(session.subjectName || '').toLowerCase().includes('digital electronics')) && key && (key.startsWith('de-') || key.startsWith('ecg-')))) {
+    if (ecgSim || (session && (session.subjectCode === 'U25ECG01' || session.subjectCode === 'U21ECG01' || String(session.subjectName || '').toLowerCase().includes('digital electronics')) && key && (key.startsWith('de-') || key.startsWith('ecg-')))) {
       const ecg = ecgSim || { id: key, title: title || key, unit: (simulationContext && simulationContext.unit) || 1, topic: (simulationContext && simulationContext.topic) || '' };
       activeResourceTitle = title || ecg.title;
       launchSmartBoardSimWidget('ecg-lab', title || ecg.title, { ...(simulationContext || {}), simId: key, unit: ecg.unit, topic: ecg.topic });
@@ -2455,17 +2455,17 @@
       existing.remove();
     }
 
-    const isEcgLab = simKey === 'ecg-lab' || (simKey && (simKey.startsWith('de-') || simKey.startsWith('ecg-'))) || (session && (session.subjectCode === 'U21ECG01' || String(session.subjectName || '').toLowerCase().includes('digital electronics')));
-    const isChemLab = simKey === 'chem-lab' || (simKey && simKey.startsWith('chem-')) || (session && (session.subjectCode === 'U21CY101' || String(session.subjectName || '').toLowerCase().includes('engineering chemistry')));
+    const isEcgLab = simKey === 'ecg-lab' || (simKey && (simKey.startsWith('de-') || simKey.startsWith('ecg-'))) || (session && (session.subjectCode === 'U25ECG01' || session.subjectCode === 'U21ECG01' || String(session.subjectName || '').toLowerCase().includes('digital electronics')));
+    const isChemLab = simKey === 'chem-lab' || (simKey && simKey.startsWith('chem-')) || (session && (session.subjectCode === 'U25CY103' || session.subjectCode === 'U21CY101' || String(session.subjectName || '').toLowerCase().includes('chemistry')));
     const isPdcLab = simKey === 'pdc-lab' || (simKey && (simKey.startsWith('am-') || simKey.startsWith('fm-') || simKey.startsWith('comm-') || simKey.startsWith('ask-') || simKey.startsWith('fsk-') || simKey.startsWith('psk-') || simKey.startsWith('dpsk-') || simKey.startsWith('error-') || simKey.startsWith('rs232-') || simKey.startsWith('modem-') || simKey.startsWith('ascii-') || simKey.startsWith('barcode-') || simKey.startsWith('bandwidth-') || simKey.startsWith('analog-') || simKey.startsWith('bit-') || simKey.startsWith('waveform-') || simKey.startsWith('dcom-') || simKey.startsWith('info-') || simKey.startsWith('ber-') || simKey.startsWith('angle-') || simKey.startsWith('pm-'))) || (session && (session.subjectCode === 'U21IT201' || session.subjectCode === 'U211T201' || String(session.subjectName || '').toLowerCase().includes('data communication')));
     const isEeLab = simKey === 'ee-lab';
-    const isMaLab = simKey === 'ma-lab' || (simKey && (simKey.startsWith('ma-') || simKey.startsWith('math-') || /^u[1-5]_/.test(simKey))) || (session && (session.subjectCode === 'U21MA101' || session.subjectCode === 'U25RMA101' || String(session.subjectName || '').toLowerCase().includes('mathematics')));
+    const isMaLab = simKey === 'ma-lab' || (simKey && (simKey.startsWith('ma-') || simKey.startsWith('math-') || /^u[1-5]_/.test(simKey))) || (session && (session.subjectCode === 'U25MA102' || session.subjectCode === 'U21MA101' || session.subjectCode === 'U25RMA101' || String(session.subjectName || '').toLowerCase().includes('mathematics')));
     const isEgLab = simKey === 'eg-lab';
     const isEpLab = simKey === 'ep-lab' || isEgLab || isMaLab || isEeLab; // EP, EG and MA share the canvas engine (ep-simulation.js)
     const isCnLab = simKey === 'cn-lab' || isEpLab || isPdcLab || isEcgLab || isChemLab; // catalogue labs share one code path
     const isDsaLab = simKey === 'cs-dsa-lab';
     const isOsLab = !isCnLab && (simKey === 'cs-os-lab' || simKey.startsWith('os-') || (session && (session.subjectCode === 'U21CS403' || String(session.subjectName || '').toLowerCase().includes('operating system'))));
-    const isCLab = !isCnLab && !isOsLab && (simKey === 'c-lab' || simKey.startsWith('c-') || (session && (session.subjectCode === 'U21CS101' || session.subjectCode === 'U21CSG01' || String(session.subjectName || '').toLowerCase().includes('c programming') || String(session.subjectName || '').toLowerCase().includes('problem solving'))));
+    const isCLab = !isCnLab && !isOsLab && (simKey === 'c-lab' || simKey.startsWith('c-') || (session && (session.subjectCode === 'U25CSG02' || session.subjectCode === 'U21CS101' || session.subjectCode === 'U21CSG01' || String(session.subjectName || '').toLowerCase().includes('c programming') || String(session.subjectName || '').toLowerCase().includes('problem solving'))));
     const isIframeLab = isDsaLab || isOsLab || isCnLab || isCLab;
     const widget = document.createElement('div');
     widget.id = 'rbac-smartboard-sim-widget';
@@ -2480,7 +2480,7 @@
         embedded: '1', lock: '1', sim: String(actualSimId),
         subjectId: String(session.subjectId || ''),
          subjectName: String(session.subjectName || (isChemLab ? 'Engineering Chemistry' : isEcgLab ? 'Digital Electronics' : isPdcLab ? 'Principles of Data Communication' : isMaLab ? 'Engineering Mathematics' : '')),
-         subjectCode: String(session.subjectCode || (isChemLab ? 'U21CY101' : isEcgLab ? 'U21ECG01' : isPdcLab ? 'U21IT201' : isMaLab ? (session.subjectCode || 'U21MA101') : '')),
+         subjectCode: String(session.subjectCode || (isChemLab ? (session.subjectCode || 'U25CY103') : isEcgLab ? 'U21ECG01' : isPdcLab ? 'U21IT201' : isMaLab ? (session.subjectCode || 'U25MA102') : '')),
         departmentId: String(session.departmentId || ''), departmentName: String(session.departmentName || session.programmeName || ''),
         semesterId: String(session.semesterId || ''), semesterNumber: String(session.semesterNumber || (isEcgLab ? '2' : isPdcLab ? '2' : isMaLab ? '1' : '')), role: String(session.role || 'teacher'),
         config: JSON.stringify(cnCtx.config || {}), state: JSON.stringify(cnCtx.state || {}),
@@ -2500,7 +2500,7 @@
         embedded: '1',
         subjectId: String(session.subjectId || ''),
         subjectName: String(session.subjectName || (isCLab ? 'Problem Solving and C Programming' : isOsLab ? 'Operating Systems' : '')),
-        subjectCode: String(session.subjectCode || (isCLab ? 'U21CS101' : isOsLab ? 'U21CS403' : '')),
+        subjectCode: String(session.subjectCode || (isCLab ? 'U25CSG02' : isOsLab ? 'U21CS403' : '')),
         departmentId: String(session.departmentId || ''),
         departmentName: String(session.departmentName || session.programmeName || ''),
         semesterId: String(session.semesterId || ''),
@@ -2525,7 +2525,7 @@
           <span style="font-size:16px">${isCLab ? '⚡' : isOsLab ? '💻' : '🔬'}</span>
           <div>
             <h4 style="margin:0;font-size:13.5px;font-weight:800;color:#ffffff">${escapeHtml(title || (isCLab ? 'C Programming Simulation Lab' : isOsLab ? 'Operating Systems Simulation Lab' : 'Interactive Academic Simulation'))}</h4>
-            <span style="font-size:10px;color:${isCLab || isOsLab ? '#bae6fd' : '#a7f3d0'};font-weight:600">${isCnLab ? escapeHtml(`${session.subjectCode || (isEeLab ? 'U21EEG01' : isMaLab ? 'U21MA101' : isEgLab ? 'U21ME101' : isEpLab ? 'U21PH101' : 'U21CSG05')} · Unit ${simulationContext.unit || ''} · ${simulationContext.topic || ''}`) : isCLab ? escapeHtml(`${session.subjectCode || 'U21CS101'} · Problem Solving & C Programming`) : 'Smart Board Live Widget • Stylus Ready'}</span>
+            <span style="font-size:10px;color:${isCLab || isOsLab ? '#bae6fd' : '#a7f3d0'};font-weight:600">${isCnLab ? escapeHtml(`${session.subjectCode || (isEeLab ? 'U25EEG02' : isMaLab ? 'U25MA102' : isEgLab ? 'U25MEG03' : isEpLab ? 'U25PH101' : 'U25CSG03')} · Unit ${simulationContext.unit || ''} · ${simulationContext.topic || ''}`) : isCLab ? escapeHtml(`${session.subjectCode || 'U25CSG02'} · Problem Solving using C`) : 'Smart Board Live Widget • Stylus Ready'}</span>
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:6px">

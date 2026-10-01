@@ -88,7 +88,7 @@ async function seedSimulations() {
   // 2. ENGINEERING MATHEMATICS (U21MA101)
   const maSubject = await Subject.findOne({
     $or: [
-      { subjectCode: 'U21MA101' },
+      { subjectCode: { $in: ['U25MA102', 'U21MA101'] } },
       { subjectName: /Engineering Mathematics/i },
       { subjectName: /Calculus and Differential Equations/i }
     ]
@@ -119,7 +119,7 @@ async function seedSimulations() {
         teacher: teacher._id,
         chapterOrUnit: sim.unit || 1,
         status: ContentStatus.PUBLISHED,
-        tags: sim.tags || ['Engineering Mathematics', 'U21MA101'],
+        tags: sim.tags || ['Matrices and Calculus', 'U25MA102'],
         publishedAt: new Date(),
         version: 1,
         simulationConfig: {

@@ -29,6 +29,7 @@
         { label: 'Steps', icon: '🪜', el: () => document.querySelector('#ep-steps')?.closest('.ep-card'), group: 'a' },
         { label: 'Formula', icon: 'ƒ', el: '#ep-formula-card', group: 'b', force: true },
         { label: 'Explain', icon: '💬', el: '#ep-explain-card', group: 'b', force: true },
+        { label: 'Challenge', icon: '🏆', el: '#ep-challenge-card', group: 'a' },
         { label: 'AI', icon: '🤖', el: () => document.querySelector('.ep-card.ep-ai'), group: 'a' },
       ],
       hide: ['#ep-toggle-formula', '#ep-toggle-explain', '.ep-layout'],
@@ -248,7 +249,9 @@
     window.addEventListener('orientationchange', relayout);
     if (window.visualViewport) window.visualViewport.addEventListener('resize', relayout);
     wrapAll(); renderDocks(); relayout();
-    window.SimulationShell = { adapter: key, relayout, setFocus, panels: () => panels.map((p) => p.label) };
+    /** Engines can bring a panel to the front (e.g. Challenge mode opens the Challenge tab). */
+    const activate = (label) => { const pnl = panels.find((x) => x.label === label); if (!pnl || !available(pnl)) return false; const D = split && pnl.group === 'b' ? DB : DA; D.active = pnl; renderDocks(); return true; };
+    window.SimulationShell = { adapter: key, relayout, setFocus, activate, panels: () => panels.map((p) => p.label) };
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build); else build();

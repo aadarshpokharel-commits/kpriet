@@ -30,7 +30,7 @@ export function isTemplateForSubject(template: ISimulationCatalogItem, subject: 
 }
 
 /**
- * Engineering Physics (U21PH101) — 46 Smart Board simulations (engine: smartboard/ep-simulation.html).
+ * Engineering Physics (U25PH101) — 46 Smart Board simulations (engine: smartboard/ep-simulation.html).
  * A teacher "publishes" one by saving its configuration:
  *   simulationConfig.type = template id, initialParams = { simulationType: 'engineering-physics',
  *   simulationSubtype, defaultParameters, visualizationMode, steps }.
@@ -587,7 +587,7 @@ export const SIMULATION_CATALOG: ISimulationCatalogItem[] = [
 ];
 
 /**
- * Engineering Graphics (U21ME101) — 11 Smart Board simulations (engine: smartboard/eg-simulation.html).
+ * Engineering Graphics (U25MEG03) — 11 Smart Board simulations (engine: smartboard/eg-simulation.html).
  * Published configuration: simulationConfig.type = template id, initialParams = { simulationType: 'engineering-graphics',
  * simulationSubtype, defaultParameters, visualizationMode, steps }. Keep in sync with smart-board-my-version/src/tools/eg-catalog.js.
  */
@@ -624,7 +624,7 @@ export const EG_SIMULATION_TEMPLATES: ISimulationCatalogItem[] = [
 ];
 
 /**
- * Engineering Mathematics (U21MA101 · Calculus and Differential Equations) — 29 Smart Board simulations
+ * Matrices and Calculus (U25MA102) — 29 Smart Board simulations
  * (engine: smartboard/ma-simulation.html). Published configuration: simulationConfig.type = template id,
  * initialParams = { simulationType: 'engineering-mathematics', simulationSubtype, defaultParameters, visualizationMode, steps }.
  * Keep in sync with smart-board-my-version/src/tools/ma-catalog.js.
@@ -824,7 +824,7 @@ export const PDC_SIMULATION_TEMPLATES: ISimulationCatalogItem[] = [
 ];
 
 /**
- * Basics of Electrical and Electronics Engineering (U21EEG01) — 35 Smart Board simulations (engine: smartboard/ee-simulation.html)
+ * Basics of Electrical and Electronics Engineering (U25EEG02) — 35 Smart Board simulations (engine: smartboard/ee-simulation.html)
  * with Learn / Experiment / Challenge modes. Published configuration: simulationConfig.type = template id,
  * initialParams = { simulationType: 'electrical-electronics', simulationSubtype, defaultParameters, visualizationMode, learningMode, steps }.
  * Challenge attempts are verified with constants/ee-challenge.evaluator.ts. Keep in sync with smart-board-my-version/src/tools/ee-catalog.js.
@@ -886,7 +886,7 @@ export const EE_SIMULATION_TEMPLATES: ISimulationCatalogItem[] = [
 ];
 
 /**
- * Digital Electronics (U21ECG01) — 46 Smart Board simulations (engine: smartboard/ecg-simulation.html).
+ * Digital Electronics (U25ECG01) — 46 Smart Board simulations (engine: smartboard/ecg-simulation.html).
  */
 const ECG_SUBJECT_KEYWORDS = [
   'digital electronics',
@@ -908,7 +908,7 @@ function ecgTemplate(id: string, unit: number, topic: string, title: string, des
     suggestedUnits: [unit],
     smartboardPresetKey: id,
     defaultParams: { simulationType: 'digital-electronics', defaultParameters: {}, visualizationMode: '', steps: [] },
-    tags: ['Digital Electronics', 'DE', 'U21ECG01', topic],
+    tags: ['Digital Electronics', 'DE', 'U25ECG01', topic],
     subjectKeywords: ECG_SUBJECT_KEYWORDS,
     unit,
     topic,

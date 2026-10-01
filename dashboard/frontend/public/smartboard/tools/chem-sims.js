@@ -116,6 +116,29 @@
     D.text(g, 'Change the inputs to update this simulation immediately', 500, 525, { align: 'center', size: 14, weight: 700, color: '#475569' });
   }
 
-  CAT.simulations.forEach((sim) => { const kind = profile[sim.id]; const p = params[kind] || params.hardness; const ss = steps[kind] || [sim.topic, 'Inputs', 'Reaction', 'Measured result']; S[sim.id] = { params: p, conceptual: false, live: true, stepDuration: 3.5, validate: (values) => window.ChemistryEngines.validate(kind, values), steps: () => ss.map((title) => ({ title: title, text: 'Follow the ' + title.toLowerCase() + ' stage and observe the measured change.' })), compute: (values) => { const c = calculate(kind, values); return { formulas: [c.formula], readouts: c.values.map((x, i) => ({ label: x[0], value: x[1], tone: i === 0 ? 'blue' : i === 1 ? 'green' : 'amber' })), state: { subject: 'Engineering Chemistry', simulation: sim.id, model: kind, visualizationState: { stage: ss[0], progress: 0, calculated: c.values, graph: c.graph || null } }, explain: { what: sim.title + ' uses an explicit chemistry model.', why: sim.description, param: p[0].label, effect: c.explain } }; }, draw: (g, st) => draw(g, sim, kind, st) }; });
+  CAT.simulations.forEach((sim) => {
+    if (S[sim.id]) return; // Keep high-fidelity unit-specific simulation if already registered
+    const kind = profile[sim.id];
+    const p = params[kind] || params.hardness;
+    const ss = steps[kind] || [sim.topic, 'Inputs', 'Reaction', 'Measured result'];
+    S[sim.id] = {
+      params: p,
+      conceptual: false,
+      live: true,
+      stepDuration: 3.5,
+      validate: (values) => window.ChemistryEngines.validate(kind, values),
+      steps: () => ss.map((title) => ({ title: title, text: 'Follow the ' + title.toLowerCase() + ' stage and observe the measured change.' })),
+      compute: (values) => {
+        const c = calculate(kind, values);
+        return {
+          formulas: [c.formula],
+          readouts: c.values.map((x, i) => ({ label: x[0], value: x[1], tone: i === 0 ? 'blue' : i === 1 ? 'green' : 'amber' })),
+          state: { subject: 'Engineering Chemistry', simulation: sim.id, model: kind, visualizationState: { stage: ss[0], progress: 0, calculated: c.values, graph: c.graph || null } },
+          explain: { what: sim.title + ' uses an explicit chemistry model.', why: sim.description, param: p[0].label, effect: c.explain }
+        };
+      },
+      draw: (g, st) => draw(g, sim, kind, st)
+    };
+  });
   window.ChemSims = S;
 })();
