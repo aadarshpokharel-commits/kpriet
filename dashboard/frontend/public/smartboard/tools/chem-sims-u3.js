@@ -582,55 +582,59 @@
   // ═════════════════════════════════════════════════════════════════
   // 11. POLYMER PROCESSING & MOLDING (INJECTION, EXTRUSION, COMPRESSION)
   // ═════════════════════════════════════════════════════════════════
+  // ═════════════════════════════════════════════════════════════════
+  // 11. INJECTION, EXTRUSION & COMPRESSION MOLDING VIDEO SIMULATOR
+  // ═════════════════════════════════════════════════════════════════
   S['chem-molding-processes'] = {
     live: true,
-    approx: 'Polymer melt rheology modeled via power-law non-Newtonian shear thinning (Ostwald-de Waele: η = K·γ^(n-1)). Cycle cooling time follow Fourier thermal diffusion t_cool = (h^2 / (π^2 α))·ln(4/π · (Tm - Tw)/(Te - Tw)).',
+    approx: 'Melt rheology obeys power-law pseudoplastic shear-thinning (Ostwald-de Waele). Cooling follows 1D unsteady Fourier heat conduction.',
     modes: [
       { key: 'injection', label: 'Injection Molding (Thermoplastics: High Speed & Complex Parts)' },
-      { key: 'extrusion', label: 'Extrusion Molding (Continuous Profiles: Pipes, Sheets, Filaments)' },
-      { key: 'compression', label: 'Compression Molding (Thermosets: Bakelite, Rubber, BMC)' },
+      { key: 'extrusion', label: 'Extrusion Molding (Continuous Pipes, Sheets & Filaments)' },
+      { key: 'compression', label: 'Compression Molding (Thermosets: Electrical & Structural Parts)' },
     ],
     params: [
       {
         key: 'barrelTemp',
-        label: 'Melt Processing Temperature (°C)',
+        label: 'Melt Processing Temperature',
         type: 'range',
-        default: 230,
-        min: 150,
-        max: 320,
+        min: 170,
+        max: 300,
         step: 5,
+        default: 230,
         unit: '°C',
         help: 'Melt temperature must exceed Tm to lower shear viscosity without thermal degradation.',
       },
       {
         key: 'moldPressure',
-        label: 'Injection / Hydraulic Pressure (bar)',
+        label: 'Injection / Hydraulic Pressure',
         type: 'range',
-        default: 850,
         min: 200,
         max: 1800,
         step: 50,
+        default: 1300,
         unit: 'bar',
         help: 'High pressure overcomes flow resistance in thin runners and prevents sink marks.',
       },
       {
         key: 'cyclePhase',
-        label: 'Cycle Phase',
+        label: 'Cycle Phase Override',
         type: 'select',
-        default: 'injection',
+        default: 'auto',
         options: [
-          { value: 'clamping', label: '1. Mold Clamping & Plasticizing' },
-          { value: 'injection', label: '2. Melt Injection & Cavity Filling' },
-          { value: 'packing_cooling', label: '3. Holding Pressure & Mold Cooling' },
-          { value: 'ejection', label: '4. Mold Opening & Finished Part Ejection' },
+          { value: 'auto', label: 'Continuous Automatic Video Loop' },
+          { value: 'clamping', label: 'Phase 1: Mold Clamping & Plasticizing' },
+          { value: 'injection', label: 'Phase 2: High-Speed Melt Injection & Fill' },
+          { value: 'packing_cooling', label: 'Phase 3: Pack Pressure & Mold Cooling' },
+          { value: 'ejection', label: 'Phase 4: Mold Opening & Part Ejection' },
         ],
-        help: 'Trace the full manufacturing cycle from plasticizing to finished part ejection.',
+        help: 'Select auto for continuous video animation, or freeze a specific manufacturing phase.',
       },
     ],
     examples: [
-      { label: 'PP Injection Molding (T = 230°C, P = 850 bar)', values: { mode: 'injection', barrelTemp: 230, moldPressure: 850, cyclePhase: 'injection' } },
-      { label: 'Continuous Pipe Extrusion Die (T = 200°C)', values: { mode: 'extrusion', barrelTemp: 200, moldPressure: 450, cyclePhase: 'injection' } },
-      { label: 'Bakelite Compression Molding of Electrical Switch', values: { mode: 'compression', barrelTemp: 180, moldPressure: 600, cyclePhase: 'packing_cooling' } },
+      { label: 'PP Injection Molding (T = 230°C, P = 1300 bar)', values: { mode: 'injection', barrelTemp: 230, moldPressure: 1300, cyclePhase: 'auto' } },
+      { label: 'Continuous Pipe Extrusion Die (T = 205°C)', values: { mode: 'extrusion', barrelTemp: 205, moldPressure: 550, cyclePhase: 'auto' } },
+      { label: 'Bakelite Compression Molding of Electrical Switch', values: { mode: 'compression', barrelTemp: 180, moldPressure: 650, cyclePhase: 'auto' } },
     ],
     validate() {
       return [];
@@ -638,55 +642,52 @@
     steps(p, c) {
       if (p.mode === 'injection') {
         return [
-          { title: '1. Plasticizing & Screw Recovery', text: 'Polymer pellets feed from hopper into heated barrel; rotating reciprocating screw shears, compresses, and melts resin into a homogeneous shot.' },
-          { title: '2. High-Pressure Injection & Cavity Fill', text: 'Hydraulic ram drives screw forward as an injection plunger, forcing molten polymer through nozzle, sprue, and runners into closed cold mold cavity at 800–1500 bar.' },
-          { title: '3. Holding, Cooling & Ejection', text: 'Holding pressure compensates for volumetric shrinkage (2–4%); internal water channels chill part below Tg; mold halves separate and knock-out pins eject the finished component.' },
+          { title: '1. Clamping & Plasticizing', text: 'Hopper feeds pellets into heated barrel (180–235°C). Rotating reciprocating screw shears and melts resin; molten shot pools at screw tip pushing screw back.' },
+          { title: '2. High-Pressure Cavity Injection', text: 'Hydraulic ram drives screw forward as a plunger (1000–1600 bar). Hot melt jets through nozzle, sprue, and runners, filling mold cavity with fountain flow.' },
+          { title: '3. Holding, Cooling & Ejection', text: 'Holding pressure packs part against thermal shrinkage. Chilled water channels freeze part below Tg. Mold opens by 70mm and knock-out ejector pins drop finished component.' },
         ];
       } else if (p.mode === 'extrusion') {
         return [
-          { title: '1. Feed, Compression & Metering Zones', text: 'Continuous Archimedean screw conveys pellets through feed zone, melts them under high shear in compression zone, and homogenizes melt in metering zone.' },
-          { title: '2. Breaker Plate & Profile Die', text: 'Molten polymer passes through screen pack and breaker plate to straighten flow lines, then exits precision die orifice shaping pipe, tubing, or film.' },
-          { title: '3. Vacuum Calibration & Quench Bath', text: 'Continuous extrudate enters chilled water vacuum calibrator to freeze outer dimensions, followed by caterpillar puller and automated flying cutoff saw.' },
+          { title: '1. Feed, Compression & Metering', text: 'Continuous Archimedean screw conveys pellets through feed zone, melts them under shear in compression zone, and homogenizes melt in metering zone.' },
+          { title: '2. Breaker Plate & Annular Pipe Die', text: 'Melt passes screen pack and breaker plate, entering annular die orifice shaping continuous cylindrical hollow pipe profile.' },
+          { title: '3. Vacuum Calibration & Quench Bath', text: 'Extrudate enters chilled vacuum water tank to freeze outer diameter, pulled by motorized caterpillar haul-off into flying cut-off saw.' },
         ];
       }
       return [
-        { title: '1. Preheated Charge Placement', text: 'Accurately weighed preform of thermosetting resin (e.g. Bakelite phenol-formaldehyde) is placed directly into open, heated lower mold cavity (160–180°C).' },
-        { title: '2. Hydraulic Compression & Flow', text: 'Upper hydraulic punch descends under 300–800 bar, compressing softened resin so it fills every intricate contour of the heated tool.' },
-        { title: '3. Crosslinking Cure & Ejection', text: 'Sustained heat and pressure induce irreversible covalent crosslinking (curing) into an infusible 3D network. Press opens and part is ejected hot.' },
+        { title: '1. Preheated Charge Placement', text: 'Pre-weighed charge of thermosetting resin (Bakelite phenol-formaldehyde) is placed directly into heated open lower cavity mold (160–180°C).' },
+        { title: '2. Hydraulic Compression & Flow', text: 'Upper hydraulic punch descends under 300–800 bar, crushing softened polymer so it flows into every intricate contour of the heated tool.' },
+        { title: '3. 3D Crosslinking Cure & Ejection', text: 'Sustained heat triggers irreversible covalent crosslinking into an infusible 3D network. Press opens and ejector pin demolds hot rigid part.' },
       ];
     },
     compute(p) {
       const mode = p.mode || 'injection';
       const tempC = Number(p.barrelTemp != null ? p.barrelTemp : 230);
-      const pressBar = Number(p.moldPressure != null ? p.moldPressure : 850);
-      const phase = p.cyclePhase || 'injection';
+      const pressBar = Number(p.moldPressure != null ? p.moldPressure : 1300);
+      const phase = p.cyclePhase || 'auto';
 
-      // Viscosity decreases with temperature (Arrhenius fluid behavior)
-      const baseVisc = 350; // Pa·s
+      const baseVisc = 350;
       const appVisc = Math.round(baseVisc * Math.exp(-0.012 * (tempC - 200)));
-
-      // Cooling time estimate: t_cool ~ 12 * (250 / tempC)
       const coolTime = Math.max(4, Math.round(18 * (tempC / 230)));
-      const cycleTime = coolTime + 8; // seconds
+      const cycleTime = coolTime + 8;
 
       const processTitles = {
         injection: 'Reciprocating Screw Injection Molding',
-        extrusion: 'Single-Screw Continuous Extrusion Molding',
+        extrusion: 'Single-Screw Continuous Pipe Extrusion',
         compression: 'Hydraulic Compression Molding (Thermosets)',
       };
 
       return {
         formulas: [
-          { name: 'Melt Viscosity (Arrhenius)', formula: 'η = η₀ · exp(Eη / RT)', given: `T = ${tempC}°C (T > Tm)`, calc: `Viscosity decreased by shear thinning`, result: `${appVisc}`, unit: 'Pa·s' },
-          { name: 'Molding Clamp Force', formula: 'F_clamp = P_cavity × A_proj', given: `Injection Pressure = ${pressBar} bar`, calc: `High pressure requires clamp tonnage`, result: `${Math.round(pressBar * 0.18)}`, unit: 'tonnes' },
-          { name: 'Estimated Cycle Time', formula: 't_cycle = t_inject + t_cool + t_eject', given: `Wall thickness = 2.5 mm`, calc: `Cooling = ${coolTime}s, Reset = 8s`, result: `${cycleTime}`, unit: 's' },
+          { name: 'Melt Viscosity (Arrhenius)', formula: 'η = η₀ · exp(Eη / RT)', given: 'T = ' + tempC + '°C (T > Tm)', calc: 'Viscosity decreased by shear thinning', result: '' + appVisc, unit: 'Pa·s' },
+          { name: 'Molding Clamp Force', formula: 'F_clamp = P_cavity × A_proj', given: 'Injection Pressure = ' + pressBar + ' bar', calc: 'High pressure requires clamp tonnage', result: '' + Math.round(pressBar * 0.18), unit: 'tonnes' },
+          { name: 'Estimated Cycle Time', formula: 't_cycle = t_inject + t_cool + t_eject', given: 'Wall thickness = 2.5 mm', calc: 'Cooling = ' + coolTime + 's, Reset = 8s', result: '' + cycleTime, unit: 's' },
         ],
         readouts: [
           { label: 'Process', value: mode.toUpperCase(), tone: 'hi' },
-          { label: 'Melt Viscosity', value: `${appVisc} Pa·s`, tone: 'good' },
-          { label: 'Pressure', value: `${pressBar} bar`, tone: 'hi' },
-          { label: 'Cycle Time', value: `${cycleTime} s`, tone: 'neutral' },
-          { label: 'Process Phase', value: phase.split('_')[0], tone: 'good' },
+          { label: 'Melt Viscosity', value: appVisc + ' Pa·s', tone: 'good' },
+          { label: 'Pressure', value: pressBar + ' bar', tone: 'hi' },
+          { label: 'Cycle Time', value: cycleTime + ' s', tone: 'neutral' },
+          { label: 'Process Phase', value: phase === 'auto' ? 'AUTOMATIC LOOP' : phase.toUpperCase(), tone: 'good' },
         ],
         state: {
           mode,
@@ -699,160 +700,625 @@
           processTitle: processTitles[mode],
         },
         explain: {
-          what: `Polymer processing transforms raw polymer pellets into finished commercial geometries via heat, shear deformation, high pressure, and controlled solidifying cooling.`,
-          why: `Thermoplastics melt reversibly, enabling fast automated injection molding and extrusion; thermosets undergo irreversible chemical crosslinking inside compression molds.`,
-          param: `Barrel temperature controls melt viscosity (shear thinning); insufficient temperature causes short shots, while excessive temperature degrades polymer chains.`,
-          effect: `Injection molding cycle time is dominated by cooling (Fourier conduction); mold cooling channels maintain part dimensional stability and minimize crystallization cycle delay.`,
+          what: 'Polymer processing transforms raw polymer pellets into finished commercial geometries via heat, shear deformation, high pressure, and controlled solidifying cooling.',
+          why: 'Thermoplastics melt reversibly, enabling fast automated injection molding and extrusion; thermosets undergo irreversible chemical crosslinking inside compression molds.',
+          param: 'Barrel temperature controls melt viscosity (shear thinning); insufficient temperature causes short shots, while excessive temperature degrades polymer chains.',
+          effect: 'Injection molding cycle time is dominated by cooling (Fourier conduction); mold cooling channels maintain part dimensional stability and minimize crystallization cycle delay.',
         },
       };
     },
     draw(g, S) {
       const { p, c, t } = S;
       const step = S.step || 0;
-      D.clear(g, '#0f172a');
+      D.clear(g, '#090d16'); // rich deep cinematic dark background
 
       const st = c.state;
 
-      // Step HUD
-      drawStepHUD(g, S, step === 0 ? 'Clamping & plasticizing: rotating screw melts hopper pellets' : step === 1 ? 'High-pressure cavity injection & pack-cooling phase' : 'Mold opening, part demolding & conveyor ejection cycle');
+      // Calculate video cycle phase (12 second loop)
+      const cyclePeriod = 12.0;
+      let normTime = ((t % cyclePeriod) / cyclePeriod); // 0.0 to 1.0
 
-      // Header Banner
-      D.text(g, `POLYMERS PROCESSING: ${st.processTitle.toUpperCase()}`, 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
-      D.text(g, `Temperature = ${st.tempC}°C · Pressure = ${st.pressBar} bar · Viscosity = ${st.appVisc} Pa·s · Cycle Time = ${st.cycleTime} s`, 30, 62, { color: '#94a3b8', size: 13, weight: 600 });
+      // Manual phase override if user selected a static phase
+      if (st.phase === 'clamping') normTime = 0.15;
+      else if (st.phase === 'injection') normTime = 0.42;
+      else if (st.phase === 'packing_cooling') normTime = 0.68;
+      else if (st.phase === 'ejection') normTime = 0.88;
 
-      // Left Panel: Mechanical Machine Cross-Section (x: 24 to 530)
-      D.rect(g, 24, 85, 500, 440, { fill: '#1e293b', stroke: '#334155', r: 12 });
-      D.text(g, st.processTitle, 40, 110, { color: '#f8fafc', size: 14, weight: 700 });
+      // Sub-phases:
+      // 0.00 - 0.30: Phase 1 - Clamping & Plasticizing (Screw rotates, pellets drop & melt, shot accumulates)
+      // 0.30 - 0.55: Phase 2 - High Pressure Injection (Screw shoots forward, melt fountains into cavity 0->100%)
+      // 0.55 - 0.80: Phase 3 - Holding & Chilled Cooling (Water channels pulse, part freezes from orange to cyan)
+      // 0.80 - 1.00: Phase 4 - Mold Open & Ejection (Moving platen retracts, ejector pins pop part, drops)
+      let phaseIdx = 0;
+      let phaseName = '1. PLASTICIZING';
+      let phaseDetail = 'Screw rotating & conveying pellets; polymer melts into shot reservoir';
+      let fillPct = 0;
+      let moldOpenX = 0; // platen separation offset (0 to 65px)
+      let screwOffset = 0; // screw forward/back offset (-25px to +25px)
+      let currentPressure = 0;
 
-      const cx = 270;
-      const cy = 290;
-
-      if (st.mode === 'injection') {
-        // Injection Molding Machine Schematics
-        // Barrel
-        const bX = 50;
-        const bY = cy - 35;
-        const bW = 280;
-        const bH = 70;
-        D.rect(g, bX, bY, bW, bH, { fill: '#334155', stroke: '#64748b', width: 2, r: 6 });
-
-        // Hopper on top
-        D.poly(g, [
-          [bX + 40, bY - 60],
-          [bX + 90, bY - 60],
-          [bX + 75, bY],
-          [bX + 55, bY],
-        ], { fill: '#475569', stroke: '#94a3b8', width: 2, close: true });
-        D.text(g, 'Pellet Hopper', bX + 65, bY - 72, { color: '#94a3b8', size: 10, weight: 700, align: 'center' });
-
-        // Heaters on barrel
-        for (let h = 0; h < 4; h++) {
-          D.rect(g, bX + 110 + h * 40, bY - 8, 30, 8, { fill: '#ea580c' });
-          D.rect(g, bX + 110 + h * 40, bY + bH, 30, 8, { fill: '#ea580c' });
-        }
-        D.text(g, `Heater Bands (${st.tempC}°C)`, bX + 180, bY - 18, { color: '#ea580c', size: 10, weight: 700, align: 'center' });
-
-        // Reciprocating screw inside barrel
-        const screwColor = st.phase === 'injection' ? '#38bdf8' : '#cbd5e1';
-        D.line(g, bX + 10, cy, bX + bW - 20, cy, { color: screwColor, width: 8 });
-        for (let f = 0; f < 7; f++) {
-          D.line(g, bX + 30 + f * 35, cy - 22, bX + 45 + f * 35, cy + 22, { color: screwColor, width: 4 });
-        }
-
-        // Nozzle
-        D.poly(g, [
-          [bX + bW, cy - 18],
-          [bX + bW + 25, cy - 6],
-          [bX + bW + 25, cy + 6],
-          [bX + bW, cy + 18],
-        ], { fill: '#cbd5e1', stroke: '#64748b', width: 1.5, close: true });
-
-        // Mold Halves (Stationary & Movable Platen)
-        const mX = bX + bW + 28;
-        const mW = 120;
-        const mH = 140;
-        const mY = cy - 70;
-        D.rect(g, mX, mY, mW, mH, { fill: '#0f172a', stroke: '#38bdf8', width: 2, r: 6 });
-
-        // Part Cavity inside mold
-        const cavColor = st.phase === 'clamping' ? '#0f172a' : '#f59e0b';
-        D.rect(g, mX + 30, cy - 30, 60, 60, { fill: cavColor, stroke: '#facc15', width: 2, r: 4 });
-        D.text(g, 'Cavity', mX + 60, cy, { color: st.phase === 'clamping' ? '#64748b' : '#0f172a', size: 11, weight: 800, align: 'center' });
-
-        // Bottom annotation
-        D.tag(g, `Phase: ${st.phase.toUpperCase()} · Cavity Pressure: ${st.pressBar} bar`, cx, 490, { bg: '#0f172a', border: '#38bdf8', color: '#38bdf8', size: 12, align: 'center' });
-      } else if (st.mode === 'extrusion') {
-        // Extruder barrel + continuous die + cooling tank
-        const bX = 50;
-        const bY = cy - 35;
-        const bW = 230;
-        const bH = 70;
-        D.rect(g, bX, bY, bW, bH, { fill: '#334155', stroke: '#64748b', width: 2, r: 6 });
-
-        // Hopper
-        D.poly(g, [[bX + 30, bY - 55], [bX + 75, bY - 55], [bX + 60, bY], [bX + 45, bY]], { fill: '#475569', stroke: '#94a3b8', width: 1.5, close: true });
-
-        // Extruder Screw
-        D.line(g, bX + 10, cy, bX + bW - 10, cy, { color: '#cbd5e1', width: 8 });
-        for (let f = 0; f < 6; f++) {
-          D.line(g, bX + 25 + f * 35, cy - 22, bX + 40 + f * 35, cy + 22, { color: '#cbd5e1', width: 4 });
-        }
-
-        // Profile Die
-        D.rect(g, bX + bW, cy - 20, 25, 40, { fill: '#facc15', stroke: '#eab308', width: 2 });
-        D.text(g, 'Die', bX + bW + 12, cy, { color: '#0f172a', size: 10, weight: 800, align: 'center' });
-
-        // Continuous Extruded Pipe exiting
-        D.rect(g, bX + bW + 25, cy - 12, 180, 24, { fill: '#38bdf8', stroke: '#0284c7', width: 1.5 });
-        D.text(g, 'Continuous Pipe / Profile Extrudate', bX + bW + 115, cy - 25, { color: '#38bdf8', size: 10, weight: 700, align: 'center' });
-
-        D.tag(g, 'Continuous Steady-State Production (No cooling cycle delay)', cx, 490, { bg: '#0f172a', border: '#22c55e', color: '#22c55e', size: 12, align: 'center' });
+      if (normTime < 0.30) {
+        phaseIdx = 0;
+        phaseName = '1. PLASTICIZING & CLAMPING';
+        phaseDetail = 'Pellets feed from hopper; rotating screw shears & melts resin into cushion shot';
+        fillPct = 0;
+        moldOpenX = 0;
+        // Screw gradually moves backward as shot accumulates in front
+        screwOffset = -25 * (normTime / 0.30);
+        currentPressure = 80 + 40 * Math.sin(t * 4);
+      } else if (normTime < 0.55) {
+        phaseIdx = 1;
+        phaseName = '2. HIGH-PRESSURE INJECTION';
+        phaseDetail = 'Hydraulic ram thrusts screw forward as plunger; hot melt fills cavity (1300 bar)';
+        const injProg = (normTime - 0.30) / 0.25;
+        fillPct = Math.min(100, Math.round(injProg * 100));
+        // Screw shoots forward
+        screwOffset = -25 + 45 * injProg;
+        moldOpenX = 0;
+        currentPressure = Math.round(st.pressBar * (0.6 + 0.4 * injProg));
+      } else if (normTime < 0.80) {
+        phaseIdx = 2;
+        phaseName = '3. PACKING & CHILLED COOLING';
+        phaseDetail = 'Holding pressure compensates shrinkage; chilled water channels freeze part below Tg';
+        fillPct = 100;
+        screwOffset = 20;
+        moldOpenX = 0;
+        const coolProg = (normTime - 0.55) / 0.25;
+        currentPressure = Math.round(st.pressBar * 0.4 * (1 - coolProg * 0.7));
       } else {
-        // Compression Molding press
-        const pX = cx - 90;
-        const pY = cy - 80;
-        const pW = 180;
-
-        // Upper Hydraulic Plunger (moving down)
-        D.rect(g, pX + 20, pY - 30, pW - 40, 45, { fill: '#475569', stroke: '#94a3b8', width: 2, r: 6 });
-        D.arrow(g, cx, pY - 45, cx, pY - 10, { color: '#ef4444', width: 3, head: 8 });
-        D.text(g, 'Hydraulic Pressure (600 bar)', cx, pY - 55, { color: '#ef4444', size: 11, weight: 700, align: 'center' });
-
-        // Lower Mold Cavity with heating bands
-        D.rect(g, pX, cy + 20, pW, 90, { fill: '#334155', stroke: '#64748b', width: 2, r: 8 });
-        D.rect(g, pX + 30, cy + 20, pW - 60, 45, { fill: '#7c2d12', stroke: '#ea580c', width: 2, r: 4 });
-        D.text(g, 'Bakelite Thermoset (Crosslinking 180°C)', cx, cy + 42, { color: '#facc15', size: 10, weight: 700, align: 'center' });
-
-        D.tag(g, 'Irreversible 3D Covalent Crosslinking Network', cx, 490, { bg: '#0f172a', border: '#f59e0b', color: '#facc15', size: 12, align: 'center' });
+        phaseIdx = 3;
+        phaseName = '4. MOLD OPENING & PART EJECTION';
+        phaseDetail = 'Movable platen retracts 70mm along tie bars; knock-out pins eject finished component';
+        fillPct = 100;
+        screwOffset = 0;
+        const openProg = (normTime - 0.80) / 0.20;
+        if (openProg < 0.6) {
+          moldOpenX = 65 * (openProg / 0.6);
+        } else {
+          moldOpenX = 65 * (1 - (openProg - 0.6) / 0.4);
+        }
+        currentPressure = 20;
       }
 
-      // Right Panel: Rheology & Process Operations (x: 540 to 975)
-      D.rect(g, 540, 85, 435, 440, { fill: '#1e293b', stroke: '#334155', r: 12 });
-      D.text(g, 'Polymer Melt Rheology & Processing Parameters', 560, 110, { color: '#f8fafc', size: 14, weight: 700 });
+      // ─── Top Cinematic Header Bar (Clean, NO overlap) ───
+      g.save();
+      D.text(g, 'POLYMERS PROCESSING VIDEO SIMULATION', 28, 30, { color: '#38bdf8', size: 18, weight: 800 });
+      D.text(g, st.processTitle + ' · T = ' + st.tempC + '°C · P_max = ' + st.pressBar + ' bar', 28, 52, { color: '#94a3b8', size: 12, weight: 600 });
+      g.restore();
 
-      const pxX = 560;
-      const metrics = [
-        { label: 'Non-Newtonian Melt Viscosity', val: `${st.appVisc} Pa·s (Pseudoplastic Shear-Thinning)`, col: '#38bdf8' },
-        { label: 'Required Injection Pressure', val: `${st.pressBar} bar (Overcomes runner flow resistance)`, col: '#facc15' },
-        { label: 'Melt Processing Temperature', val: `${st.tempC} °C (Optimized above Tm)`, col: '#ea580c' },
-        { label: 'Estimated Cycle Time', val: `${st.cycleTime} s (Cooling dominates: ${st.coolTime} s)`, col: '#22c55e' },
-      ];
+      // Top-right Step HUD (neatly placed at x: 560 to 975)
+      drawStepHUD(g, S, phaseDetail);
 
-      metrics.forEach((m, i) => {
-        const my = 145 + i * 80;
-        D.rect(g, pxX, my, 395, 68, { fill: '#0f172a', stroke: '#334155', r: 8 });
-        D.text(g, m.label, pxX + 15, my + 24, { color: '#94a3b8', size: 11, weight: 600 });
-        D.text(g, m.val, pxX + 15, my + 46, { color: m.col, size: 12, weight: 800 });
-      });
+      // ─── Left Main Viewport: Mechanical Video Simulation ───
+      const vpX = 24;
+      const vpY = 74;
+      const vpW = 560;
+      const vpH = 450;
 
-      // Bottom theory note
-      D.rect(g, 560, 440, 395, 60, { fill: '#0f172a', stroke: '#334155', r: 8 });
-      D.text(g, 'Cooling Time Law: t_cool ∝ (h² / α) · ln(ΔT)', 575, 462, { color: '#facc15', size: 11, weight: 700 });
-      D.text(g, 'Doubling wall thickness quadruples cooling cycle time.', 575, 482, { color: '#cbd5e1', size: 10.5 });
+      // Viewport chassis
+      g.save();
+      g.fillStyle = '#0f172a';
+      g.strokeStyle = '#1e293b';
+      g.lineWidth = 2;
+      g.beginPath();
+      if (g.roundRect) g.roundRect(vpX, vpY, vpW, vpH, 12);
+      else g.rect(vpX, vpY, vpW, vpH);
+      g.fill();
+      g.stroke();
+
+      // Viewport Sub-header / Status Badge
+      D.text(g, 'VIDEO SIMULATION STAGE: ' + phaseName, vpX + 16, vpY + 24, { color: '#facc15', size: 13, weight: 800 });
+
+      // Animated REC indicator dot
+      const recPulse = 0.5 + 0.5 * Math.sin(t * 4);
+      g.beginPath();
+      g.arc(vpX + vpW - 32, vpY + 20, 5, 0, Math.PI * 2);
+      g.fillStyle = 'rgba(239, 68, 68, ' + (0.4 + 0.6 * recPulse) + ')';
+      g.fill();
+      D.text(g, 'LIVE 60FPS', vpX + vpW - 44, vpY + 24, { color: '#ef4444', size: 10, weight: 800, align: 'right' });
+      g.restore();
+
+      const cx = vpX + 280;
+      const cy = vpY + 230;
+
+      if (st.mode === 'injection') {
+        // ─────────────────────────────────────────────────────────────
+        // DETAILED INJECTION MOLDING MACHINE
+        // ─────────────────────────────────────────────────────────────
+
+        // Machine Bed & Chrome Tie Bars
+        g.save();
+        // Lower machine casting bed
+        g.fillStyle = '#1e293b';
+        g.fillRect(vpX + 16, cy + 95, vpW - 32, 28);
+        g.strokeStyle = '#334155';
+        g.lineWidth = 1.5;
+        g.strokeRect(vpX + 16, cy + 95, vpW - 32, 28);
+        D.text(g, 'HEAVY CAST MACHINE BED & HYDRAULIC CLAMP UNIT', vpX + 24, cy + 114, { color: '#64748b', size: 9, weight: 700 });
+
+        // Chrome Tie Bars (4 high-tensile steel tie bars passing through platens)
+        const tbY1 = cy - 85;
+        const tbY2 = cy + 70;
+        const tbGrad = g.createLinearGradient(0, tbY1, 0, tbY1 + 10);
+        tbGrad.addColorStop(0, '#94a3b8');
+        tbGrad.addColorStop(0.5, '#f8fafc');
+        tbGrad.addColorStop(1, '#475569');
+        g.fillStyle = tbGrad;
+        g.fillRect(vpX + 28, tbY1, vpW - 56, 9);
+        g.fillRect(vpX + 28, tbY2, vpW - 56, 9);
+
+        // 1. REAR HYDRAULIC INJECTION CYLINDER & RAM
+        const cylX = vpX + 28;
+        const cylY = cy - 35;
+        const cylW = 75;
+        const cylH = 70;
+        g.fillStyle = '#334155';
+        g.fillRect(cylX, cylY, cylW, cylH);
+        g.strokeStyle = '#475569';
+        g.lineWidth = 2;
+        g.strokeRect(cylX, cylY, cylW, cylH);
+        D.text(g, 'Hydraulic', cylX + cylW / 2, cylY + 28, { color: '#94a3b8', size: 9, weight: 700, align: 'center' });
+        D.text(g, 'Cylinder', cylX + cylW / 2, cylY + 42, { color: '#94a3b8', size: 9, weight: 700, align: 'center' });
+
+        // Hydraulic Ram Piston Shaft
+        const ramW = 28 + screwOffset;
+        g.fillStyle = '#cbd5e1';
+        g.fillRect(cylX + cylW, cy - 12, Math.max(8, ramW), 24);
+
+        // 2. HEATED PLASTICIZING BARREL
+        const bX = cylX + cylW + 28;
+        const bY = cy - 36;
+        const bW = 210;
+        const bH = 72;
+
+        // Barrel steel casing
+        g.fillStyle = '#1e293b';
+        g.strokeStyle = '#475569';
+        g.lineWidth = 2;
+        g.fillRect(bX, bY, bW, bH);
+        g.strokeRect(bX, bY, bW, bH);
+
+        // 4 Temperature Gradient Heating Bands with Thermal Glow
+        const bandNames = ['180°C', '205°C', '225°C', '235°C'];
+        for (let b = 0; b < 4; b++) {
+          const hX = bX + 38 + b * 42;
+          const hGlow = 0.6 + 0.4 * Math.sin(t * 3 + b);
+          g.fillStyle = 'rgba(234, 88, 12, ' + hGlow + ')';
+          g.fillRect(hX, bY - 8, 30, 8); // top heater
+          g.fillRect(hX, bY + bH, 30, 8); // bottom heater
+          D.text(g, bandNames[b], hX + 15, bY - 12, { color: '#ea580c', size: 8, weight: 700, align: 'center' });
+        }
+
+        // HOPPER ON TOP (Dispensing animated polymer pellets)
+        const hopX = bX + 22;
+        const hopY = bY - 65;
+        g.fillStyle = '#334155';
+        g.strokeStyle = '#64748b';
+        g.lineWidth = 2;
+        g.beginPath();
+        g.moveTo(hopX, hopY);
+        g.lineTo(hopX + 44, hopY);
+        g.lineTo(hopX + 32, bY);
+        g.lineTo(hopX + 12, bY);
+        g.closePath();
+        g.fill();
+        g.stroke();
+        D.text(g, 'Pellet Hopper', hopX + 22, hopY - 8, { color: '#94a3b8', size: 9, weight: 700, align: 'center' });
+
+        // Animated falling polymer pellets
+        for (let pIdx = 0; pIdx < 12; pIdx++) {
+          const pYOffset = (pIdx * 12 + t * 45) % 60;
+          const px = hopX + 16 + ((pIdx * 7) % 14);
+          const py = hopY + 8 + pYOffset;
+          if (py < bY) {
+            g.beginPath();
+            g.arc(px, py, 2.5, 0, Math.PI * 2);
+            g.fillStyle = pIdx % 2 === 0 ? '#38bdf8' : '#0284c7';
+            g.fill();
+          }
+        }
+
+        // Inside Barrel: Molten Polymer Liquid & Reciprocating Helical Screw
+        // Molten pool filling the barrel
+        const meltGrad = g.createLinearGradient(bX, 0, bX + bW, 0);
+        meltGrad.addColorStop(0, '#0284c7'); // solid pellets
+        meltGrad.addColorStop(0.4, '#d97706'); // softening compression
+        meltGrad.addColorStop(1, '#ea580c'); // completely molten reservoir
+        g.fillStyle = meltGrad;
+        g.fillRect(bX + 4, bY + 4, bW - 8, bH - 8);
+
+        // Helical Screw (Shaft + Rotating Flights)
+        const scrX = bX + 10 + screwOffset;
+        const scrY = cy;
+        const scrLen = bW - 35;
+        // Screw core shaft
+        g.fillStyle = '#94a3b8';
+        g.fillRect(scrX, scrY - 10, scrLen, 20);
+
+        // Screw flights rotating
+        const rotPhase = (t * 6) % (Math.PI * 2);
+        for (let fl = 0; fl < 8; fl++) {
+          const flX = scrX + 15 + fl * 20;
+          const flH = 22 + Math.sin(rotPhase + fl * 0.8) * 4;
+          g.fillStyle = '#cbd5e1';
+          g.beginPath();
+          g.moveTo(flX, scrY - flH);
+          g.lineTo(flX + 9, scrY + flH);
+          g.lineTo(flX + 5, scrY + flH);
+          g.lineTo(flX - 4, scrY - flH);
+          g.closePath();
+          g.fill();
+        }
+
+        // Conical Screw Tip (Smear head)
+        g.fillStyle = '#e2e8f0';
+        g.beginPath();
+        g.moveTo(scrX + scrLen, scrY - 14);
+        g.lineTo(scrX + scrLen + 16, scrY);
+        g.lineTo(scrX + scrLen, scrY + 14);
+        g.closePath();
+        g.fill();
+
+        // Cushion Reservoir of Molten Resin at Tip
+        const tipReservoirW = Math.max(6, (bX + bW - 4) - (scrX + scrLen + 16));
+        g.fillStyle = '#f97316';
+        g.fillRect(scrX + scrLen + 16, cy - 24, tipReservoirW, 48);
+
+        // Injection Nozzle Tip
+        const nozX = bX + bW;
+        g.fillStyle = '#94a3b8';
+        g.strokeStyle = '#64748b';
+        g.lineWidth = 1.5;
+        g.beginPath();
+        g.moveTo(nozX, cy - 18);
+        g.lineTo(nozX + 18, cy - 6);
+        g.lineTo(nozX + 18, cy + 6);
+        g.lineTo(nozX, cy + 18);
+        g.closePath();
+        g.fill();
+        g.stroke();
+
+        // Molten Jet shooting through nozzle during Phase 2 (Injection)
+        if (phaseIdx === 1) {
+          g.fillStyle = '#facc15';
+          g.shadowColor = '#facc15';
+          g.shadowBlur = 8;
+          g.fillRect(nozX + 14, cy - 3, 20, 6);
+          g.shadowBlur = 0;
+        }
+
+        // 3. TWO-PLATE INJECTION MOLD & MOVING PLATEN
+        // Fixed Platen (Stationary, bolted to barrel side)
+        const fixX = nozX + 18;
+        const fixY = cy - 70;
+        const fixW = 55;
+        const fixH = 140;
+        g.fillStyle = '#334155';
+        g.strokeStyle = '#475569';
+        g.lineWidth = 2;
+        g.fillRect(fixX, fixY, fixW, fixH);
+        g.strokeRect(fixX, fixY, fixW, fixH);
+        D.text(g, 'Fixed Mold', fixX + fixW / 2, fixY - 8, { color: '#94a3b8', size: 9, weight: 700, align: 'center' });
+
+        // Sprue Bushing channel inside fixed mold
+        g.fillStyle = fillPct > 0 ? (phaseIdx >= 2 ? '#0284c7' : '#f97316') : '#0f172a';
+        g.beginPath();
+        g.moveTo(fixX, cy - 5);
+        g.lineTo(fixX + fixW, cy - 8);
+        g.lineTo(fixX + fixW, cy + 8);
+        g.lineTo(fixX, cy + 5);
+        g.closePath();
+        g.fill();
+
+        // Movable Platen & Mold Core (Moves right when mold opens)
+        const movX = fixX + fixW + 4 + moldOpenX;
+        const movY = fixY;
+        const movW = 85;
+        const movH = fixH;
+        g.fillStyle = '#334155';
+        g.strokeStyle = '#475569';
+        g.lineWidth = 2;
+        g.fillRect(movX, movY, movW, movH);
+        g.strokeRect(movX, movY, movW, movH);
+        D.text(g, 'Moving Platen', movX + movW / 2, movY - 8, { color: '#94a3b8', size: 9, weight: 700, align: 'center' });
+
+        // Chilled Water Cooling Channels inside Movable Tool (Pulsing blue coolant)
+        const coolPulse = Math.sin(t * 5);
+        for (let ch = 0; ch < 3; ch++) {
+          const chY = movY + 24 + ch * 46;
+          g.beginPath();
+          g.arc(movX + movW - 20, chY, 7, 0, Math.PI * 2);
+          g.fillStyle = '#0284c7';
+          g.fill();
+          g.strokeStyle = '#38bdf8';
+          g.lineWidth = 1.5;
+          g.stroke();
+          // Coolant flow wave
+          g.beginPath();
+          g.arc(movX + movW - 20, chY, 3.5 + 1.5 * coolPulse, 0, Math.PI * 2);
+          g.fillStyle = '#e0f2fe';
+          g.fill();
+        }
+
+        // Precision Mold Part Cavity (e.g. Phone Case / Enclosure Profile)
+        const cavX = movX + 6;
+        const cavY = cy - 42;
+        const cavW = 38;
+        const cavH = 84;
+
+        // Cavity Boundary
+        g.fillStyle = '#090d16';
+        g.strokeStyle = '#facc15';
+        g.lineWidth = 1.5;
+        g.fillRect(cavX, cavY, cavW, cavH);
+        g.strokeRect(cavX, cavY, cavW, cavH);
+
+        // Polymer filling the Cavity
+        if (fillPct > 0) {
+          const filledH = (fillPct / 100) * cavH;
+          // Color: glowing hot orange when injecting, cooling to high-gloss cyan
+          let partColor = '#f97316';
+          if (phaseIdx === 2) {
+            // cooling transition
+            partColor = '#0284c7';
+          } else if (phaseIdx === 3) {
+            partColor = '#38bdf8'; // fully frozen solid
+          }
+          g.fillStyle = partColor;
+          g.fillRect(cavX, cavY + cavH - filledH, cavW, filledH);
+
+          // Fountain flow meniscus wave at advancing front during Phase 2
+          if (phaseIdx === 1 && fillPct < 100) {
+            g.beginPath();
+            g.arc(cavX + cavW / 2, cavY + cavH - filledH, cavW / 2, Math.PI, 0);
+            g.fillStyle = '#facc15';
+            g.fill();
+          }
+
+          D.text(g, 'Part (' + fillPct + '%)', cavX + cavW / 2, cavY + cavH / 2 + 3, {
+            color: '#ffffff',
+            size: 9,
+            weight: 800,
+            align: 'center',
+          });
+        }
+
+        // EJECTOR PINS & FALLING FINISHED PART (Phase 4)
+        if (phaseIdx === 3 && moldOpenX > 25) {
+          // Ejector Pins extending forward from moving mold
+          const pinExt = Math.min(22, (moldOpenX - 25));
+          g.fillStyle = '#e2e8f0';
+          g.fillRect(cavX - pinExt, cy - 25, pinExt, 4);
+          g.fillRect(cavX - pinExt, cy + 25, pinExt, 4);
+
+          // Ejected finished part dropping into collection chute
+          const dropTime = (normTime - 0.88);
+          const dropY = (dropTime > 0) ? (cy + (dropTime * 450)) : cy;
+          if (dropY < cy + 120) {
+            g.save();
+            g.fillStyle = '#38bdf8';
+            g.shadowColor = '#38bdf8';
+            g.shadowBlur = 10;
+            g.fillRect(fixX + fixW + 16, dropY - 20, 24, 40);
+            D.text(g, 'EJECTED', fixX + fixW + 28, dropY + 2, { color: '#0f172a', size: 7, weight: 800, align: 'center' });
+            g.restore();
+          }
+        }
+
+        // Part Collection Bin & Chute at Bottom Right
+        const chuteX = fixX + fixW + 8;
+        const chuteY = cy + 95;
+        g.fillStyle = '#1e293b';
+        g.strokeStyle = '#38bdf8';
+        g.lineWidth = 1.5;
+        g.beginPath();
+        g.moveTo(chuteX, chuteY);
+        g.lineTo(chuteX + 50, chuteY + 25);
+        g.lineTo(chuteX - 10, chuteY + 25);
+        g.closePath();
+        g.fill();
+        g.stroke();
+        D.text(g, 'Part Bin', chuteX + 20, chuteY + 20, { color: '#38bdf8', size: 9, weight: 700 });
+
+        g.restore();
+      } else if (st.mode === 'extrusion') {
+        // ─────────────────────────────────────────────────────────────
+        // DETAILED CONTINUOUS SCREW EXTRUSION LINE
+        // ─────────────────────────────────────────────────────────────
+        g.save();
+        // Extruder barrel + continuous rotating Archimedes screw
+        const bX = vpX + 35;
+        const bY = cy - 35;
+        const bW = 210;
+        const bH = 70;
+        D.rect(g, bX, bY, bW, bH, { fill: '#1e293b', stroke: '#475569', width: 2, r: 6 });
+
+        // Hopper
+        const hopX = bX + 25;
+        const hopY = bY - 60;
+        D.poly(g, [[hopX, hopY], [hopX + 45, hopY], [hopX + 35, bY], [hopX + 15, bY]], { fill: '#334155', stroke: '#64748b', width: 2, close: true });
+        D.text(g, 'Pellet Feed', hopX + 22, hopY - 8, { color: '#94a3b8', size: 9, weight: 700, align: 'center' });
+
+        // Rotating screw inside
+        D.line(g, bX + 10, cy, bX + bW - 10, cy, { color: '#94a3b8', width: 10 });
+        const exScrewPhase = (t * 8) % (Math.PI * 2);
+        for (let f = 0; f < 8; f++) {
+          const fx = bX + 20 + f * 24;
+          const fh = 20 + Math.sin(exScrewPhase + f * 0.7) * 4;
+          D.line(g, fx, cy - fh, fx + 8, cy + fh, { color: '#cbd5e1', width: 3.5 });
+        }
+
+        // Circular Annular Pipe Die
+        const dieX = bX + bW;
+        D.rect(g, dieX, cy - 26, 26, 52, { fill: '#facc15', stroke: '#eab308', width: 2, r: 4 });
+        D.text(g, 'Die', dieX + 13, cy + 4, { color: '#0f172a', size: 10, weight: 800, align: 'center' });
+
+        // Chilled Vacuum Water Spray Quench Tank
+        const tankX = dieX + 32;
+        const tankY = cy - 45;
+        const tankW = 140;
+        const tankH = 90;
+        D.rect(g, tankX, tankY, tankW, tankH, { fill: 'rgba(2, 132, 199, 0.25)', stroke: '#38bdf8', width: 1.5, r: 6 });
+        D.text(g, 'Vacuum Water Quench Bath', tankX + tankW / 2, tankY - 8, { color: '#38bdf8', size: 9, weight: 700, align: 'center' });
+
+        // Water spray nozzles
+        for (let sp = 0; sp < 4; sp++) {
+          const sx = tankX + 20 + sp * 32;
+          D.circle(g, sx, tankY + 8, 3, { fill: '#38bdf8' });
+          for (let d = 0; d < 3; d++) {
+            const dy = tankY + 14 + ((d * 8 + t * 40) % 20);
+            D.circle(g, sx - 4 + d * 4, dy, 1.5, { fill: '#e0f2fe' });
+          }
+        }
+
+        // Continuous Moving Pipe Extrudate passing through
+        const pipeH = 26;
+        const pipeY = cy - pipeH / 2;
+        g.fillStyle = '#38bdf8';
+        g.fillRect(dieX + 26, pipeY, vpW - (dieX + 26 - vpX) - 15, pipeH);
+        D.line(g, dieX + 26, cy, vpX + vpW - 15, cy, { color: '#ffffff', width: 2, dash: [8, 8] });
+
+        // Caterpillar Puller Unit (Two motorized track belts pulling pipe)
+        const pullX = tankX + tankW + 15;
+        const pullY1 = pipeY - 26;
+        const pullY2 = pipeY + pipeH + 4;
+        D.rect(g, pullX, pullY1, 65, 22, { fill: '#334155', stroke: '#facc15', width: 1.5, r: 4 });
+        D.rect(g, pullX, pullY2, 65, 22, { fill: '#334155', stroke: '#facc15', width: 1.5, r: 4 });
+        D.text(g, 'Puller ➔', pullX + 32, pullY1 + 14, { color: '#facc15', size: 9, weight: 800, align: 'center' });
+        D.text(g, 'Puller ➔', pullX + 32, pullY2 + 14, { color: '#facc15', size: 9, weight: 800, align: 'center' });
+
+        g.restore();
+      } else {
+        // ─────────────────────────────────────────────────────────────
+        // DETAILED HYDRAULIC COMPRESSION MOLDING (THERMOSET BAKELITE)
+        // ─────────────────────────────────────────────────────────────
+        g.save();
+        const pX = cx - 110;
+        const pY = cy - 80;
+        const pW = 220;
+
+        // Heavy Press Frame Columns
+        D.rect(g, pX - 35, pY - 50, 25, 240, { fill: '#334155', stroke: '#64748b', width: 2 });
+        D.rect(g, pX + pW + 10, pY - 50, 25, 240, { fill: '#334155', stroke: '#64748b', width: 2 });
+
+        // Upper Hydraulic Ram (descends dynamically)
+        const pressCycle = Math.sin(t * 1.5);
+        const ramDescend = Math.max(0, 35 * (0.5 + 0.5 * pressCycle));
+
+        // Upper Hydraulic Cylinder
+        D.rect(g, pX + 50, pY - 50, 120, 50, { fill: '#1e293b', stroke: '#94a3b8', width: 2, r: 6 });
+        D.text(g, 'Hydraulic Press (' + st.pressBar + ' bar)', cx, pY - 24, { color: '#ef4444', size: 10, weight: 800, align: 'center' });
+
+        // Moving Upper Punch Tool
+        D.rect(g, pX + 25, pY + ramDescend, pW - 50, 45, { fill: '#475569', stroke: '#cbd5e1', width: 2, r: 6 });
+        D.text(g, 'Upper Male Mold Plunger', cx, pY + ramDescend + 26, { color: '#f8fafc', size: 10, weight: 800, align: 'center' });
+
+        // Heated Lower Female Cavity Mold (180°C)
+        const lowY = cy + 45;
+        D.rect(g, pX, lowY, pW, 95, { fill: '#1e293b', stroke: '#ea580c', width: 2.5, r: 8 });
+        // Heating elements
+        for (let el = 0; el < 4; el++) {
+          D.circle(g, pX + 35 + el * 50, lowY + 75, 7, { fill: '#ea580c' });
+        }
+        D.text(g, 'Electric Heating Cartridges (180°C)', cx, lowY + 79, { color: '#ea580c', size: 9, weight: 700, align: 'center' });
+
+        // Compressed Bakelite Polymer Charge inside Cavity
+        const chargeH = 28 - (ramDescend * 0.4);
+        g.fillStyle = '#7c2d12'; // deep Bakelite amber
+        g.strokeStyle = '#f59e0b';
+        g.lineWidth = 2;
+        g.fillRect(pX + 35, lowY + 12, pW - 70, chargeH);
+        g.strokeRect(pX + 35, lowY + 12, pW - 70, chargeH);
+        D.text(g, 'Bakelite Resin Charge (Crosslinking Cure)', cx, lowY + 26, { color: '#facc15', size: 9.5, weight: 800, align: 'center' });
+
+        g.restore();
+      }
+
+      // ─── Right Panel: Live Video Telemetry & Rheology Readouts ───
+      const panX = 600;
+      const panY = 74;
+      const panW = 375;
+      const panH = 450;
+
+      g.save();
+      g.fillStyle = '#0f172a';
+      g.strokeStyle = '#1e293b';
+      g.lineWidth = 2;
+      g.beginPath();
+      if (g.roundRect) g.roundRect(panX, panY, panW, panH, 12);
+      else g.rect(panX, panY, panW, panH);
+      g.fill();
+      g.stroke();
+
+      D.text(g, 'PROCESS TELEMETRY & CONTROLS', panX + 16, panY + 24, { color: '#38bdf8', size: 12, weight: 800 });
+
+      // 1. Live Cycle Phase Progress Bar
+      const barY = panY + 45;
+      D.text(g, 'Video Cycle Timeline (12s Continuous Loop)', panX + 16, barY, { color: '#94a3b8', size: 10, weight: 600 });
+      g.fillStyle = '#1e293b';
+      g.fillRect(panX + 16, barY + 8, panW - 32, 12);
+      g.fillStyle = '#38bdf8';
+      g.fillRect(panX + 16, barY + 8, (panW - 32) * normTime, 12);
+      // Moving playhead marker
+      g.fillStyle = '#ffffff';
+      g.fillRect(panX + 16 + (panW - 32) * normTime - 2, barY + 6, 4, 16);
+
+      // Phase indicators pills
+      const phases = ['1. Feed', '2. Inject', '3. Cool', '4. Eject'];
+      for (let ph = 0; ph < 4; ph++) {
+        const phX = panX + 16 + ph * 86;
+        const isCur = ph === phaseIdx;
+        g.fillStyle = isCur ? '#38bdf8' : '#1e293b';
+        g.beginPath();
+        if (g.roundRect) g.roundRect(phX, barY + 26, 80, 20, 4);
+        else g.rect(phX, barY + 26, 80, 20);
+        g.fill();
+        D.text(g, phases[ph], phX + 40, barY + 40, { color: isCur ? '#0f172a' : '#94a3b8', size: 9, weight: 800, align: 'center' });
+      }
+
+      // 2. Real-Time Pressure Gauge (bar)
+      const pGaugeY = barY + 62;
+      D.rect(g, panX + 16, pGaugeY, panW - 32, 68, { fill: '#1e293b', stroke: '#334155', r: 8 });
+      D.text(g, 'Injection / Hydraulic Pressure', panX + 28, pGaugeY + 20, { color: '#94a3b8', size: 10, weight: 600 });
+      D.text(g, currentPressure + ' bar', panX + 28, pGaugeY + 46, { color: '#facc15', size: 18, weight: 800 });
+      // Pressure bar
+      const pPct = Math.min(1, currentPressure / 1800);
+      g.fillStyle = '#0f172a';
+      g.fillRect(panX + 160, pGaugeY + 34, 180, 12);
+      const pGrad = g.createLinearGradient(panX + 160, 0, panX + 340, 0);
+      pGrad.addColorStop(0, '#10b981');
+      pGrad.addColorStop(0.7, '#facc15');
+      pGrad.addColorStop(1, '#ef4444');
+      g.fillStyle = pGrad;
+      g.fillRect(panX + 160, pGaugeY + 34, 180 * pPct, 12);
+
+      // 3. Cavity Fill Meter (%)
+      const cavMeterY = pGaugeY + 76;
+      D.rect(g, panX + 16, cavMeterY, panW - 32, 68, { fill: '#1e293b', stroke: '#334155', r: 8 });
+      D.text(g, 'Mold Cavity Fill Progress', panX + 28, cavMeterY + 20, { color: '#94a3b8', size: 10, weight: 600 });
+      D.text(g, fillPct + '%', panX + 28, cavMeterY + 46, { color: fillPct === 100 ? '#10b981' : '#38bdf8', size: 18, weight: 800 });
+      g.fillStyle = '#0f172a';
+      g.fillRect(panX + 160, cavMeterY + 34, 180, 12);
+      g.fillStyle = fillPct === 100 ? '#10b981' : '#38bdf8';
+      g.fillRect(panX + 160, cavMeterY + 34, 180 * (fillPct / 100), 12);
+
+      // 4. Melt Temperature & Viscosity
+      const viscY = cavMeterY + 76;
+      D.rect(g, panX + 16, viscY, panW - 32, 68, { fill: '#1e293b', stroke: '#334155', r: 8 });
+      D.text(g, 'Melt Rheology (Temperature & Viscosity)', panX + 28, viscY + 20, { color: '#94a3b8', size: 10, weight: 600 });
+      D.text(g, st.tempC + ' °C  |  ' + st.appVisc + ' Pa·s', panX + 28, viscY + 46, { color: '#ea580c', size: 15, weight: 800 });
+
+      // 5. Engineering Principles Box
+      const princY = viscY + 76;
+      D.rect(g, panX + 16, princY, panW - 32, 56, { fill: '#1e293b', stroke: '#334155', r: 8 });
+      D.text(g, 'Cooling Time Law: t_cool ∝ (h² / α) · ln(ΔT)', panX + 26, princY + 22, { color: '#facc15', size: 10, weight: 700 });
+      D.text(g, 'Fountain flow ensures high molecular orientation along wall.', panX + 26, princY + 40, { color: '#94a3b8', size: 9.5 });
+
+      g.restore();
     },
   };
 
-  // ═════════════════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════════════════════
   // 12. CRYSTAL FIELD SPLITTING (OCTAHEDRAL/TETRAHEDRAL, COLOR & MAGNETISM)
   // ═════════════════════════════════════════════════════════════════
   S['chem-crystal-field-theory'] = {
