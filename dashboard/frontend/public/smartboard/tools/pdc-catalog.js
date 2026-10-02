@@ -43,7 +43,7 @@
       flagship: false,
       tier: 1,
       description: 'Interactive signal flow through Information Source → Transmitter → Channel (Noise) → Receiver → Destination.',
-      formula: 'v_{out}(t) = \mathcal{F}^{-1}\{H(f) \cdot \mathcal{F}[v_{in}(t)]\} + n(t)',
+      formula: 'v_{out}(t) = \\mathcal{F}^{-1}\\{H(f) \\cdot \\mathcal{F}[v_{in}(t)]\\} + n(t)',
       defaultParams: { activeStage: 0, noiseLevel: 0.15, signalFreq: 2, channelType: 'wireless' },
       challenge: {
         goal: 'Select the stage responsible for modulating the message onto the carrier frequency and identify where thermal noise is added.',

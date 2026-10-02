@@ -15,40 +15,44 @@
   const S = (window.ChemSims = window.ChemSims || {});
   const D = window.EPDraw;
   const { C, fmt, clamp, lerp, rad } = D;
+  const R_GAS = 8.314; // J/(mol*K)
+  const FARADAY = 96485; // C/mol
 
-  // ─── Step-by-Step HUD & Animation Helper ───
+    // ─── Step-by-Step HUD & Animation Helper (Compact, Non-Colliding) ───
   function drawStepHUD(g, S, customNote) {
     const step = S.step || 0;
+    const cur = (S.steps && S.steps[step]) || {};
     const steps = S.steps || [];
-    const cur = steps[step] || { title: 'Step ' + (step + 1), text: '' };
     const total = steps.length || 1;
     const t = S.t || 0;
 
     g.save();
-    const hudW = 440;
-    const hudH = 68;
+    // Sleek, compact badge in top-right corner (never overlaps canvas title)
+    const hudW = 210;
+    const hudH = 38;
     const hudX = 1000 - hudW - 24;
-    const hudY = 18;
+    const hudY = 16;
 
-    g.fillStyle = 'rgba(15, 23, 42, 0.88)';
-    g.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+    g.fillStyle = 'rgba(15, 23, 42, 0.9)';
+    g.strokeStyle = 'rgba(56, 189, 248, 0.4)';
     g.lineWidth = 1.5;
     g.beginPath();
-    if (g.roundRect) g.roundRect(hudX, hudY, hudW, hudH, 10);
+    if (g.roundRect) g.roundRect(hudX, hudY, hudW, hudH, 8);
     else g.rect(hudX, hudY, hudW, hudH);
     g.fill();
     g.stroke();
 
+    // Step dots & active badge
     const glow = 0.5 + 0.5 * Math.sin(t * 3.5);
     g.fillStyle = '#38bdf8';
     g.font = 'bold 11px system-ui, sans-serif';
-    g.fillText('STEP ' + (step + 1) + ' OF ' + total, hudX + 16, hudY + 22);
+    g.fillText('STEP ' + (step + 1) + ' OF ' + total, hudX + 12, hudY + 23);
 
     for (let i = 0; i < total; i++) {
-      const dx = hudX + 115 + i * 16;
-      const dy = hudY + 18;
+      const dx = hudX + 105 + i * 16;
+      const dy = hudY + 19;
       g.beginPath();
-      g.arc(dx, dy, i === step ? 5 : 3.5, 0, Math.PI * 2);
+      g.arc(dx, dy, i === step ? 4.5 : 3, 0, Math.PI * 2);
       if (i === step) {
         g.fillStyle = 'rgba(56, 189, 248, ' + (0.7 + 0.3 * glow) + ')';
         g.fill();
@@ -64,22 +68,16 @@
       }
     }
 
-    g.fillStyle = '#f8fafc';
-    g.font = 'bold 13px system-ui, sans-serif';
-    const cleanTitle = (cur.title || '').replace(/^\d+\.\s*/, '');
-    g.fillText(cleanTitle.length > 44 ? cleanTitle.slice(0, 42) + '...' : cleanTitle, hudX + 16, hudY + 43);
-
-    g.fillStyle = '#94a3b8';
-    g.font = '11px system-ui, sans-serif';
-    const sub = customNote || cur.text || '';
-    g.fillText(sub.length > 60 ? sub.slice(0, 58) + '...' : sub, hudX + 16, hudY + 59);
+    // Animated LIVE pulse indicator
+    const pulse = 0.5 + 0.5 * Math.sin(t * 4);
+    g.beginPath();
+    g.arc(hudX + hudW - 16, hudY + 19, 3.5, 0, Math.PI * 2);
+    g.fillStyle = 'rgba(56, 189, 248, ' + (0.5 + 0.5 * pulse) + ')';
+    g.fill();
 
     g.restore();
   }
 
-
-  const R_GAS = 8.314462618; // J/(mol·K)
-  const FARADAY = 96485.33212; // C/mol
 
   // ═════════════════════════════════════════════════════════════════
   // 13. GIBBS FREE ENERGY (ΔG = ΔH − TΔS) & SPONTANEITY
@@ -511,7 +509,7 @@
     draw(g, S) {
       const { p, c, t } = S;
       const step = S.step || 0;
-      D.clear(g, '#0f172a');
+      D.clear(g, '#090d16');
 
       const st = c.state;
 
@@ -520,39 +518,61 @@
 
       if (st.mode === 'daniell_cell') {
         // Daniell Cell
-        D.text(g, 'DANIELL GALVANIC CELL & NERNST ELECTROCHEMICAL APPARATUS', 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
-        D.text(g, `${st.cellNotation} · E_cell = ${st.eCell.toFixed(4)} V · T = ${st.tempC}°C · Q = ${st.Q}`, 30, 62, { color: '#94a3b8', size: 13, weight: 600 });
+        D.text(g, 'DANIELL GALVANIC CELL & NERNST ELECTROCHEMICAL APPARATUS', 30, 36, { color: '#38bdf8', size: 19, weight: 800 });
+        D.text(g, `${st.cellNotation}  •  E_cell = ${st.eCell.toFixed(4)} V  •  T = ${st.tempC}°C  •  Q = ${st.Q}`, 30, 62, { color: '#94a3b8', size: 12.5, weight: 600 });
 
         // Left Panel: Electrochemical Cell Apparatus (x: 24 to 530)
-        D.rect(g, 24, 85, 500, 440, { fill: '#1e293b', stroke: '#334155', r: 12 });
-        D.text(g, 'Galvanic Cell & Salt Bridge Apparatus', 40, 110, { color: '#f8fafc', size: 14, weight: 700 });
+        D.rect(g, 24, 85, 500, 440, { fill: '#131b2e', stroke: '#1e293b', r: 12 });
+        D.text(g, 'Galvanic Cell & Salt Bridge Apparatus (Live Circuit)', 40, 108, { color: '#f8fafc', size: 13.5, weight: 700 });
 
         const cx = 270;
-        const cy = 290;
+        const cy = 295;
 
         // Anode Beaker (Left, Zn)
         const b1X = 65;
         const b1Y = cy;
         const bW = 140;
         const bH = 150;
-        D.rect(g, b1X, b1Y, bW, bH, { fill: '#0f172a', stroke: '#64748b', width: 2, r: 6 });
-        D.rect(g, b1X + 4, b1Y + 30, bW - 8, bH - 34, { fill: 'rgba(56,189,248,0.2)', r: 4 });
-        D.text(g, `ZnSO₄ (${st.cZn} M)`, b1X + 70, b1Y + 120, { color: '#38bdf8', size: 11, weight: 700, align: 'center' });
+        D.rect(g, b1X, b1Y, bW, bH, { fill: '#0a0f1d', stroke: '#475569', width: 2, r: 6 });
+        // Solution liquid with subtle meniscus waves
+        const wave1 = Math.sin(t * 3) * 1.5;
+        D.rect(g, b1X + 4, b1Y + 30 + wave1, bW - 8, bH - 34 - wave1, { fill: 'rgba(56, 189, 248, 0.16)', r: 4 });
+        D.text(g, `ZnSO₄ (${st.cZn} M)`, b1X + 70, b1Y + 124, { color: '#38bdf8', size: 11, weight: 700, align: 'center' });
 
         // Zinc Electrode
+        const znOxidation = 0.5 + 0.5 * Math.sin(t * 4);
         D.rect(g, b1X + 35, b1Y - 45, 24, 130, { fill: '#94a3b8', stroke: '#cbd5e1', width: 1.5 });
-        D.text(g, 'Zn Anode (−)', b1X + 47, b1Y - 58, { color: '#cbd5e1', size: 10, weight: 800, align: 'center' });
+        D.text(g, 'Zn Anode (−)', b1X + 47, b1Y - 56, { color: '#cbd5e1', size: 10, weight: 800, align: 'center' });
+
+        // Animated Zn2+ ions shedding into solution
+        for (let i = 0; i < 4; i++) {
+          const zoT = (t * 0.8 + i * 0.25) % 1;
+          const zx = b1X + 59 + zoT * 40;
+          const zy = b1Y + 45 + i * 20 + Math.sin(t * 3 + i) * 6;
+          D.circle(g, zx, zy, 4, { fill: 'rgba(148, 163, 184, ' + (1 - zoT) + ')', stroke: '#38bdf8', width: 1 });
+          D.text(g, 'Zn²⁺', zx, zy - 4, { color: 'rgba(56, 189, 248, ' + (1 - zoT) + ')', size: 8, weight: 700, align: 'center' });
+        }
 
         // Cathode Beaker (Right, Cu)
         const b2X = 335;
         const b2Y = cy;
-        D.rect(g, b2X, b2Y, bW, bH, { fill: '#0f172a', stroke: '#64748b', width: 2, r: 6 });
-        D.rect(g, b2X + 4, b2Y + 30, bW - 8, bH - 34, { fill: 'rgba(2,132,199,0.45)', r: 4 });
-        D.text(g, `CuSO₄ (${st.cCu} M)`, b2X + 70, b2Y + 120, { color: '#38bdf8', size: 11, weight: 700, align: 'center' });
+        D.rect(g, b2X, b2Y, bW, bH, { fill: '#0a0f1d', stroke: '#475569', width: 2, r: 6 });
+        const wave2 = Math.cos(t * 3) * 1.5;
+        D.rect(g, b2X + 4, b2Y + 30 + wave2, bW - 8, bH - 34 - wave2, { fill: 'rgba(2, 132, 199, 0.38)', r: 4 });
+        D.text(g, `CuSO₄ (${st.cCu} M)`, b2X + 70, b2Y + 124, { color: '#38bdf8', size: 11, weight: 700, align: 'center' });
 
-        // Copper Electrode
+        // Copper Electrode (with plated surface shimmer)
         D.rect(g, b2X + 80, b2Y - 45, 24, 130, { fill: '#ea580c', stroke: '#f97316', width: 1.5 });
-        D.text(g, 'Cu Cathode (+)', b2X + 92, b2Y - 58, { color: '#f97316', size: 10, weight: 800, align: 'center' });
+        D.text(g, 'Cu Cathode (+)', b2X + 92, b2Y - 56, { color: '#f97316', size: 10, weight: 800, align: 'center' });
+
+        // Animated Cu2+ deposition onto electrode
+        for (let i = 0; i < 4; i++) {
+          const cuT = (t * 0.9 + i * 0.25) % 1;
+          const cxPos = b2X + 40 + (1 - cuT) * 40;
+          const cyPos = b2Y + 45 + i * 20 + Math.cos(t * 3 + i) * 6;
+          D.circle(g, cxPos, cyPos, 4, { fill: 'rgba(234, 88, 12, ' + cuT + ')', stroke: '#ea580c', width: 1 });
+          D.text(g, 'Cu²⁺', cxPos, cyPos - 4, { color: 'rgba(249, 115, 22, ' + cuT + ')', size: 8, weight: 700, align: 'center' });
+        }
 
         // Inverted U-tube Salt Bridge (KCl in Agar)
         D.poly(g, [
@@ -561,33 +581,104 @@
           [b2X + 35, b1Y - 20],
           [b2X + 35, b2Y + 90],
           [b2X + 47, b2Y + 90],
-          [b2X + 47, b1Y - 10],
-          [b1X + 117, b1Y - 10],
+          [b2X + 47, b1Y - 8],
+          [b1X + 117, b1Y - 8],
           [b1X + 117, b1Y + 90],
-        ], { fill: 'rgba(250,204,21,0.25)', stroke: '#facc15', width: 2, close: true });
-        D.text(g, 'Salt Bridge (KCl)', cx, b1Y - 28, { color: '#facc15', size: 10.5, weight: 800, align: 'center' });
+        ], { fill: 'rgba(250, 204, 21, 0.22)', stroke: '#facc15', width: 2, close: true });
+        D.text(g, 'Salt Bridge (KCl in Agar)', cx, b1Y - 30, { color: '#facc15', size: 10.5, weight: 800, align: 'center' });
 
-        // External Wire & Voltmeter
-        D.line(g, b1X + 47, b1Y - 45, b1X + 47, cy - 110, { color: '#f8fafc', width: 2 });
-        D.line(g, b1X + 47, cy - 110, cx - 35, cy - 110, { color: '#f8fafc', width: 2 });
+        // Animated Ions moving through Salt Bridge
+        // K+ moves towards cathode (right)
+        for (let i = 0; i < 5; i++) {
+          const kt = (t * 0.35 + i * 0.2) % 1;
+          let kx, ky;
+          if (kt < 0.25) {
+            kx = b1X + 111;
+            ky = (b1Y + 70) - (kt / 0.25) * 80;
+          } else if (kt < 0.75) {
+            const u = (kt - 0.25) / 0.5;
+            kx = (b1X + 111) + u * ((b2X + 41) - (b1X + 111));
+            ky = b1Y - 14;
+          } else {
+            kx = b2X + 41;
+            ky = (b1Y - 14) + ((kt - 0.75) / 0.25) * 84;
+          }
+          D.circle(g, kx, ky, 3, { fill: '#a855f7', stroke: '#e9d5ff', width: 1 });
+          if (i === 2) D.text(g, 'K⁺ →', kx, ky - 6, { color: '#c084fc', size: 8, weight: 800, align: 'center' });
+        }
 
-        D.line(g, b2X + 92, b2Y - 45, b2X + 92, cy - 110, { color: '#f8fafc', width: 2 });
-        D.line(g, b2X + 92, cy - 110, cx + 35, cy - 110, { color: '#f8fafc', width: 2 });
+        // Cl- moves towards anode (left)
+        for (let i = 0; i < 5; i++) {
+          const clt = (1 - ((t * 0.35 + i * 0.2) % 1));
+          let clx, cly;
+          if (clt < 0.25) {
+            clx = b1X + 111;
+            cly = (b1Y + 70) - (clt / 0.25) * 80;
+          } else if (clt < 0.75) {
+            const u = (clt - 0.25) / 0.5;
+            clx = (b1X + 111) + u * ((b2X + 41) - (b1X + 111));
+            cly = b1Y - 14;
+          } else {
+            clx = b2X + 41;
+            cly = (b1Y - 14) + ((clt - 0.75) / 0.25) * 84;
+          }
+          D.circle(g, clx, cly + 4, 3, { fill: '#eab308', stroke: '#fef08a', width: 1 });
+          if (i === 2) D.text(g, '← Cl⁻', clx, cly + 10, { color: '#facc15', size: 8, weight: 800, align: 'center' });
+        }
 
-        // Digital Voltmeter
-        D.circle(g, cx, cy - 110, 32, { fill: '#0f172a', stroke: '#38bdf8', width: 2.5 });
-        D.text(g, 'V', cx, cy - 128, { color: '#38bdf8', size: 10, weight: 800, align: 'center' });
-        D.text(g, `${st.eCell.toFixed(3)} V`, cx, cy - 106, { color: '#22c55e', size: 12, weight: 900, align: 'center' });
+        // External Circuit Wires
+        const wY = cy - 110;
+        D.line(g, b1X + 47, b1Y - 45, b1X + 47, wY, { color: '#64748b', width: 2.5 });
+        D.line(g, b1X + 47, wY, cx - 38, wY, { color: '#64748b', width: 2.5 });
+        D.line(g, b2X + 92, b2Y - 45, b2X + 92, wY, { color: '#64748b', width: 2.5 });
+        D.line(g, b2X + 92, wY, cx + 38, wY, { color: '#64748b', width: 2.5 });
 
-        // Electron flow arrows
-        D.arrow(g, b1X + 70, cy - 110, b1X + 120, cy - 110, { color: '#38bdf8', width: 2, head: 5 });
-        D.text(g, 'e⁻ Flow ──>', b1X + 95, cy - 122, { color: '#38bdf8', size: 10, align: 'center' });
+        // Continuous Moving Electrons (e-) along circuit
+        const eDistTotal = (b1Y - 45 - wY) + (cx - 38 - (b1X + 47)) + (b2X + 92 - (cx + 38)) + (b2Y - 45 - wY);
+        const eSpeed = Math.max(0.4, st.eCell) * 60;
+        for (let i = 0; i < 9; i++) {
+          const s = (t * eSpeed + i * (eDistTotal / 9)) % eDistTotal;
+          let ex, ey;
+          const s1 = b1Y - 45 - wY;
+          const s2 = s1 + (cx - 38 - (b1X + 47));
+          const s3 = s2 + (b2X + 92 - (cx + 38));
+          if (s < s1) {
+            ex = b1X + 47;
+            ey = (b1Y - 45) - s;
+          } else if (s < s2) {
+            ex = (b1X + 47) + (s - s1);
+            ey = wY;
+          } else if (s < s3) {
+            ex = (cx + 38) + (s - s2);
+            ey = wY;
+          } else {
+            ex = b2X + 92;
+            ey = wY + (s - s3);
+          }
+          D.circle(g, ex, ey, 4.5, { fill: '#38bdf8', stroke: '#ffffff', width: 1.2 });
+          if (i % 2 === 0) {
+            D.text(g, 'e⁻', ex, ey - 7, { color: '#38bdf8', size: 9, weight: 800, align: 'center' });
+          }
+        }
 
-        D.tag(g, `Cell EMF: E = 1.10 − 0.0296 log₁₀(${st.Q}) = ${st.eCell.toFixed(4)} V`, cx, 490, { bg: '#0f172a', border: '#22c55e', color: '#22c55e', size: 12, align: 'center' });
+        // Precision Digital Voltmeter Housing
+        D.circle(g, cx, wY, 36, { fill: '#0a0f1d', stroke: '#38bdf8', width: 3 });
+        D.circle(g, cx, wY, 32, { fill: '#0f172a', stroke: '#1e293b', width: 1 });
+        // LED indicator
+        const ledGlow = 0.6 + 0.4 * Math.sin(t * 6);
+        D.circle(g, cx, wY - 20, 3, { fill: 'rgba(34, 197, 94, ' + ledGlow + ')', stroke: '#22c55e', width: 1 });
+        D.text(g, 'DIGITAL EMF', cx, wY - 11, { color: '#94a3b8', size: 8, weight: 800, align: 'center' });
+        // Jitter voltage for ultra-realistic live measurement
+        const jitter = (Math.sin(t * 12) * 0.0003);
+        const liveDispVolt = (st.eCell + jitter).toFixed(4);
+        D.text(g, liveDispVolt + ' V', cx, wY + 6, { color: '#38bdf8', size: 12, weight: 900, align: 'center' });
+
+        // Tag summary
+        D.tag(g, `Cell Potential: E = 1.10 − 0.0296 log₁₀(${st.Q.toFixed(3)}) = ${st.eCell.toFixed(4)} V`, cx, 488, { bg: '#090d16', border: '#22c55e', color: '#22c55e', size: 12, align: 'center' });
 
         // Right Panel: Nernst Concentration Plots (x: 540 to 975)
-        D.rect(g, 540, 85, 435, 440, { fill: '#1e293b', stroke: '#334155', r: 12 });
-        D.text(g, 'Nernst Logarithmic Potential Curve', 560, 110, { color: '#f8fafc', size: 14, weight: 700 });
+        D.rect(g, 540, 85, 435, 440, { fill: '#131b2e', stroke: '#1e293b', r: 12 });
+        D.text(g, 'Nernst Logarithmic Potential Curve', 560, 108, { color: '#f8fafc', size: 13.5, weight: 700 });
 
         const gx = 595;
         const gy = 440;
@@ -611,53 +702,90 @@
         }
         D.poly(g, qPts, { stroke: '#38bdf8', width: 3, fill: false });
 
-        // Current operating point
+        // Current operating point with pulsing halo
         const curLq = Math.log10(st.Q);
         const curX = gx + ((curLq + 4) / 8) * gw;
         const curY = gy - ((st.eCell - 0.95) / 0.3) * gh;
         D.line(g, curX, gy, curX, curY, { color: '#facc15', width: 1.5, dash: [3, 3] });
+        const haloR = 6 + Math.sin(t * 5) * 2;
+        D.circle(g, curX, curY, haloR, { fill: 'rgba(250, 204, 21, 0.3)' });
         D.circle(g, curX, curY, 6, { fill: '#facc15', stroke: '#ffffff', width: 2 });
         D.text(g, `${st.eCell.toFixed(3)} V`, curX, curY - 14, { color: '#facc15', size: 11, weight: 800, align: 'center' });
 
-        D.rect(g, 560, gy + 32, 395, 42, { fill: '#0f172a', stroke: '#334155', r: 8 });
-        D.text(g, `Le Chatelier shift: decreasing [Zn²⁺] raises E_cell above 1.10 V`, 575, gy + 53, { color: '#38bdf8', size: 11, weight: 700 });
+        D.rect(g, 560, gy + 32, 395, 42, { fill: '#0a0f1d', stroke: '#334155', r: 8 });
+        D.text(g, 'Le Chatelier shift: decreasing [Zn²⁺] raises E_cell above 1.10 V', 575, gy + 53, { color: '#38bdf8', size: 11, weight: 700 });
       } else {
         // Glass-Calomel pH Electrode View
-        D.text(g, 'GLASS-CALOMEL COMBINED pH SENSING APPARATUS', 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
-        D.text(g, `Unknown Solution pH = ${st.ph.toFixed(2)} · Measured E_cell = ${st.eCellPH.toFixed(4)} V · Nernst Slope = ${st.nernstSlopeMV} mV/pH`, 30, 62, { color: '#94a3b8', size: 13, weight: 600 });
+        D.text(g, 'GLASS-CALOMEL COMBINED pH SENSING APPARATUS', 30, 36, { color: '#38bdf8', size: 19, weight: 800 });
+        D.text(g, `Unknown Solution pH = ${st.ph.toFixed(2)}  •  Measured E_cell = ${st.eCellPH.toFixed(4)} V  •  Nernst Slope = ${st.nernstSlopeMV} mV/pH`, 30, 62, { color: '#94a3b8', size: 12.5, weight: 600 });
 
         // Left Panel: Glass Electrode Probe in Beaker
-        D.rect(g, 24, 85, 500, 440, { fill: '#1e293b', stroke: '#334155', r: 12 });
-        D.text(g, 'Combination Glass & SCE Probe in Unknown Solution', 40, 110, { color: '#f8fafc', size: 14, weight: 700 });
+        D.rect(g, 24, 85, 500, 440, { fill: '#131b2e', stroke: '#1e293b', r: 12 });
+        D.text(g, 'Combination Glass & SCE Probe in Unknown Solution', 40, 108, { color: '#f8fafc', size: 13.5, weight: 700 });
 
         const cx = 270;
-        const cy = 290;
+        const cy = 295;
 
         // Solution Beaker
-        D.rect(g, cx - 110, cy - 20, 220, 160, { fill: '#0f172a', stroke: '#64748b', width: 2, r: 8 });
+        D.rect(g, cx - 110, cy - 20, 220, 160, { fill: '#0a0f1d', stroke: '#475569', width: 2, r: 8 });
         // Dynamic solution color based on pH indicator
-        let phCol = 'rgba(56,189,248,0.3)';
-        if (st.ph < 3) phCol = 'rgba(239,68,68,0.4)';
-        else if (st.ph < 6) phCol = 'rgba(245,158,11,0.4)';
-        else if (st.ph < 8) phCol = 'rgba(34,197,94,0.4)';
-        else phCol = 'rgba(168,85,247,0.4)';
+        let phCol = 'rgba(56, 189, 248, 0.3)';
+        if (st.ph < 3) phCol = 'rgba(239, 68, 68, 0.45)';
+        else if (st.ph < 6) phCol = 'rgba(245, 158, 11, 0.45)';
+        else if (st.ph < 8) phCol = 'rgba(34, 197, 94, 0.45)';
+        else if (st.ph < 11) phCol = 'rgba(56, 189, 248, 0.45)';
+        else phCol = 'rgba(168, 85, 247, 0.45)';
 
-        D.rect(g, cx - 106, cy + 10, 212, 126, { fill: phCol, r: 6 });
-        D.text(g, `Test Solution pH = ${st.ph.toFixed(2)}`, cx, cy + 110, { color: '#ffffff', size: 13, weight: 800, align: 'center' });
+        D.rect(g, cx - 106, cy + 20, 212, 116, { fill: phCol, r: 6 });
+        D.text(g, `Test Solution (pH ${st.ph.toFixed(2)})`, cx, cy + 115, { color: '#ffffff', size: 12, weight: 800, align: 'center' });
 
-        // Combined Glass Probe Body
-        D.rect(g, cx - 22, cy - 130, 44, 180, { fill: '#ffffff', stroke: '#94a3b8', width: 2, r: 6 });
-        // Internal Ag/AgCl reference wire
-        D.line(g, cx - 8, cy - 120, cx - 8, cy + 30, { color: '#94a3b8', width: 1.5 });
-        // Thin pH-sensitive Glass Bulb at bottom
-        D.circle(g, cx, cy + 50, 16, { fill: 'rgba(56,189,248,0.5)', stroke: '#38bdf8', width: 2 });
-        D.text(g, 'H⁺ Selective Bulb', cx + 75, cy + 52, { color: '#38bdf8', size: 10, weight: 700 });
+        // Combination Electrode Stem
+        D.rect(g, cx - 22, cy - 110, 44, 150, { fill: 'rgba(255, 255, 255, 0.15)', stroke: '#94a3b8', width: 1.5, r: 4 });
+        D.rect(g, cx - 18, cy - 105, 36, 140, { fill: 'rgba(148, 163, 184, 0.2)' });
 
-        D.tag(g, `E_cell = E°_glass − 0.05916 pH − E_SCE = ${st.eCellPH.toFixed(4)} V`, cx, 490, { bg: '#0f172a', border: '#38bdf8', color: '#38bdf8', size: 12, align: 'center' });
+        // Internal Reference (Ag/AgCl wire)
+        D.line(g, cx - 8, cy - 100, cx - 8, cy + 25, { color: '#cbd5e1', width: 2 });
+        D.text(g, 'Ag/AgCl', cx - 12, cy - 90, { color: '#cbd5e1', size: 8, weight: 700, align: 'right' });
 
-        // Right Panel: E vs pH Calibration Line
-        D.rect(g, 540, 85, 435, 440, { fill: '#1e293b', stroke: '#334155', r: 12 });
-        D.text(g, 'Linear Calibration Response (59.16 mV/pH)', 560, 110, { color: '#f8fafc', size: 14, weight: 700 });
+        // Calomel Reference compartment
+        D.line(g, cx + 8, cy - 100, cx + 8, cy + 25, { color: '#f59e0b', width: 2 });
+        D.text(g, 'SCE Ref', cx + 12, cy - 90, { color: '#f59e0b', size: 8, weight: 700, align: 'left' });
+
+        // Thin Glass Bulb Membrane (Sensitive Hydrated Gel)
+        const bulbGlow = 0.5 + 0.5 * Math.sin(t * 4);
+        D.circle(g, cx, cy + 45, 22, { fill: 'rgba(56, 189, 248, ' + (0.3 + 0.2 * bulbGlow) + ')', stroke: '#38bdf8', width: 2.5 });
+        D.circle(g, cx, cy + 45, 17, { fill: 'rgba(255, 255, 255, 0.25)', stroke: '#cbd5e1', width: 1 });
+        D.text(g, 'Glass', cx, cy + 40, { color: '#ffffff', size: 9, weight: 800, align: 'center' });
+        D.text(g, 'Membrane', cx, cy + 50, { color: '#38bdf8', size: 8, weight: 800, align: 'center' });
+
+        // Dynamic H+ ions clustering around bulb
+        const numH = Math.round(clamp((14 - st.ph) * 1.5 + 3, 2, 20));
+        for (let i = 0; i < numH; i++) {
+          const hAngle = (i / numH) * Math.PI * 2 + t * 0.8;
+          const hRad = 28 + Math.sin(t * 3 + i) * 6;
+          const hx = cx + Math.cos(hAngle) * hRad;
+          const hy = cy + 45 + Math.sin(hAngle) * hRad;
+          D.circle(g, hx, hy, 3, { fill: '#ef4444', stroke: '#fca5a5', width: 1 });
+          if (i === 0) D.text(g, 'H⁺', hx, hy - 6, { color: '#ef4444', size: 9, weight: 800, align: 'center' });
+        }
+
+        // Porous ceramic liquid junction
+        D.rect(g, cx + 16, cy + 28, 6, 8, { fill: '#ffffff', stroke: '#f59e0b', width: 1 });
+        D.text(g, 'Porous Frit', cx + 26, cy + 32, { color: '#facc15', size: 8, weight: 700 });
+
+        // Multimeter Digital Cable
+        D.line(g, cx, cy - 110, cx, cy - 135, { color: '#64748b', width: 2.5 });
+
+        // High precision digital meter
+        D.circle(g, cx, cy - 145, 28, { fill: '#0a0f1d', stroke: '#38bdf8', width: 2.5 });
+        D.text(g, 'pH METER', cx, cy - 156, { color: '#94a3b8', size: 7.5, weight: 800, align: 'center' });
+        D.text(g, st.ph.toFixed(2), cx, cy - 141, { color: '#22c55e', size: 14, weight: 900, align: 'center' });
+
+        D.tag(g, `Nernst Response: E_cell = ${st.eCellPH.toFixed(4)} V  •  ΔE/ΔpH = ${st.nernstSlopeMV} mV`, cx, 488, { bg: '#090d16', border: '#22c55e', color: '#22c55e', size: 12, align: 'center' });
+
+        // Right Panel: Linear Calibration Line (E vs pH)
+        D.rect(g, 540, 85, 435, 440, { fill: '#131b2e', stroke: '#1e293b', r: 12 });
+        D.text(g, 'Electrode Calibration: EMF vs pH (Nernst Line)', 560, 108, { color: '#f8fafc', size: 13.5, weight: 700 });
 
         const gx = 595;
         const gy = 440;
@@ -666,25 +794,30 @@
 
         D.line(g, gx, gy, gx + gw, gy, { color: '#475569', width: 1.5 });
         D.line(g, gx, gy, gx, gy - gh, { color: '#475569', width: 1.5 });
-        D.text(g, 'Solution pH', gx + gw - 40, gy + 20, { color: '#94a3b8', size: 11, weight: 600 });
+        D.text(g, 'Solution pH (0 to 14)', gx + gw - 65, gy + 20, { color: '#94a3b8', size: 10.5, weight: 600 });
         D.text(g, 'E_cell (V)', gx - 10, gy - gh - 8, { color: '#94a3b8', size: 11, weight: 600, align: 'right' });
 
-        // Line from pH = 0 to 14
-        const p1 = [gx, gy - gh + 25];
-        const p2 = [gx + gw, gy - 25];
-        D.line(g, p1[0], p1[1], p2[0], p2[1], { color: '#38bdf8', width: 3 });
+        // Calibration Line
+        const phPts = [
+          [gx, gy - ((0.45 - (-0.45)) / 0.9) * gh],
+          [gx + gw, gy - ((-0.38 - (-0.45)) / 0.9) * gh],
+        ];
+        D.poly(g, phPts, { stroke: '#38bdf8', width: 3, fill: false });
 
-        // Live pH point
-        const curPx = gx + (st.ph / 14) * gw;
-        const curPy = p1[1] + (st.ph / 14) * (p2[1] - p1[1]);
-        D.line(g, curPx, gy, curPx, curPy, { color: '#facc15', width: 1.5, dash: [3, 3] });
-        D.circle(g, curPx, curPy, 6, { fill: '#facc15', stroke: '#ffffff', width: 2 });
-        D.text(g, `pH ${st.ph.toFixed(1)} (${st.eCellPH.toFixed(3)} V)`, curPx, curPy - 14, { color: '#facc15', size: 11, weight: 800, align: 'center' });
+        // Current pH point with pulsing ring
+        const phU = st.ph / 14;
+        const phX = gx + phU * gw;
+        const phY = gy - ((st.eCellPH - (-0.45)) / 0.9) * gh;
+        D.line(g, phX, gy, phX, phY, { color: '#facc15', width: 1.5, dash: [3, 3] });
+        const pRing = 6 + Math.sin(t * 5) * 2;
+        D.circle(g, phX, phY, pRing, { fill: 'rgba(250, 204, 21, 0.3)' });
+        D.circle(g, phX, phY, 6, { fill: '#facc15', stroke: '#ffffff', width: 2 });
+        D.text(g, `pH ${st.ph.toFixed(2)} (${st.eCellPH.toFixed(3)} V)`, phX, phY - 14, { color: '#facc15', size: 10.5, weight: 800, align: 'center' });
 
-        D.rect(g, 560, gy + 32, 395, 42, { fill: '#0f172a', stroke: '#334155', r: 8 });
-        D.text(g, 'Nernstian Electrode Response: Linear from pH 1 to 12', 575, gy + 53, { color: '#38bdf8', size: 11, weight: 700 });
+        D.rect(g, 560, gy + 32, 395, 42, { fill: '#0a0f1d', stroke: '#334155', r: 8 });
+        D.text(g, `Slope = ${st.nernstSlopeMV} mV/pH unit at ${st.tempC}°C (theoretical: 59.16 mV at 25°C)`, 575, gy + 53, { color: '#38bdf8', size: 11, weight: 700 });
       }
-    },
+    }
   };
 
   // ═════════════════════════════════════════════════════════════════
@@ -1147,7 +1280,7 @@
     draw(g, S) {
       const { p, c, t } = S;
       const step = S.step || 0;
-      D.clear(g, '#0f172a');
+      D.clear(g, '#090d16');
 
       const st = c.state;
 
@@ -1155,21 +1288,92 @@
       drawStepHUD(g, S, step === 0 ? 'Initial reactant diffusion & Maxwell-Boltzmann collision frequency' : step === 1 ? 'High-energy collisions overcoming activation energy barrier (E ≥ Ea)' : 'Concentration decay curve & integrated rate law half-life (t½)');
 
       // Header Banner
-      D.text(g, `REACTION KINETICS: ${st.rateLawStr.toUpperCase()}`, 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
-      D.text(g, `[A]₀ = ${st.a0} M · Current [A] = ${st.at.toFixed(3)} M · Conversion = ${st.convPct}% · Half-Life t½ = ${st.tHalf.toFixed(1)} s`, 30, 62, { color: '#94a3b8', size: 13, weight: 600 });
+      D.text(g, `REACTION KINETICS: ${st.rateLawStr.toUpperCase()}`, 30, 36, { color: '#38bdf8', size: 19, weight: 800 });
+      D.text(g, `[A]₀ = ${st.a0} M  •  Current [A] = ${st.at.toFixed(3)} M  •  Conversion = ${st.convPct}%  •  Half-Life t½ = ${st.tHalf.toFixed(1)} s`, 30, 62, { color: '#94a3b8', size: 12.5, weight: 600 });
 
-      // Left Panel: Concentration Decay Curve [A] vs t (x: 24 to 530)
-      D.rect(g, 24, 85, 500, 440, { fill: '#1e293b', stroke: '#334155', r: 12 });
-      D.text(g, 'Concentration Decay Profile [A] vs Time', 40, 110, { color: '#f8fafc', size: 14, weight: 700 });
+      // Left Panel: Live Molecular Collision Reactor Chamber (x: 24 to 510)
+      D.rect(g, 24, 85, 486, 440, { fill: '#131b2e', stroke: '#1e293b', r: 12 });
+      D.text(g, 'Maxwell-Boltzmann Collision Reactor Chamber', 40, 108, { color: '#f8fafc', size: 13.5, weight: 700 });
 
-      const gx = 80;
+      // Reactor vessel bounding box
+      const rx0 = 44;
+      const ry0 = 130;
+      const rw0 = 446;
+      const rh0 = 310;
+      D.rect(g, rx0, ry0, rw0, rh0, { fill: '#0a0f1d', stroke: '#334155', width: 2, r: 10 });
+
+      // Deterministic particle simulation based on time t and conversion
+      const numParticles = 24;
+      const productFraction = clamp(st.convPct / 100, 0, 1);
+      const numProducts = Math.round(numParticles * productFraction);
+
+      // Render 24 bouncing particles with collision flashes
+      for (let i = 0; i < numParticles; i++) {
+        // Pseudo-random initial phase based on index
+        const seed = i * 137.5;
+        const speedX = 35 + (i % 5) * 12;
+        const speedY = 28 + ((i + 2) % 4) * 14;
+        const phaseX = (seed % (rw0 - 24));
+        const phaseY = ((seed * 1.6) % (rh0 - 24));
+
+        // Ping-pong bounce within bounds
+        const totalX = (t * speedX + phaseX);
+        const cycleX = (rw0 - 28) * 2;
+        const modX = totalX % cycleX;
+        const px = rx0 + 14 + (modX < (rw0 - 28) ? modX : cycleX - modX);
+
+        const totalY = (t * speedY + phaseY);
+        const cycleY = (rh0 - 28) * 2;
+        const modY = totalY % cycleY;
+        const py = ry0 + 14 + (modY < (rh0 - 28) ? modY : cycleY - modY);
+
+        const isProduct = i < numProducts;
+
+        if (isProduct) {
+          // Product Molecule (Ruby / Violet with halo)
+          D.circle(g, px, py, 6.5, { fill: '#f43f5e', stroke: '#fda4af', width: 1.5 });
+          D.circle(g, px, py, 11, { fill: 'rgba(244, 63, 94, 0.2)' });
+        } else {
+          // Reactant Molecule A (Cyan) or B (Emerald)
+          const isA = (i % 2 === 0);
+          const col = isA ? '#38bdf8' : '#34d399';
+          const strokeCol = isA ? '#bae6fd' : '#a7f3d0';
+          D.circle(g, px, py, 5.5, { fill: col, stroke: strokeCol, width: 1.2 });
+        }
+
+        // Active collision flashes near center
+        if (i % 4 === 0) {
+          const flashPhase = (t * 2.5 + i * 0.4) % 1;
+          if (flashPhase < 0.2) {
+            const fAlpha = (1 - flashPhase / 0.2) * 0.8;
+            D.circle(g, px, py, 18, { fill: 'rgba(250, 204, 21, ' + fAlpha + ')' });
+            D.circle(g, px, py, 6, { fill: '#ffffff' });
+          }
+        }
+      }
+
+      // Reactor Status HUD
+      D.rect(g, rx0 + 10, ry0 + rh0 - 45, rw0 - 20, 36, { fill: 'rgba(15, 23, 42, 0.85)', stroke: '#334155', r: 8 });
+      D.circle(g, rx0 + 26, ry0 + rh0 - 27, 4.5, { fill: '#38bdf8' });
+      D.text(g, `Reactants [A]: ${(numParticles - numProducts)} (${st.at.toFixed(2)} M)`, rx0 + 36, ry0 + rh0 - 32, { color: '#38bdf8', size: 10.5, weight: 700 });
+      D.circle(g, rx0 + 240, ry0 + rh0 - 27, 4.5, { fill: '#f43f5e' });
+      D.text(g, `Products [P]: ${numProducts} (${st.convPct}% Yield)`, rx0 + 250, ry0 + rh0 - 32, { color: '#f43f5e', size: 10.5, weight: 700 });
+
+      // Collision Theory Tag
+      D.tag(g, 'Collision Rate: Z_AB ∝ [A][B] • Fraction with E ≥ Ea = exp(−Ea/RT)', 267, 488, { bg: '#090d16', border: '#38bdf8', color: '#38bdf8', size: 11, align: 'center' });
+
+      // Right Panel: Integrated Concentration Profile & Order Verification (x: 520 to 975)
+      D.rect(g, 520, 85, 455, 440, { fill: '#131b2e', stroke: '#1e293b', r: 12 });
+      D.text(g, 'Integrated Kinetic Profile & Half-Life Decay', 540, 108, { color: '#f8fafc', size: 13.5, weight: 700 });
+
+      const gx = 575;
       const gy = 440;
-      const gw = 410;
-      const gh = 260;
+      const gw = 370;
+      const gh = 230;
 
       D.line(g, gx, gy, gx + gw, gy, { color: '#475569', width: 1.5 });
       D.line(g, gx, gy, gx, gy - gh, { color: '#475569', width: 1.5 });
-      D.text(g, 'Time t (s)', gx + gw - 35, gy + 20, { color: '#94a3b8', size: 11, weight: 600 });
+      D.text(g, 'Reaction Time t (s) →', gx + gw - 80, gy + 20, { color: '#94a3b8', size: 10.5, weight: 600 });
       D.text(g, 'Concentration [A] (M)', gx - 10, gy - gh - 8, { color: '#94a3b8', size: 11, weight: 600, align: 'right' });
 
       // Plot curve
@@ -1186,52 +1390,34 @@
         else cVal = st.a0 / (1 + st.a0 * st.k * curT);
 
         const px = gx + u * gw;
-        const py = gy - (cVal / (st.a0 * 1.1)) * gh;
-        decayPts.push([px, py]);
+        const py = gy - (cVal / (st.a0 * 1.15)) * gh;
+        decayPts.push([px, clamp(py, gy - gh, gy)]);
       }
 
       D.poly(g, decayPts, { stroke: '#38bdf8', width: 3, fill: false });
 
-      // Live position point
-      const curX = gx + (st.t / tMax) * gw;
-      const curY = gy - (st.at / (st.a0 * 1.1)) * gh;
-      D.line(g, curX, gy, curX, curY, { color: '#facc15', width: 1.5, dash: [3, 3] });
-      D.circle(g, curX, curY, 6, { fill: '#facc15', stroke: '#ffffff', width: 2 });
-      D.text(g, `t = ${st.t} s, [A] = ${st.at.toFixed(3)} M`, curX, curY - 14, { color: '#facc15', size: 10.5, weight: 800, align: 'center' });
-
-      D.tag(g, `Half-Life: t½ = ${st.tHalf.toFixed(2)} s`, 270, 490, { bg: '#0f172a', border: '#38bdf8', color: '#38bdf8', size: 12, align: 'center' });
-
-      // Right Panel: Diagnostic Linear Integrated Plot (x: 540 to 975)
-      D.rect(g, 540, 85, 435, 440, { fill: '#1e293b', stroke: '#334155', r: 12 });
-      D.text(g, `Diagnostic Linear Plot: ${st.linearPlotStr}`, 560, 110, { color: '#f8fafc', size: 14, weight: 700 });
-
-      const rx = 595;
-      const ry = 440;
-      const rw = 340;
-      const rh = 260;
-
-      D.line(g, rx, ry, rx + rw, ry, { color: '#475569', width: 1.5 });
-      D.line(g, rx, ry, rx, ry - rh, { color: '#475569', width: 1.5 });
-      D.text(g, 'Time t (s)', rx + rw - 35, ry + 20, { color: '#94a3b8', size: 11, weight: 600 });
-      D.text(g, st.mode === 'first_order' ? 'ln[A]' : st.mode === 'second_order' ? '1/[A]' : '[A]', rx - 10, ry - rh - 8, { color: '#94a3b8', size: 11, weight: 600, align: 'right' });
-
-      // Straight line
-      const linPts = [];
-      for (let i = 0; i <= numPts; i++) {
-        const u = i / numPts;
-        let yNorm = 0;
-        if (st.mode === 'zero_order') yNorm = 0.8 - u * 0.6;
-        else if (st.mode === 'first_order') yNorm = 0.8 - u * 0.65;
-        else yNorm = 0.2 + u * 0.65;
-
-        linPts.push([rx + u * rw, ry - yNorm * rh]);
+      // Half-Life t1/2 vertical dashed line and marker
+      if (st.tHalf < tMax) {
+        const hx = gx + (st.tHalf / tMax) * gw;
+        const hy = gy - ((st.a0 * 0.5) / (st.a0 * 1.15)) * gh;
+        D.line(g, hx, gy, hx, hy, { color: '#10b981', width: 1.5, dash: [4, 4] });
+        D.circle(g, hx, hy, 4, { fill: '#10b981' });
+        D.text(g, 't½ (50%)', hx, gy + 14, { color: '#10b981', size: 10, weight: 700, align: 'center' });
       }
-      D.poly(g, linPts, { stroke: '#22c55e', width: 3, fill: false });
-      D.text(g, `Straight Line (Slope = ${st.mode === 'second_order' ? '+k' : '−k'})`, rx + 140, ry - rh + 40, { color: '#22c55e', size: 11, weight: 800 });
 
-      D.rect(g, 560, ry + 32, 395, 42, { fill: '#0f172a', stroke: '#334155', r: 8 });
-      D.text(g, 'Linearity confirms the true kinetic order of the reaction.', 575, ry + 53, { color: '#38bdf8', size: 11, weight: 700 });
-    },
+      // Live position point with sweep oscilloscope pulse
+      const curX = gx + (st.t / tMax) * gw;
+      const curY = gy - (st.at / (st.a0 * 1.15)) * gh;
+      D.line(g, curX, gy, curX, curY, { color: '#facc15', width: 1.5, dash: [3, 3] });
+      const cRing = 6 + Math.sin(t * 5) * 2;
+      D.circle(g, curX, curY, cRing, { fill: 'rgba(250, 204, 21, 0.3)' });
+      D.circle(g, curX, curY, 6, { fill: '#facc15', stroke: '#ffffff', width: 2 });
+      D.text(g, `t = ${st.t} s  •  [A] = ${st.at.toFixed(3)} M`, curX, curY - 14, { color: '#facc15', size: 10.5, weight: 800, align: 'center' });
+
+      // Linear diagnostic confirmation bar
+      D.rect(g, 540, gy + 32, 415, 42, { fill: '#0a0f1d', stroke: '#334155', r: 8 });
+      D.text(g, `Linear Diagnostics: ${st.linearPlotStr}  •  k = ${st.k} ${st.kUnit}`, 555, gy + 53, { color: '#38bdf8', size: 11, weight: 700 });
+    }
   };
 
   // ═════════════════════════════════════════════════════════════════

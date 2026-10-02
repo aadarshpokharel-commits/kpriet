@@ -14,39 +14,41 @@
   const D = window.EPDraw;
   const { C, fmt, clamp, lerp, rad } = D;
 
-  // ─── Step-by-Step HUD & Animation Helper ───
+    // ─── Step-by-Step HUD & Animation Helper (Compact, Non-Colliding) ───
   function drawStepHUD(g, S, customNote) {
     const step = S.step || 0;
+    const cur = (S.steps && S.steps[step]) || {};
     const steps = S.steps || [];
-    const cur = steps[step] || { title: 'Step ' + (step + 1), text: '' };
     const total = steps.length || 1;
     const t = S.t || 0;
 
     g.save();
-    const hudW = 440;
-    const hudH = 68;
+    // Sleek, compact badge in top-right corner (never overlaps canvas title)
+    const hudW = 210;
+    const hudH = 38;
     const hudX = 1000 - hudW - 24;
-    const hudY = 18;
+    const hudY = 16;
 
-    g.fillStyle = 'rgba(15, 23, 42, 0.88)';
-    g.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+    g.fillStyle = 'rgba(15, 23, 42, 0.9)';
+    g.strokeStyle = 'rgba(56, 189, 248, 0.4)';
     g.lineWidth = 1.5;
     g.beginPath();
-    if (g.roundRect) g.roundRect(hudX, hudY, hudW, hudH, 10);
+    if (g.roundRect) g.roundRect(hudX, hudY, hudW, hudH, 8);
     else g.rect(hudX, hudY, hudW, hudH);
     g.fill();
     g.stroke();
 
+    // Step dots & active badge
     const glow = 0.5 + 0.5 * Math.sin(t * 3.5);
     g.fillStyle = '#38bdf8';
     g.font = 'bold 11px system-ui, sans-serif';
-    g.fillText('STEP ' + (step + 1) + ' OF ' + total, hudX + 16, hudY + 22);
+    g.fillText('STEP ' + (step + 1) + ' OF ' + total, hudX + 12, hudY + 23);
 
     for (let i = 0; i < total; i++) {
-      const dx = hudX + 115 + i * 16;
-      const dy = hudY + 18;
+      const dx = hudX + 105 + i * 16;
+      const dy = hudY + 19;
       g.beginPath();
-      g.arc(dx, dy, i === step ? 5 : 3.5, 0, Math.PI * 2);
+      g.arc(dx, dy, i === step ? 4.5 : 3, 0, Math.PI * 2);
       if (i === step) {
         g.fillStyle = 'rgba(56, 189, 248, ' + (0.7 + 0.3 * glow) + ')';
         g.fill();
@@ -62,15 +64,12 @@
       }
     }
 
-    g.fillStyle = '#f8fafc';
-    g.font = 'bold 13px system-ui, sans-serif';
-    const cleanTitle = (cur.title || '').replace(/^\d+\.\s*/, '');
-    g.fillText(cleanTitle.length > 44 ? cleanTitle.slice(0, 42) + '...' : cleanTitle, hudX + 16, hudY + 43);
-
-    g.fillStyle = '#94a3b8';
-    g.font = '11px system-ui, sans-serif';
-    const sub = customNote || cur.text || '';
-    g.fillText(sub.length > 60 ? sub.slice(0, 58) + '...' : sub, hudX + 16, hudY + 59);
+    // Animated LIVE pulse indicator
+    const pulse = 0.5 + 0.5 * Math.sin(t * 4);
+    g.beginPath();
+    g.arc(hudX + hudW - 16, hudY + 19, 3.5, 0, Math.PI * 2);
+    g.fillStyle = 'rgba(56, 189, 248, ' + (0.5 + 0.5 * pulse) + ')';
+    g.fill();
 
     g.restore();
   }
@@ -250,204 +249,253 @@
     draw(g, S) {
       const { p, c, t } = S;
       const step = S.step || 0;
-      D.clear(g, '#0f172a');
+      D.clear(g, '#090d16');
 
       const mode = p.mode || 'sn2';
       const st = c.state;
 
-      // Animate progress xi continuously when playing or based on active step
-      let xi = (p.progress != null ? p.progress : 35) / 100;
+      // Video simulation continuous cyclic time (8s loop per reaction cycle)
+      const cycleT = (t * 0.7) % 8; // 0 to 8s
+      let xi = 0;
       if (S.playing || S.transient) {
-        const stepTarget = step === 0 ? 0.12 : step === 1 ? 0.50 : 0.92;
-        const wiggle = 0.04 * Math.sin(t * 3.5);
-        xi = clamp(stepTarget + wiggle, 0.05, 0.98);
+        // Step-locked progress
+        const stepTarget = step === 0 ? 0.15 : step === 1 ? 0.50 : 0.90;
+        xi = clamp(stepTarget + 0.04 * Math.sin(t * 3), 0.02, 0.98);
       } else {
-        // Subtle resting vibration
-        xi = clamp(xi + 0.015 * Math.sin(t * 3), 0.02, 0.98);
+        // Continuous smooth video trajectory
+        if (cycleT < 2.5) {
+          xi = (cycleT / 2.5) * 0.35; // 0 to 0.35: approach
+        } else if (cycleT < 5.0) {
+          xi = 0.35 + ((cycleT - 2.5) / 2.5) * 0.35; // 0.35 to 0.70: transition state
+        } else if (cycleT < 7.2) {
+          xi = 0.70 + ((cycleT - 5.0) / 2.2) * 0.28; // 0.70 to 0.98: inversion & separation
+        } else {
+          xi = 0.98; // Brief hold at product
+        }
       }
 
       // Step HUD
       drawStepHUD(g, S, step === 0 ? 'Nucleophile approach along 180° trajectory' : step === 1 ? (mode === 'sn2' ? 'Trigonal bipyramidal transition state [Nu···C···X]‡' : 'Planar carbocation intermediate & leaving group departure') : (mode === 'sn2' ? 'Walden inversion: stereochemical configuration inverted' : 'Racemic nucleophile attack from both faces'));
 
       // Header Banner
-      D.text(g, mode === 'sn2' ? 'SN2 BIMOLECULAR NUCLEOPHILIC SUBSTITUTION' : 'SN1 UNIMOLECULAR NUCLEOPHILIC SUBSTITUTION', 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
-      D.text(g, `Substrate: ${st.subDeg} · Nu: ${st.nucName} · Favored: ${st.dominant} · ${st.rateLaw}`, 30, 62, { color: '#94a3b8', size: 13, weight: 600 });
+      D.text(g, mode === 'sn2' ? 'SN2 BIMOLECULAR NUCLEOPHILIC SUBSTITUTION (WALDEN INVERSION)' : 'SN1 UNIMOLECULAR NUCLEOPHILIC SUBSTITUTION (RACEMIZATION)', 30, 36, { color: '#38bdf8', size: 19, weight: 800 });
+      D.text(g, `Substrate: ${st.subDeg}  •  Nu: ${st.nucName}  •  Favored: ${st.dominant}  •  ${st.rateLaw}`, 30, 62, { color: '#94a3b8', size: 12.5, weight: 600 });
 
-      // Left Panel: Molecular Geometry Animation (x: 20 to 520)
-      D.rect(g, 24, 85, 490, 440, { fill: '#1e293b', stroke: '#334155', r: 12 });
-      D.text(g, mode === 'sn2' ? 'Backside Attack & Walden Inversion' : 'Carbocation Intermediate & Dual Face Attack', 40, 110, { color: '#f8fafc', size: 14, weight: 700 });
+      // Left Panel: Molecular Geometry Animation (x: 24 to 515)
+      D.rect(g, 24, 85, 490, 440, { fill: '#131b2e', stroke: '#1e293b', r: 12 });
+      D.text(g, mode === 'sn2' ? 'Backside Attack & Walden Umbrella Inversion' : 'Carbocation Intermediate & Dual Face Attack', 40, 108, { color: '#f8fafc', size: 13.5, weight: 700 });
 
       const cx = 270;
-      const cy = 290;
+      const cy = 295;
 
       if (mode === 'sn2') {
-        const umbrellaAngle = lerp(0.38, -0.38, xi);
-        const nuDist = lerp(160, 48, clamp(xi * 1.8, 0, 1));
-        const brDist = lerp(48, 170, clamp((xi - 0.25) * 1.5, 0, 1));
+        // Umbrella inversion angle: swings from +0.42 rad (facing Nu) to -0.42 rad (inverted away)
+        const umbrellaAngle = lerp(0.42, -0.42, xi);
+        const nuDist = lerp(170, 52, clamp(xi * 1.6, 0, 1));
+        const brDist = lerp(52, 175, clamp((xi - 0.35) * 1.55, 0, 1));
 
         const nuX = cx - nuDist;
         const brX = cx + brDist;
 
+        // Visual trajectory guidelines
+        D.line(g, cx - 180, cy, cx + 180, cy, { color: 'rgba(255, 255, 255, 0.08)', width: 1, dash: [4, 4] });
+
         // C-Nu bond and C-Br bond
-        if (xi < 0.3) {
-          D.line(g, cx, cy, brX, cy, { color: '#fb7185', width: 4 });
-          D.arrow(g, nuX + 24, cy, cx - 60, cy, { color: '#38bdf8', width: 2.5, head: 7 });
-        } else if (xi <= 0.75) {
-          D.line(g, nuX, cy, cx, cy, { color: '#38bdf8', width: 2.5, dash: [4, 4] });
-          D.line(g, cx, cy, brX, cy, { color: '#fb7185', width: 2.5, dash: [4, 4] });
-          D.text(g, '[ Nu···C···Br ]‡', cx, cy - 80, { color: '#facc15', size: 14, weight: 800, align: 'center' });
-          D.text(g, 'δ⁻', nuX, cy - 25, { color: '#38bdf8', size: 12, weight: 700, align: 'center' });
-          D.text(g, 'δ⁻', brX, cy - 25, { color: '#fb7185', size: 12, weight: 700, align: 'center' });
+        if (xi < 0.32) {
+          // Reactant approach
+          D.line(g, cx, cy, brX, cy, { color: '#fb7185', width: 4.5 });
+          D.arrow(g, nuX + 22, cy, cx - 65, cy, { color: '#38bdf8', width: 2.5, head: 7 });
+          D.text(g, 'Backside 180° Attack', cx - 110, cy - 25, { color: '#38bdf8', size: 10, weight: 700, align: 'center' });
+        } else if (xi <= 0.72) {
+          // Transition state: partial bonds
+          const tsGlow = 0.5 + 0.5 * Math.sin(t * 8);
+          D.line(g, nuX, cy, cx, cy, { color: '#38bdf8', width: 3, dash: [5, 4] });
+          D.line(g, cx, cy, brX, cy, { color: '#fb7185', width: 3, dash: [5, 4] });
+
+          // TS Brackets [ ... ]‡
+          D.text(g, '[', cx - 105, cy - 5, { color: '#facc15', size: 40, weight: 300 });
+          D.text(g, ']‡', cx + 105, cy - 5, { color: '#facc15', size: 36, weight: 800 });
+          D.text(g, 'Trigonal Bipyramidal TS [Nu···C···Br]‡', cx, cy - 90, { color: '#facc15', size: 13, weight: 800, align: 'center' });
+          D.text(g, 'δ−', nuX, cy - 26, { color: '#38bdf8', size: 13, weight: 800, align: 'center' });
+          D.text(g, 'δ−', brX, cy - 26, { color: '#fb7185', size: 13, weight: 800, align: 'center' });
         } else {
-          D.line(g, nuX, cy, cx, cy, { color: '#38bdf8', width: 4 });
+          // Inverted product
+          D.line(g, nuX, cy, cx, cy, { color: '#38bdf8', width: 4.5 });
           D.arrow(g, cx + 55, cy, brX - 22, cy, { color: '#fb7185', width: 2.5, head: 7 });
-          D.text(g, 'Br⁻ Leaving Group', brX, cy - 25, { color: '#fb7185', size: 11, weight: 700, align: 'center' });
+          D.text(g, 'Br⁻ Leaving Group Departs', brX, cy - 26, { color: '#fb7185', size: 11, weight: 700, align: 'center' });
+          D.text(g, '100% Inverted Configuration', cx - 20, cy - 85, { color: '#22c55e', size: 12.5, weight: 800, align: 'center' });
         }
 
         // Substituents
         const subLabels = p.substrate === 'methyl' ? ['H', 'H', 'H'] : p.substrate === 'primary' ? ['CH₃', 'H', 'H'] : p.substrate === 'secondary' ? ['CH₃', 'CH₃', 'H'] : ['CH₃', 'CH₃', 'CH₃'];
 
         // Sub 1: Upward
-        const s1x = cx + Math.sin(umbrellaAngle) * 55;
-        const s1y = cy - Math.cos(umbrellaAngle) * 55;
-        D.line(g, cx, cy, s1x, s1y, { color: '#94a3b8', width: 3 });
+        const s1x = cx + Math.sin(umbrellaAngle) * 58;
+        const s1y = cy - Math.cos(umbrellaAngle) * 58;
+        D.line(g, cx, cy, s1x, s1y, { color: '#94a3b8', width: 3.5 });
         D.atom(g, s1x, s1y, 14, '#334155', { label: subLabels[0] });
 
-        // Sub 2: Down-Wedge
-        const s2x = cx + Math.sin(umbrellaAngle + 1.8) * 50;
-        const s2y = cy - Math.cos(umbrellaAngle + 1.8) * 45;
-        D.line(g, cx, cy, s2x, s2y, { color: '#a855f7', width: 4 });
+        // Sub 2: Down-Wedge (coming forward)
+        const s2x = cx + Math.sin(umbrellaAngle + 1.8) * 52;
+        const s2y = cy - Math.cos(umbrellaAngle + 1.8) * 48;
+        D.line(g, cx, cy, s2x, s2y, { color: '#a855f7', width: 4.5 });
         D.atom(g, s2x, s2y, 14, '#334155', { label: subLabels[1] });
 
-        // Sub 3: Down-Dash
-        const s3x = cx + Math.sin(umbrellaAngle - 1.8) * 50;
-        const s3y = cy - Math.cos(umbrellaAngle - 1.8) * 45;
-        D.line(g, cx, cy, s3x, s3y, { color: '#64748b', width: 2.5, dash: [3, 3] });
+        // Sub 3: Down-Dash (going backward)
+        const s3x = cx + Math.sin(umbrellaAngle - 1.8) * 52;
+        const s3y = cy - Math.cos(umbrellaAngle - 1.8) * 48;
+        D.line(g, cx, cy, s3x, s3y, { color: '#64748b', width: 3, dash: [4, 3] });
         D.atom(g, s3x, s3y, 14, '#334155', { label: subLabels[2] });
 
-        // Nucleophile, Central Carbon, Bromide
+        // Nucleophile with lone pairs
         D.atom(g, nuX, cy, 18, '#0284c7', { label: 'Nu' });
-        D.atom(g, cx, cy, 16, '#1e293b', { label: 'C' });
+        // Lone pairs on Nu
+        D.circle(g, nuX + 2, cy - 14, 2, { fill: '#38bdf8' });
+        D.circle(g, nuX + 8, cy - 14, 2, { fill: '#38bdf8' });
+
+        // Central Carbon
+        D.atom(g, cx, cy, 17, '#0f172a', { label: 'C' });
+
+        // Bromide with halo
+        D.circle(g, brX, cy, 22, { fill: 'rgba(190, 18, 60, 0.2)' });
         D.atom(g, brX, cy, 18, '#be123c', { label: 'Br' });
 
         // Bottom annotation
-        D.tag(g, st.stateLabel, cx, 490, { bg: '#0f172a', border: '#38bdf8', color: '#38bdf8', size: 12, align: 'center' });
+        const phaseLabel = xi < 0.32 ? 'Phase 1: Backside Nu Approach (180°)' : xi <= 0.72 ? 'Phase 2: Pentacoordinated [Nu···C···Br]‡ TS' : 'Phase 3: Walden Inversion & Br⁻ Departure';
+        D.tag(g, phaseLabel, cx, 488, { bg: '#090d16', border: '#38bdf8', color: '#38bdf8', size: 12, align: 'center' });
       } else {
-        // SN1 Animation
-        const brDist = lerp(48, 175, clamp(xi * 1.9, 0, 1));
+        // SN1 Animation (Stepwise Ionization + Planar Carbocation + Racemization)
+        const brDist = lerp(52, 185, clamp(xi * 1.8, 0, 1));
         const brX = cx + brDist;
 
         const subLabels = p.substrate === 'methyl' ? ['H', 'H', 'H'] : p.substrate === 'primary' ? ['CH₃', 'H', 'H'] : p.substrate === 'secondary' ? ['CH₃', 'CH₃', 'H'] : ['CH₃', 'CH₃', 'CH₃'];
 
         // Planar sp2 transition
-        const planarity = clamp(xi * 1.8, 0, 1);
-        const a1 = lerp(-Math.PI * 0.5, -Math.PI * 0.5, planarity);
+        const planarity = clamp(xi * 1.7, 0, 1);
+        const a1 = -Math.PI * 0.5;
         const a2 = lerp(Math.PI * 0.65, Math.PI * 0.83, planarity);
         const a3 = lerp(Math.PI * 0.35, Math.PI * 0.17, planarity);
 
-        D.line(g, cx, cy, cx + Math.cos(a1) * 52, cy + Math.sin(a1) * 52, { color: '#94a3b8', width: 3 });
-        D.atom(g, cx + Math.cos(a1) * 52, cy + Math.sin(a1) * 52, 14, '#334155', { label: subLabels[0] });
+        // Carbocation empty p-orbital lobes (translucent cyan/violet dumbbell)
+        if (xi > 0.35) {
+          const pGlow = 0.5 + 0.5 * Math.sin(t * 5);
+          g.save();
+          // Top lobe
+          g.fillStyle = 'rgba(56, 189, 248, ' + (0.25 + 0.15 * pGlow) + ')';
+          g.beginPath();
+          g.ellipse(cx, cy - 32, 16, 26, 0, 0, Math.PI * 2);
+          g.fill();
+          // Bottom lobe
+          g.fillStyle = 'rgba(168, 85, 247, ' + (0.25 + 0.15 * pGlow) + ')';
+          g.beginPath();
+          g.ellipse(cx, cy + 32, 16, 26, 0, 0, Math.PI * 2);
+          g.fill();
+          g.restore();
 
-        D.line(g, cx, cy, cx + Math.cos(a2) * 52, cy + Math.sin(a2) * 52, { color: '#a855f7', width: 3.5 });
-        D.atom(g, cx + Math.cos(a2) * 52, cy + Math.sin(a2) * 52, 14, '#334155', { label: subLabels[1] });
+          D.text(g, 'Empty 2pz Orbital', cx, cy - 65, { color: '#38bdf8', size: 10, weight: 700, align: 'center' });
+          D.text(g, 'Planar sp² Carbocation (R₃C⁺)', cx, cy + 70, { color: '#facc15', size: 11, weight: 800, align: 'center' });
+        }
 
-        D.line(g, cx, cy, cx + Math.cos(a3) * 52, cy + Math.sin(a3) * 52, { color: '#64748b', width: 3 });
-        D.atom(g, cx + Math.cos(a3) * 52, cy + Math.sin(a3) * 52, 14, '#334155', { label: subLabels[2] });
+        // Sub 1: Upward
+        D.line(g, cx, cy, cx + Math.cos(a1) * 54, cy + Math.sin(a1) * 54, { color: '#94a3b8', width: 3.5 });
+        D.atom(g, cx + Math.cos(a1) * 54, cy + Math.sin(a1) * 54, 14, '#334155', { label: subLabels[0] });
 
-        if (xi < 0.5) {
-          D.line(g, cx, cy, brX, cy, { color: '#fb7185', width: 3, dash: xi > 0.2 ? [4, 4] : undefined });
+        // Sub 2: Bottom-Left
+        D.line(g, cx, cy, cx + Math.cos(a2) * 54, cy + Math.sin(a2) * 54, { color: '#a855f7', width: 4 });
+        D.atom(g, cx + Math.cos(a2) * 54, cy + Math.sin(a2) * 54, 14, '#334155', { label: subLabels[1] });
+
+        // Sub 3: Bottom-Right
+        D.line(g, cx, cy, cx + Math.cos(a3) * 54, cy + Math.sin(a3) * 54, { color: '#64748b', width: 3 });
+        D.atom(g, cx + Math.cos(a3) * 54, cy + Math.sin(a3) * 54, 14, '#334155', { label: subLabels[2] });
+
+        // Bromide bond / ionization
+        if (xi < 0.45) {
+          D.line(g, cx, cy, brX, cy, { color: '#fb7185', width: 3.5, dash: xi > 0.2 ? [4, 4] : undefined });
         }
         D.atom(g, brX, cy, 18, '#be123c', { label: 'Br⁻' });
 
-        // Empty p-orbital lobes once ionized
-        if (xi > 0.35) {
-          D.poly(g, [[cx, cy], [cx - 16, cy - 35], [cx, cy - 60], [cx + 16, cy - 35], [cx, cy]], { fill: 'rgba(56,189,248,0.25)', stroke: '#38bdf8', width: 1.5, close: true });
-          D.poly(g, [[cx, cy], [cx - 16, cy + 35], [cx, cy + 60], [cx + 16, cy + 35], [cx, cy]], { fill: 'rgba(249,115,22,0.25)', stroke: '#f97316', width: 1.5, close: true });
-          D.text(g, 'Empty 2p lobe (+)', cx + 24, cy - 45, { color: '#38bdf8', size: 10, weight: 600 });
-          D.text(g, 'Empty 2p lobe (−)', cx + 24, cy + 45, { color: '#f97316', size: 10, weight: 600 });
+        // Dual Face Attack in Step 2/3
+        if (xi > 0.6) {
+          // Top attack (Retention 50%)
+          D.arrow(g, cx - 40, cy - 80, cx - 10, cy - 45, { color: '#22c55e', width: 2.5, head: 6 });
+          D.atom(g, cx - 55, cy - 90, 14, '#0284c7', { label: 'Nu' });
+          D.text(g, 'Top Face (50% Retention)', cx - 70, cy - 108, { color: '#22c55e', size: 9.5, weight: 700 });
+
+          // Bottom attack (Inversion 50%)
+          D.arrow(g, cx - 40, cy + 80, cx - 10, cy + 45, { color: '#38bdf8', width: 2.5, head: 6 });
+          D.atom(g, cx - 55, cy + 90, 14, '#0284c7', { label: 'Nu' });
+          D.text(g, 'Bottom Face (50% Inversion)', cx - 70, cy + 112, { color: '#38bdf8', size: 9.5, weight: 700 });
         }
 
-        // Nucleophile Attack Pathways
-        if (xi >= 0.55) {
-          D.arrow(g, cx - 75, cy - 60, cx - 18, cy - 25, { color: '#38bdf8', width: 2, head: 6 });
-          D.text(g, 'Top Face (50% Retention)', cx - 80, cy - 70, { color: '#38bdf8', size: 10, weight: 700 });
+        // Central Carbon
+        D.atom(g, cx, cy, 17, '#0f172a', { label: 'C⁺' });
 
-          D.arrow(g, cx - 75, cy + 60, cx - 18, cy + 25, { color: '#f97316', width: 2, head: 6 });
-          D.text(g, 'Bottom Face (50% Inversion)', cx - 80, cy + 75, { color: '#f97316', size: 10, weight: 700 });
-
-          D.atom(g, cx - 100, cy - 60, 15, '#0284c7', { label: 'Nu⁻' });
-          D.atom(g, cx - 100, cy + 60, 15, '#c2410c', { label: 'Nu⁻' });
-        }
-
-        D.atom(g, cx, cy, 16, '#b45309', { label: 'C⁺' });
-        D.tag(g, st.stateLabel, cx, 490, { bg: '#0f172a', border: '#f59e0b', color: '#facc15', size: 12, align: 'center' });
+        const sn1Phase = xi < 0.4 ? 'Phase 1: Rate-Limiting C−Br Ionization (RDS)' : xi < 0.7 ? 'Phase 2: Planar sp² Carbocation Intermediate' : 'Phase 3: Equal Probability Attack (Racemic R+S)';
+        D.tag(g, sn1Phase, cx, 488, { bg: '#090d16', border: '#facc15', color: '#facc15', size: 12, align: 'center' });
       }
 
-      // Right Panel: Free Energy Diagram (x: 535 to 975)
-      D.rect(g, 535, 85, 440, 440, { fill: '#1e293b', stroke: '#334155', r: 12 });
-      D.text(g, 'Potential Free Energy Profile ΔG‡ vs ξ', 555, 110, { color: '#f8fafc', size: 14, weight: 700 });
-      D.tag(g, `Ea = ${st.eaEff} kJ/mol`, 905, 110, { bg: '#0f172a', border: '#facc15', color: '#facc15', size: 11, align: 'center' });
+      // Right Panel: Reaction Energy Coordinate Diagram
+      D.rect(g, 525, 85, 450, 440, { fill: '#131b2e', stroke: '#1e293b', r: 12 });
+      D.text(g, mode === 'sn2' ? 'Concerted Potential Energy Barrier (One TS)' : 'Stepwise Potential Energy Profile (Two TS + Interm.)', 545, 108, { color: '#f8fafc', size: 13.5, weight: 700 });
 
-      const gx = 595;
+      const gx = 575;
       const gy = 440;
-      const gw = 340;
-      const gh = 250;
+      const gw = 360;
+      const gh = 230;
 
-      // Coordinate axes
       D.line(g, gx, gy, gx + gw, gy, { color: '#475569', width: 1.5 });
       D.line(g, gx, gy, gx, gy - gh, { color: '#475569', width: 1.5 });
-      D.text(g, 'Reaction Coord ξ', gx + gw - 35, gy + 20, { color: '#94a3b8', size: 11, weight: 600 });
-      D.text(g, 'Free Energy ΔG', gx - 12, gy - gh - 8, { color: '#94a3b8', size: 11, weight: 600, align: 'right' });
+      D.text(g, 'Reaction Coordinate ξ →', gx + gw - 80, gy + 20, { color: '#94a3b8', size: 10.5, weight: 600 });
+      D.text(g, 'Free Energy ΔG (kJ/mol)', gx - 10, gy - gh - 8, { color: '#94a3b8', size: 11, weight: 600, align: 'right' });
 
-      // Energy curve
+      // Plot energy curve
       const pts = [];
       const numPts = 60;
       for (let i = 0; i <= numPts; i++) {
         const u = i / numPts;
         let gVal = 0;
         if (mode === 'sn2') {
-          gVal = 4 * st.eaEff * u * (1 - u) - 35 * u;
+          // Single bell shaped peak
+          gVal = Math.sin(u * Math.PI) * st.eaEff - u * 35;
         } else {
-          const eInt = st.eaEff * 0.42;
+          // Double peak with dip in middle
           if (u <= 0.55) {
             const v = u / 0.55;
-            gVal = Math.sin(v * Math.PI * 0.5) * st.eaEff * (1 - 0.4 * v) + eInt * Math.pow(v, 2);
+            gVal = Math.sin(v * Math.PI * 0.5) * st.eaEff * (1 - 0.35 * v) + (st.eaEff * 0.42) * Math.pow(v, 2);
           } else {
             const v = (u - 0.55) / 0.45;
-            gVal = (1 - v) * eInt + Math.sin(v * Math.PI) * 25 - 40 * v;
+            gVal = (1 - v) * (st.eaEff * 0.42) + Math.sin(v * Math.PI) * 25 - v * 40;
           }
         }
         const px = gx + u * gw;
-        const py = gy - (gVal + 45) * (gh / (st.eaEff + 70));
-        pts.push([px, py]);
+        const py = gy - ((gVal + 40) / (st.eaEff + 60)) * gh;
+        pts.push([px, clamp(py, gy - gh + 10, gy)]);
       }
+      D.poly(g, pts, { stroke: '#38bdf8', width: 3, fill: false });
 
-      D.poly(g, pts, { stroke: mode === 'sn2' ? '#38bdf8' : '#f59e0b', width: 3, fill: false });
+      // Animated energy ball tracking live progress ξ
+      const curIdx = Math.round(xi * numPts);
+      const ballPos = pts[clamp(curIdx, 0, pts.length - 1)];
+      // Pulsing halo around ball
+      const bHalo = 7 + Math.sin(t * 6) * 2;
+      D.circle(g, ballPos[0], ballPos[1], bHalo, { fill: 'rgba(250, 204, 21, 0.3)' });
+      D.circle(g, ballPos[0], ballPos[1], 6.5, { fill: '#facc15', stroke: '#ffffff', width: 2 });
+      D.text(g, `${st.currentG.toFixed(1)} kJ`, ballPos[0], ballPos[1] - 14, { color: '#facc15', size: 10.5, weight: 800, align: 'center' });
 
-      // Peak Labels
+      // Peak label
       if (mode === 'sn2') {
-        const pk = pts[Math.round(numPts * 0.5)];
-        D.text(g, `TS‡ (Ea = ${st.eaEff} kJ)`, pk[0], pk[1] - 12, { color: '#38bdf8', size: 11, weight: 700, align: 'center' });
+        const peakPt = pts[Math.round(numPts * 0.5)];
+        D.text(g, `Ea‡ = ${st.eaEff} kJ/mol`, peakPt[0], peakPt[1] - 22, { color: '#f87171', size: 11, weight: 800, align: 'center' });
       } else {
-        const pk1 = pts[Math.round(numPts * 0.28)];
-        const val = pts[Math.round(numPts * 0.55)];
-        D.text(g, `TS 1‡ (RDS)`, pk1[0], pk1[1] - 12, { color: '#f59e0b', size: 10, weight: 700, align: 'center' });
-        D.text(g, 'R⁺ Intermediate', val[0], val[1] + 16, { color: '#38bdf8', size: 10, weight: 700, align: 'center' });
+        const ts1 = pts[Math.round(numPts * 0.35)];
+        D.text(g, 'TS 1‡ (RDS)', ts1[0], ts1[1] - 18, { color: '#f87171', size: 10, weight: 800, align: 'center' });
+        const intPt = pts[Math.round(numPts * 0.55)];
+        D.text(g, 'R⁺ Interm.', intPt[0], intPt[1] + 16, { color: '#38bdf8', size: 10, weight: 800, align: 'center' });
       }
 
-      // Live position bead
-      const curIdx = clamp(Math.round(xi * numPts), 0, numPts);
-      const curPt = pts[curIdx];
-      if (curPt) {
-        D.line(g, curPt[0], gy, curPt[0], curPt[1], { color: '#fbbf24', width: 1, dash: [3, 3] });
-        D.circle(g, curPt[0], curPt[1], 6, { fill: '#f59e0b', stroke: '#ffffff', width: 2 });
-        D.text(g, `${st.currentG} kJ/mol`, curPt[0], curPt[1] - 16, { color: '#fde047', size: 11, weight: 800, align: 'center' });
-      }
-
-      // Bottom info card in right panel
-      D.rect(g, 555, gy + 32, 400, 42, { fill: '#0f172a', stroke: '#334155', r: 8 });
-      D.text(g, `Stereochemical Outcome: ${st.stereo}`, 570, gy + 53, { color: '#38bdf8', size: 12, weight: 700 });
-    },
+      D.rect(g, 545, gy + 32, 410, 42, { fill: '#0a0f1d', stroke: '#334155', r: 8 });
+      D.text(g, `Stereochemical Outcome: ${st.stereo}`, 560, gy + 53, { color: '#38bdf8', size: 11.5, weight: 700 });
+    }
   };
 
   // ═════════════════════════════════════════════════════════════════
@@ -951,81 +999,95 @@
     draw(g, S) {
       const { p, c, t } = S;
       const step = S.step || 0;
-      D.clear(g, '#0f172a');
+      D.clear(g, '#090d16');
 
       const st = c.state;
 
       // Step HUD
-      drawStepHUD(g, S, step === 0 ? 'Primary aromatic amine in ice bath (0–5 °C) with NaNO₂/HCl' : step === 1 ? 'Diazonium salt formation (Ar-N₂⁺ Cl⁻) with low-T stability' : 'Electrophilic azo coupling with β-naphthol forming bright dye');
+      drawStepHUD(g, S, step === 0 ? 'Primary aromatic amine in ice bath (0−5 °C) with NaNO₂/HCl' : step === 1 ? 'Diazonium salt formation (Ar-N₂⁺ Cl⁻) with low-T stability' : 'Electrophilic azo coupling with β-naphthol forming bright dye');
 
       // Header Banner
-      D.text(g, 'AZO DYE SYNTHESIS: DIAZOTIZATION & COUPLING FLOW', 30, 36, { color: '#38bdf8', size: 20, weight: 800 });
-      D.text(g, `Target Dye: ${st.name} · Perceived: ${st.colorName} · λ_max: ${st.lambdaMax} nm · Yield: ${st.yieldPct}%`, 30, 62, { color: '#94a3b8', size: 13, weight: 600 });
+      D.text(g, 'AZO DYE SYNTHESIS: DIAZOTIZATION & COUPLING FLOW', 30, 36, { color: '#38bdf8', size: 19, weight: 800 });
+      D.text(g, `Target Dye: ${st.name}  •  Perceived: ${st.colorName}  •  λ_max: ${st.lambdaMax} nm  •  Yield: ${st.yieldPct}%`, 30, 62, { color: '#94a3b8', size: 12.5, weight: 600 });
 
-      // Left Panel: Reaction Apparatus & Mechanism (x: 24 to 530)
-      D.rect(g, 24, 85, 500, 440, { fill: '#1e293b', stroke: '#334155', r: 12 });
+      // Left Panel: Reaction Apparatus & Mechanism (x: 24 to 510)
+      D.rect(g, 24, 85, 486, 440, { fill: '#131b2e', stroke: '#1e293b', r: 12 });
 
-      const cx = 270;
-      const cy = 290;
+      const cx = 267;
+      const cy = 295;
 
       if (st.stage === 'step1_diazotization') {
-        D.text(g, 'Stage 1: Diazotization in Ice Bath (0–5°C)', 40, 110, { color: '#f8fafc', size: 14, weight: 700 });
+        D.text(g, 'Stage 1: Diazotization in Ice Bath (0−5°C)', 40, 108, { color: '#f8fafc', size: 13.5, weight: 700 });
 
         // Ice Bath Tub
-        D.rect(g, cx - 110, cy - 20, 220, 150, { fill: 'rgba(56,189,248,0.12)', stroke: '#38bdf8', width: 2, r: 12 });
-        for (let i = 0; i < 6; i++) {
-          const ix = cx - 95 + i * 32;
-          const iy = cy + 90 + (i % 2) * 8;
-          D.rect(g, ix, iy, 24, 24, { fill: '#ffffff', stroke: '#93c5fd', width: 1.5, r: 4 });
-          D.text(g, 'ICE', ix + 12, iy + 14, { color: '#1e3a8a', size: 9, weight: 800, align: 'center' });
+        D.rect(g, cx - 115, cy - 20, 230, 155, { fill: 'rgba(56, 189, 248, 0.1)', stroke: '#38bdf8', width: 2, r: 12 });
+
+        // 8 Animated Floating Ice Cubes bobbing gently
+        for (let i = 0; i < 8; i++) {
+          const bob = Math.sin(t * 2.5 + i * 0.9) * 3;
+          const ix = cx - 100 + (i % 4) * 52;
+          const iy = cy + 70 + Math.floor(i / 4) * 32 + bob;
+          D.rect(g, ix, iy, 24, 22, { fill: '#ffffff', stroke: '#93c5fd', width: 1.2, r: 4 });
+          // Ice glint highlight
+          D.line(g, ix + 3, iy + 4, ix + 12, iy + 4, { color: '#bae6fd', width: 1.5 });
+          D.text(g, 'ICE', ix + 12, iy + 14, { color: '#1e3a8a', size: 8.5, weight: 800, align: 'center' });
         }
 
-        // Flask
+        // Conical Flask
         D.poly(g, [
           [cx - 16, cy - 50],
           [cx - 16, cy],
-          [cx - 48, cy + 100],
-          [cx + 48, cy + 100],
+          [cx - 50, cy + 105],
+          [cx + 50, cy + 105],
           [cx + 16, cy],
           [cx + 16, cy - 50],
-        ], { fill: st.isDecomposing ? 'rgba(239,68,68,0.25)' : 'rgba(56,189,248,0.25)', stroke: '#e2e8f0', width: 2.5, close: true });
+        ], { fill: st.isDecomposing ? 'rgba(239, 68, 68, 0.22)' : 'rgba(56, 189, 248, 0.22)', stroke: '#e2e8f0', width: 2.5, close: true });
 
-        // Liquid
+        // Liquid inside flask with vortex wave
+        const flWave = Math.sin(t * 3.5) * 2;
         D.poly(g, [
-          [cx - 40, cy + 45],
-          [cx - 46, cy + 98],
-          [cx + 46, cy + 98],
-          [cx + 40, cy + 45],
-        ], { fill: st.isDecomposing ? 'rgba(239,68,68,0.5)' : 'rgba(56,189,248,0.5)', stroke: false, close: true });
+          [cx - 42, cy + 45 + flWave],
+          [cx - 48, cy + 102],
+          [cx + 48, cy + 102],
+          [cx + 42, cy + 45 - flWave],
+        ], { fill: st.isDecomposing ? 'rgba(239, 68, 68, 0.55)' : 'rgba(56, 189, 248, 0.5)', stroke: false, close: true });
 
-        // Thermometer
-        const thX = cx + 8;
-        const thY = cy - 40;
-        D.rect(g, thX, thY, 8, 110, { fill: '#ffffff', stroke: '#94a3b8', width: 1.5, r: 4 });
-        const mercH = clamp((st.tempC / 30) * 80, 8, 85);
-        D.rect(g, thX + 1, thY + 110 - mercH, 6, mercH, { fill: st.tempC > 5 ? '#ef4444' : '#0284c7', r: 3 });
-        D.circle(g, thX + 4, thY + 114, 6, { fill: st.tempC > 5 ? '#ef4444' : '#0284c7' });
-        D.text(g, `${st.tempC}°C`, thX + 16, thY + 12, { color: st.tempC > 5 ? '#ef4444' : '#38bdf8', size: 12, weight: 800 });
+        // Submerged Precision Thermometer
+        const thX = cx + 10;
+        const thY = cy - 42;
+        D.rect(g, thX, thY, 8, 115, { fill: '#ffffff', stroke: '#94a3b8', width: 1.5, r: 4 });
+        const mercH = clamp((st.tempC / 30) * 85, 8, 95);
+        D.rect(g, thX + 1, thY + 115 - mercH, 6, mercH, { fill: st.tempC > 5 ? '#ef4444' : '#0284c7', r: 3 });
+        D.circle(g, thX + 4, thY + 118, 6, { fill: st.tempC > 5 ? '#ef4444' : '#0284c7' });
+        D.text(g, `${st.tempC}°C`, thX + 16, thY + 10, { color: st.tempC > 5 ? '#ef4444' : '#38bdf8', size: 12, weight: 800 });
 
         if (st.isDecomposing) {
-          for (let b = 0; b < 6; b++) {
-            D.circle(g, cx - 20 + b * 8, cy + 85 - (b % 3) * 16, 3.5, { fill: '#ffffff', stroke: '#ef4444', width: 1 });
+          // Animated fizzy N2 bubbles rising and popping
+          for (let b = 0; b < 9; b++) {
+            const bPhase = (t * 2 + b * 0.3) % 1;
+            const bx = cx - 30 + b * 7 + Math.sin(t * 5 + b) * 3;
+            const by = (cy + 100) - bPhase * 60;
+            D.circle(g, bx, by, 3 + bPhase * 2, { fill: 'rgba(255, 255, 255, ' + (1 - bPhase) + ')', stroke: '#ef4444', width: 1 });
           }
-          D.text(g, '⚠️ DECOMPOSING! (T > 5°C)', cx, cy - 70, { color: '#ef4444', size: 13, weight: 800, align: 'center' });
-          D.text(g, 'Ar-N₂⁺ + H₂O → Ar-OH + N₂↑ (Decomposed into Phenol)', cx, cy - 54, { color: '#fca5a5', size: 11, align: 'center' });
+          // Flash warning banner
+          const warnGlow = 0.6 + 0.4 * Math.sin(t * 6);
+          D.rect(g, cx - 180, cy - 85, 360, 36, { fill: 'rgba(239, 68, 68, ' + (0.25 * warnGlow) + ')', stroke: '#ef4444', r: 8 });
+          D.text(g, '⚠️ THERMAL DECOMPOSITION! (T > 5°C)', cx, cy - 78, { color: '#ef4444', size: 12, weight: 800, align: 'center' });
+          D.text(g, 'Ar-N₂⁺ + H₂O → Ar-OH + N₂↑ (Decomposing into Phenol & Gas)', cx, cy - 64, { color: '#fca5a5', size: 10, align: 'center' });
         } else {
-          D.text(g, '✓ Stable Benzenediazonium Chloride [Ar-N₂⁺] Cl⁻', cx, cy - 70, { color: '#22c55e', size: 12, weight: 700, align: 'center' });
-          D.text(g, 'Cold ice bath suppresses violent decomposition', cx, cy - 54, { color: '#94a3b8', size: 11, align: 'center' });
+          D.rect(g, cx - 180, cy - 85, 360, 34, { fill: 'rgba(16, 185, 129, 0.15)', stroke: '#10b981', r: 8 });
+          D.text(g, '✓ Stable Benzenediazonium Chloride [Ar-N₂⁺] Cl⁻', cx, cy - 78, { color: '#22c55e', size: 12, weight: 800, align: 'center' });
+          D.text(g, 'Ice bath at 0−5°C successfully suppresses thermal hydrolysis', cx, cy - 64, { color: '#94a3b8', size: 10, align: 'center' });
         }
 
-        D.tag(g, `Diazonium Integrity: ${st.diazoStability}%`, cx, 490, { bg: '#0f172a', border: st.isDecomposing ? '#ef4444' : '#22c55e', color: st.isDecomposing ? '#ef4444' : '#22c55e', size: 12, align: 'center' });
+        D.tag(g, `Diazonium Thermal Stability: ${st.diazoStability}%`, cx, 488, { bg: '#090d16', border: st.isDecomposing ? '#ef4444' : '#22c55e', color: st.isDecomposing ? '#ef4444' : '#22c55e', size: 12, align: 'center' });
       } else if (st.stage === 'step2_coupling') {
-        D.text(g, 'Stage 2: Electrophilic Coupling in Beaker', 40, 110, { color: '#f8fafc', size: 14, weight: 700 });
+        D.text(g, 'Stage 2: Electrophilic Coupling & Dye Precipitation', 40, 108, { color: '#f8fafc', size: 13.5, weight: 700 });
 
-        const bx = cx - 75;
-        const by = cy - 40;
-        const bkW = 150;
-        const bkH = 160;
+        const bx = cx - 80;
+        const by = cy - 35;
+        const bkW = 160;
+        const bkH = 165;
 
         // Beaker
         D.poly(g, [
@@ -1033,118 +1095,140 @@
           [bx, by + bkH],
           [bx + bkW, by + bkH],
           [bx + bkW, by],
-        ], { fill: 'rgba(15,23,42,0.4)', stroke: '#e2e8f0', width: 2.5 });
+        ], { fill: 'rgba(15, 23, 42, 0.5)', stroke: '#e2e8f0', width: 2.5 });
 
-        // Colored dye precipitate
+        // Base solution liquid with swirling vortex
+        const liqH = 110;
         const liqCol = st.yieldPct > 35 ? st.hex : '#94a3b8';
-        D.rect(g, bx + 4, by + bkH - 100, bkW - 8, 98, { fill: liqCol, r: 6 });
+        D.rect(g, bx + 4, by + bkH - liqH, bkW - 8, liqH - 2, { fill: liqCol, r: 6 });
 
-        // Pipette dripping diazonium salt
+        // Animated swirling dye precipitate clouds
+        for (let s = 0; s < 5; s++) {
+          const sAngle = t * 3.5 + s * 1.25;
+          const sRad = 20 + s * 8;
+          const sx = cx + Math.cos(sAngle) * sRad;
+          const sy = by + bkH - 55 + Math.sin(sAngle) * (sRad * 0.4);
+          D.circle(g, sx, sy, 8 + s * 2, { fill: 'rgba(255, 255, 255, 0.25)' });
+        }
+
+        // Magnetic Stirrer Bar at bottom spinning
+        const stirAngle = t * 18;
+        const stirLen = 32;
+        const stirX1 = cx - Math.cos(stirAngle) * (stirLen * 0.5);
+        const stirY1 = by + bkH - 12 - Math.sin(stirAngle) * 3;
+        const stirX2 = cx + Math.cos(stirAngle) * (stirLen * 0.5);
+        const stirY2 = by + bkH - 12 + Math.sin(stirAngle) * 3;
+        D.line(g, stirX1, stirY1, stirX2, stirY2, { color: '#ffffff', width: 6 });
+        D.text(g, 'Magnetic Stirrer (1000 RPM)', cx, by + bkH + 18, { color: '#94a3b8', size: 9, weight: 700, align: 'center' });
+
+        // Dropping pipette with animated falling drops
         D.poly(g, [
-          [cx - 4, by - 50],
-          [cx - 4, by - 10],
-          [cx - 1, by + 5],
-          [cx + 1, by + 5],
-          [cx + 4, by - 10],
-          [cx + 4, by - 50],
+          [cx - 5, by - 55],
+          [cx - 5, by - 15],
+          [cx - 1.5, by],
+          [cx + 1.5, by],
+          [cx + 5, by - 15],
+          [cx + 5, by - 55],
         ], { fill: '#ffffff', stroke: '#94a3b8', width: 1.5, close: true });
-        D.circle(g, cx, by + 16, 3, { fill: '#38bdf8' });
-        D.circle(g, cx, by + 30, 3, { fill: '#38bdf8' });
 
-        D.text(g, 'Ar-N₂⁺ solution added dropwise', cx + 55, by - 25, { color: '#38bdf8', size: 10, weight: 600 });
-        D.text(g, `+ ${st.couplerName} in pH ${st.ph}`, cx + 55, by - 8, { color: '#f8fafc', size: 11, weight: 700 });
+        // Continuous falling droplet
+        const dropT = (t * 2.5) % 1;
+        const dropY = by + dropT * 55;
+        if (dropT < 0.95) {
+          D.circle(g, cx, dropY, 3.5, { fill: '#38bdf8', stroke: '#bae6fd', width: 1 });
+        }
+        // Splash ripples on liquid surface
+        if (dropT > 0.8) {
+          const ripR = (dropT - 0.8) * 45;
+          D.circle(g, cx, by + bkH - liqH, ripR, { fill: 'none', stroke: '#38bdf8', width: 1.2 });
+        }
 
-        D.text(g, `${st.colorName} Dye Precipitating`, cx, by + bkH + 25, { color: st.hex, size: 13, weight: 800, align: 'center' });
-        D.tag(g, `Coupling Efficiency: ${st.phEfficiency}% (Optimal: ${st.optimalPH})`, cx, 490, { bg: '#0f172a', border: '#38bdf8', color: '#38bdf8', size: 12, align: 'center' });
+        D.text(g, 'Ar-N₂⁺ Diazonium Solution (Dropwise)', cx + 55, by - 30, { color: '#38bdf8', size: 10, weight: 700 });
+        D.text(g, `Coupler: ${st.couplerName} in pH ${st.ph}`, cx + 55, by - 14, { color: '#f8fafc', size: 11, weight: 700 });
+
+        D.text(g, `${st.colorName} Dye Precipitating Instantly`, cx, by + bkH + 34, { color: st.hex, size: 13, weight: 800, align: 'center' });
+        D.tag(g, `Coupling Efficiency: ${st.phEfficiency}%  •  Optimal: ${st.optimalPH}`, cx, 488, { bg: '#090d16', border: '#38bdf8', color: '#38bdf8', size: 12, align: 'center' });
       } else {
-        D.text(g, 'Stage 3: Molecular Conjugation & Azo Linkage', 40, 110, { color: '#f8fafc', size: 14, weight: 700 });
+        D.text(g, 'Stage 3: Extended Conjugation & Azo Linkage', 40, 108, { color: '#f8fafc', size: 13.5, weight: 700 });
 
         // Molecule: Ring 1 - N=N - Ring 2
         const ar1x = cx - 110;
         const ar2x = cx + 110;
 
-        D.circle(g, ar1x, cy, 32, { fill: 'rgba(56,189,248,0.1)', stroke: '#38bdf8', width: 2 });
+        D.circle(g, ar1x, cy, 32, { fill: 'rgba(56, 189, 248, 0.12)', stroke: '#38bdf8', width: 2 });
         D.text(g, 'C₆H₅', ar1x, cy + 4, { color: '#38bdf8', size: 12, weight: 800, align: 'center' });
         D.text(g, 'Arene A', ar1x, cy + 46, { color: '#94a3b8', size: 10, align: 'center' });
 
-        // N=N bond
+        // N=N bond with pulsating pi-resonance cloud
         const n1x = cx - 35;
         const n2x = cx + 35;
         D.line(g, ar1x + 32, cy, n1x, cy, { color: '#f8fafc', width: 3 });
         D.atom(g, n1x, cy, 16, '#1e3a8a', { label: 'N' });
 
-        D.line(g, n1x + 16, cy - 4, n2x - 16, cy - 4, { color: '#f59e0b', width: 3 });
-        D.line(g, n1x + 16, cy + 4, n2x - 16, cy + 4, { color: '#f59e0b', width: 3 });
+        const piGlow = 0.5 + 0.5 * Math.sin(t * 6);
+        D.line(g, n1x + 16, cy - 4, n2x - 16, cy - 4, { color: '#f59e0b', width: 3.5 });
+        D.line(g, n1x + 16, cy + 4, n2x - 16, cy + 4, { color: '#f59e0b', width: 3.5 });
 
         D.atom(g, n2x, cy, 16, '#1e3a8a', { label: 'N' });
         D.line(g, n2x, cy, ar2x - 32, cy, { color: '#f8fafc', width: 3 });
 
-        // Chromophore box
-        D.rect(g, n1x - 20, cy - 35, 90, 70, { stroke: '#f59e0b', width: 2, dash: [4, 4], r: 8 });
+        // Chromophore box with pulsing glow
+        D.rect(g, n1x - 20, cy - 35, 90, 70, { stroke: 'rgba(245, 158, 11, ' + (0.5 + 0.5 * piGlow) + ')', width: 2, dash: [4, 4], r: 8 });
         D.text(g, 'Azo Chromophore (−N=N−)', cx, cy - 44, { color: '#f59e0b', size: 11, weight: 700, align: 'center' });
 
-        D.circle(g, ar2x, cy, 32, { fill: 'rgba(234,88,12,0.15)', stroke: st.hex, width: 2 });
+        D.circle(g, ar2x, cy, 32, { fill: 'rgba(234, 88, 12, 0.15)', stroke: st.hex, width: 2 });
         D.text(g, p.mode === 'beta_naphthol' ? 'β-Naph' : p.mode === 'phenol' ? 'Ph-OH' : 'Ar-NMe₂', ar2x, cy + 4, { color: st.hex, size: 11, weight: 800, align: 'center' });
         D.text(g, st.couplerName, ar2x, cy + 46, { color: '#94a3b8', size: 10, align: 'center' });
 
         // Auxochrome
         D.line(g, ar2x + 28, cy - 16, ar2x + 55, cy - 30, { color: st.hex, width: 2.5 });
         D.atom(g, ar2x + 55, cy - 30, 15, '#1e293b', { label: p.mode === 'dimethylaniline' ? 'NMe₂' : 'OH' });
-        D.text(g, 'Auxochrome', ar2x + 60, cy - 52, { color: st.hex, size: 10, weight: 700, align: 'center' });
+        D.text(g, 'Auxochrome', ar2x + 55, cy - 50, { color: '#94a3b8', size: 9, align: 'center' });
 
-        D.tag(g, 'Extended π-Electron Conjugation Delocalized Over Both Rings', cx, 490, { bg: '#0f172a', border: '#f59e0b', color: '#facc15', size: 12, align: 'center' });
+        D.tag(g, `Extended π-Conjugation  •  HOMO-LUMO Gap Decreased  •  λ_max = ${st.lambdaMax} nm`, cx, 488, { bg: '#090d16', border: st.hex, color: st.hex, size: 11.5, align: 'center' });
       }
 
-      // Right Panel: UV-Vis Spectrum & Fabric Swatch (x: 540 to 975)
-      D.rect(g, 540, 85, 435, 440, { fill: '#1e293b', stroke: '#334155', r: 12 });
-      D.text(g, 'Visible Absorption Spectrum & Dye Swatch', 560, 110, { color: '#f8fafc', size: 14, weight: 700 });
+      // Right Panel: UV-Vis Absorbance Spectrum & Perceived Color Swatch (x: 520 to 975)
+      D.rect(g, 520, 85, 455, 440, { fill: '#131b2e', stroke: '#1e293b', r: 12 });
+      D.text(g, 'UV-Vis Electronic Absorption Spectrum & Colorimetry', 540, 108, { color: '#f8fafc', size: 13.5, weight: 700 });
 
-      // Fabric Swatch
-      D.rect(g, 560, 135, 395, 65, { fill: st.hex, stroke: '#ffffff', width: 2, r: 10 });
-      D.text(g, `Dyed Textile Swatch: ${st.name}`, 757, 160, { color: '#ffffff', size: 13, weight: 800, align: 'center' });
-      D.text(g, `Observed Color: ${st.colorName} (λ_max = ${st.lambdaMax} nm)`, 757, 180, { color: '#f8fafc', size: 11, weight: 600, align: 'center' });
-
-      // Spectrum Graph
-      const gx = 595;
-      const gy = 440;
-      const gw = 340;
+      const gx = 575;
+      const gy = 330;
+      const gw = 370;
       const gh = 180;
 
       D.line(g, gx, gy, gx + gw, gy, { color: '#475569', width: 1.5 });
       D.line(g, gx, gy, gx, gy - gh, { color: '#475569', width: 1.5 });
-      D.text(g, 'Wavelength λ (nm)', gx + gw - 35, gy + 20, { color: '#94a3b8', size: 10, weight: 600 });
-      D.text(g, 'Absorbance A', gx - 10, gy - gh - 6, { color: '#94a3b8', size: 10, weight: 600, align: 'right' });
+      D.text(g, 'Wavelength λ (nm) →', gx + gw - 80, gy + 20, { color: '#94a3b8', size: 10.5, weight: 600 });
+      D.text(g, 'Absorbance A', gx - 10, gy - gh - 8, { color: '#94a3b8', size: 11, weight: 600, align: 'right' });
 
+      // Spectrum curve from 350 to 650 nm
       const specPts = [];
-      const lMin = 360;
-      const lMax = 640;
-      const peak = st.lambdaMax;
-      const fwhm = 45;
-
-      for (let l = lMin; l <= lMax; l += 5) {
-        const absVal = Math.exp(-Math.pow(l - peak, 2) / (2 * Math.pow(fwhm / 2.355, 2)));
-        const px = gx + ((l - lMin) / (lMax - lMin)) * gw;
-        const py = gy - absVal * (gh - 25);
+      const numPts = 60;
+      for (let i = 0; i <= numPts; i++) {
+        const lam = 350 + (i / numPts) * 300;
+        const diff = (lam - st.lambdaMax) / 38;
+        const absVal = Math.exp(-0.5 * diff * diff);
+        const px = gx + (i / numPts) * gw;
+        const py = gy - absVal * (gh * 0.85);
         specPts.push([px, py]);
       }
-
       D.poly(g, specPts, { stroke: st.hex, width: 3, fill: false });
 
       // Peak marker
-      const peakX = gx + ((peak - lMin) / (lMax - lMin)) * gw;
-      D.line(g, peakX, gy, peakX, gy - gh + 25, { color: '#facc15', width: 1.5, dash: [3, 3] });
-      D.circle(g, peakX, gy - gh + 25, 4, { fill: '#facc15' });
-      D.text(g, `λ_max = ${peak} nm`, peakX, gy - gh + 12, { color: '#facc15', size: 11, weight: 700, align: 'center' });
+      const peakX = gx + ((st.lambdaMax - 350) / 300) * gw;
+      const peakY = gy - (gh * 0.85);
+      D.line(g, peakX, gy, peakX, peakY, { color: '#facc15', width: 1.5, dash: [3, 3] });
+      D.circle(g, peakX, peakY, 5, { fill: '#facc15' });
+      D.text(g, `λ_max = ${st.lambdaMax} nm`, peakX, peakY - 14, { color: '#facc15', size: 11, weight: 800, align: 'center' });
 
-      [400, 450, 500, 550, 600].forEach((tickL) => {
-        const tx = gx + ((tickL - lMin) / (lMax - lMin)) * gw;
-        D.line(g, tx, gy, tx, gy + 5, { color: '#64748b', width: 1 });
-        D.text(g, String(tickL), tx, gy + 15, { color: '#64748b', size: 9, align: 'center' });
-      });
-
-      // Bottom theory note
-      D.rect(g, 560, gy + 32, 395, 42, { fill: '#0f172a', stroke: '#334155', r: 8 });
-      D.text(g, `Complementary Transmission: Absorbs Blue-Green (~${peak} nm) → Transmits ${st.colorName}`, 575, gy + 53, { color: '#38bdf8', size: 10.5, weight: 700 });
-    },
+      // Perceived Dye Swatch Tile below spectrum
+      D.rect(g, 540, 370, 415, 80, { fill: '#0a0f1d', stroke: '#334155', r: 10 });
+      // Color swatch square
+      D.rect(g, 555, 382, 56, 56, { fill: st.hex, stroke: '#ffffff', width: 2, r: 8 });
+      D.text(g, `Perceived Color: ${st.colorName}`, 625, 388, { color: '#ffffff', size: 13, weight: 800 });
+      D.text(g, `Coupler: ${st.couplerName}  •  Overall Yield: ${st.yieldPct}%`, 625, 410, { color: '#cbd5e1', size: 11 });
+      D.text(g, 'Bathochromic shift: absorption in blue (480 nm) yields complementary orange-red', 625, 428, { color: '#38bdf8', size: 10 });
+    }
   };
 })();

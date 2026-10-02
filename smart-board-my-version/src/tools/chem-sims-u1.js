@@ -25,41 +25,41 @@
   const MASS_C60 = 1.196e-24; // kg (C60 fullerene, 720.66 u)
   const GAS_CONSTANT = 8.314462618; // J/(mol·K)
 
-  // ─── Step-by-Step HUD & Animation Helper ───
+    // ─── Step-by-Step HUD & Animation Helper (Compact, Non-Colliding) ───
   function drawStepHUD(g, S, customNote) {
     const step = S.step || 0;
+    const cur = (S.steps && S.steps[step]) || {};
     const steps = S.steps || [];
-    const cur = steps[step] || { title: 'Step ' + (step + 1), text: '' };
     const total = steps.length || 1;
     const t = S.t || 0;
 
     g.save();
-    const hudW = 440;
-    const hudH = 68;
+    // Sleek, compact badge in top-right corner (never overlaps canvas title)
+    const hudW = 210;
+    const hudH = 38;
     const hudX = 1000 - hudW - 24;
-    const hudY = 18;
+    const hudY = 16;
 
-    // Glassmorphic translucent panel
-    g.fillStyle = 'rgba(15, 23, 42, 0.88)';
-    g.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+    g.fillStyle = 'rgba(15, 23, 42, 0.9)';
+    g.strokeStyle = 'rgba(56, 189, 248, 0.4)';
     g.lineWidth = 1.5;
     g.beginPath();
-    if (g.roundRect) g.roundRect(hudX, hudY, hudW, hudH, 10);
+    if (g.roundRect) g.roundRect(hudX, hudY, hudW, hudH, 8);
     else g.rect(hudX, hudY, hudW, hudH);
     g.fill();
     g.stroke();
 
-    // Step dots and active badge
+    // Step dots & active badge
     const glow = 0.5 + 0.5 * Math.sin(t * 3.5);
     g.fillStyle = '#38bdf8';
     g.font = 'bold 11px system-ui, sans-serif';
-    g.fillText('STEP ' + (step + 1) + ' OF ' + total, hudX + 16, hudY + 22);
+    g.fillText('STEP ' + (step + 1) + ' OF ' + total, hudX + 12, hudY + 23);
 
     for (let i = 0; i < total; i++) {
-      const dx = hudX + 115 + i * 16;
-      const dy = hudY + 18;
+      const dx = hudX + 105 + i * 16;
+      const dy = hudY + 19;
       g.beginPath();
-      g.arc(dx, dy, i === step ? 5 : 3.5, 0, Math.PI * 2);
+      g.arc(dx, dy, i === step ? 4.5 : 3, 0, Math.PI * 2);
       if (i === step) {
         g.fillStyle = 'rgba(56, 189, 248, ' + (0.7 + 0.3 * glow) + ')';
         g.fill();
@@ -75,17 +75,12 @@
       }
     }
 
-    // Step title
-    g.fillStyle = '#f8fafc';
-    g.font = 'bold 13px system-ui, sans-serif';
-    const cleanTitle = (cur.title || '').replace(/^\d+\.\s*/, '');
-    g.fillText(cleanTitle.length > 44 ? cleanTitle.slice(0, 42) + '...' : cleanTitle, hudX + 16, hudY + 43);
-
-    // Step note
-    g.fillStyle = '#94a3b8';
-    g.font = '11px system-ui, sans-serif';
-    const sub = customNote || cur.text || '';
-    g.fillText(sub.length > 60 ? sub.slice(0, 58) + '...' : sub, hudX + 16, hudY + 59);
+    // Animated LIVE pulse indicator
+    const pulse = 0.5 + 0.5 * Math.sin(t * 4);
+    g.beginPath();
+    g.arc(hudX + hudW - 16, hudY + 19, 3.5, 0, Math.PI * 2);
+    g.fillStyle = 'rgba(56, 189, 248, ' + (0.5 + 0.5 * pulse) + ')';
+    g.fill();
 
     g.restore();
   }

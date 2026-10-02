@@ -2480,7 +2480,7 @@
         embedded: '1', lock: '1', sim: String(actualSimId),
         subjectId: String(session.subjectId || ''),
          subjectName: String(session.subjectName || (isChemLab ? 'Engineering Chemistry' : isEcgLab ? 'Digital Electronics' : isPdcLab ? 'Principles of Data Communication' : isMaLab ? 'Engineering Mathematics' : '')),
-         subjectCode: String(session.subjectCode || (isChemLab ? (session.subjectCode || 'U25CY103') : isEcgLab ? 'U21ECG01' : isPdcLab ? 'U21IT201' : isMaLab ? (session.subjectCode || 'U25MA102') : '')),
+         subjectCode: String((isChemLab && (!session.subjectCode || session.subjectCode === 'U21CY101')) ? 'U25CY103' : (session.subjectCode || (isChemLab ? 'U25CY103' : isEcgLab ? 'U21ECG01' : isPdcLab ? 'U21IT201' : isMaLab ? (session.subjectCode || 'U25MA102') : '')),
         departmentId: String(session.departmentId || ''), departmentName: String(session.departmentName || session.programmeName || ''),
         semesterId: String(session.semesterId || ''), semesterNumber: String(session.semesterNumber || (isEcgLab ? '2' : isPdcLab ? '2' : isMaLab ? '1' : '')), role: String(session.role || 'teacher'),
         config: JSON.stringify(cnCtx.config || {}), state: JSON.stringify(cnCtx.state || {}),
@@ -2525,7 +2525,7 @@
           <span style="font-size:16px">${isCLab ? '⚡' : isOsLab ? '💻' : '🔬'}</span>
           <div>
             <h4 style="margin:0;font-size:13.5px;font-weight:800;color:#ffffff">${escapeHtml(title || (isCLab ? 'C Programming Simulation Lab' : isOsLab ? 'Operating Systems Simulation Lab' : 'Interactive Academic Simulation'))}</h4>
-            <span style="font-size:10px;color:${isCLab || isOsLab ? '#bae6fd' : '#a7f3d0'};font-weight:600">${isCnLab ? escapeHtml(`${session.subjectCode || (isEeLab ? 'U25EEG02' : isMaLab ? 'U25MA102' : isEgLab ? 'U25MEG03' : isEpLab ? 'U25PH101' : 'U25CSG03')} · Unit ${simulationContext.unit || ''} · ${simulationContext.topic || ''}`) : isCLab ? escapeHtml(`${session.subjectCode || 'U25CSG02'} · Problem Solving using C`) : 'Smart Board Live Widget • Stylus Ready'}</span>
+            <span style="font-size:10px;color:${isCLab || isOsLab ? '#bae6fd' : '#a7f3d0'};font-weight:600">${isCnLab ? escapeHtml(`${((isChemLab && (!session.subjectCode || session.subjectCode === 'U21CY101')) ? 'U25CY103' : (session.subjectCode || (isChemLab ? 'U25CY103' : isEeLab ? 'U25EEG02' : isMaLab ? 'U25MA102' : isEgLab ? 'U25MEG03' : isEpLab ? 'U25PH101' : 'U25CSG03')))} · Unit ${simulationContext.unit || ''} · ${simulationContext.topic || ''}`) : isCLab ? escapeHtml(`${session.subjectCode || 'U25CSG02'} · Problem Solving using C`) : 'Smart Board Live Widget • Stylus Ready'}</span>
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:6px">
