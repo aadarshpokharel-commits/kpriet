@@ -1495,6 +1495,15 @@
       return;
     }
 
+        // Engineering Chemistry: open the chosen simulation on the board
+    if (CHEM_CATALOG && (CHEM_CATALOG.get(key) || (key && key.startsWith('chem-')))) {
+      const chem = (CHEM_CATALOG.get && CHEM_CATALOG.get(key)) || { id: key, title: title || key, unit: (simulationContext && simulationContext.unit) || 1, topic: (simulationContext && simulationContext.topic) || '' };
+      activeResourceTitle = title || chem.title;
+      launchSmartBoardSimWidget('chem-lab', title || chem.title, { ...(simulationContext || {}), simId: key, unit: chem.unit, unitTitle: chem.unitTitle, topic: chem.topic });
+      if (window.App && typeof window.App.showToast === 'function') window.App.showToast('🧪 ' + (title || chem.title) + ' opened on the board', 'success');
+      return;
+    }
+
     // Computer Networks: open the chosen simulation on the board
     if (CN_CATALOG && CN_CATALOG.get(key)) {
       const cn = CN_CATALOG.get(key);

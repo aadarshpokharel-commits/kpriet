@@ -637,7 +637,7 @@
     setupLearnModes();
     setSpeed(1); applyPanels();
     renderLibrary();
-    const id = params.get('sim') || params.get('simulationId') || params.get('category') || '';
+    const id = params.get('sim') || params.get('preset') || params.get('simulationId') || params.get('category') || '';
     if (id && CAT.get(id)) openSim(id, false); else showLibrary();
   }
   function applyPanels() {
