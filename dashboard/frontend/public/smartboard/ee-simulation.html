@@ -4,18 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f4f7f3">
-  <title>Engineering Physics Simulations (U25PH101) · Eduverse</title>
+  <title>Electrical &amp; Electronics Simulations · Eduverse</title>
   <link rel="stylesheet" href="styles/ep-simulation.css">
   <link rel="stylesheet" href="styles/sim-shell.css">
 </head>
 <body>
   <main class="ep-app" id="ep-app">
     <header class="ep-header">
-      <div class="ep-brand" aria-hidden="true">EP</div>
+      <div class="ep-brand" aria-hidden="true">EE</div>
       <div class="ep-heading">
-        <nav class="ep-crumbs" id="ep-crumbs" aria-label="Location">Semester I › Engineering Physics</nav>
-        <h1><span id="ep-title">Engineering Physics Interactive Laboratory</span> <span class="ep-concept hidden" id="ep-concept" title="This is a conceptual model, not a precise real-world measurement">Conceptual Visualization</span></h1>
-        <p id="ep-subtitle">U25PH101 · Regulations 2025 · Interactive simulation library</p>
+        <nav class="ep-crumbs" id="ep-crumbs" aria-label="Location">Semester I › Basics of Electrical and Electronics Engineering</nav>
+        <h1><span id="ep-title">Electrical &amp; Electronics Interactive Laboratory</span> <span class="ep-concept hidden" id="ep-concept" title="This is a conceptual model, not a precise real-world measurement">Conceptual Visualization</span></h1>
+        <p id="ep-subtitle">U25EEG02 · Regulations 2025 · Interactive simulation library</p>
       </div>
       <div class="ep-header-actions">
         <label class="ep-mode ep-player-only hidden" id="ep-mode-wrap">Mode
@@ -32,7 +32,7 @@
     </header>
 
     <!-- Library: Unit → Topic → Simulation -->
-    <section id="ep-library" class="ep-library hidden" aria-label="Engineering Physics simulation library"></section>
+    <section id="ep-library" class="ep-library hidden" aria-label="Engineering Mathematics simulation library"></section>
 
     <!-- Player -->
     <section id="ep-player" class="ep-player hidden">
@@ -47,6 +47,13 @@
           <section class="ep-card" aria-labelledby="ep-steps-h">
             <div class="ep-card-head"><span class="ep-kicker">STEP-BY-STEP</span><h2 id="ep-steps-h">Steps</h2></div>
             <ol id="ep-steps" class="ep-steps"></ol>
+          </section>
+          <section class="ep-card ep-challenge hidden" id="ep-challenge-card" aria-labelledby="ep-ch-h">
+            <div class="ep-card-head"><span class="ep-kicker">CHALLENGE MODE</span><h2 id="ep-ch-h">Your task</h2></div>
+            <div id="ep-ch-body"></div>
+            <div class="ep-ch-actions"><button type="button" class="ep-btn" id="ep-ch-new">🔁 New challenge</button><button type="button" class="ep-btn ep-btn-primary" id="ep-ch-submit">✅ Submit answer</button></div>
+            <div id="ep-ch-result" aria-live="polite"></div>
+            <ol id="ep-ch-history" class="ep-ch-history" aria-label="Your attempts"></ol>
           </section>
           <section class="ep-card ep-ai" aria-labelledby="ep-ai-h">
             <div class="ep-card-head"><span class="ep-kicker">ASK ABOUT THIS STEP</span><h2 id="ep-ai-h">Subject AI</h2></div>
@@ -109,14 +116,21 @@
     </section>
     <div id="ep-toast" class="ep-toast" role="status" aria-live="polite"></div>
   </main>
-  <script src="tools/ep-catalog.js"></script>
+  <script src="tools/ee-catalog.js"></script>
   <script src="tools/ep-draw.js"></script>
-  <script src="tools/ep-sims-u1.js"></script>
-  <script src="tools/ep-sims-u1b.js"></script>
-  <script src="tools/ep-sims-u2.js"></script>
-  <script src="tools/ep-sims-u3.js"></script>
-  <script src="tools/ep-sims-u4.js"></script>
-  <script src="tools/ep-sims-u5.js"></script>
+  <script src="tools/ee-kit.js"></script>
+  <script src="tools/ee-u1.js"></script>
+  <script src="tools/ee-u2.js"></script>
+  <script src="tools/ee-u3.js"></script>
+  <script src="tools/ee-u4.js"></script>
+  <script src="tools/ee-u5.js"></script>
+  <script>
+    window.EduverseSimLabConfig = {
+      catalog: window.EduverseEECatalog, sims: window.EESims, engine: 'electrical-electronics', learningModes: true,
+      aiType: 'Electrical and Electronics simulation state', source: 'ee-simulation',
+      libraryTitle: 'Electrical & Electronics Interactive Laboratory', docTitle: 'Electrical & Electronics Simulations',
+    };
+  </script>
   <script src="tools/ep-simulation.js"></script>
   <script src="tools/sim-shell.js"></script>
 </body>

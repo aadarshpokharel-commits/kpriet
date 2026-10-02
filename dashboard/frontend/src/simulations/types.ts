@@ -220,6 +220,7 @@ export function resolveSubjectDomain(subject: {
   department?: any;
 }): SimulationDomain {
   const code = (subject.subjectCode || '').toUpperCase();
+  const normCode = code.replace(/^U\d{2}/, '');
   const name = (subject.subjectName || '').toLowerCase();
   const deptCode = (
     typeof subject.department === 'object' && subject.department?.code
@@ -234,7 +235,7 @@ export function resolveSubjectDomain(subject: {
 
   // 1. Mathematics
   if (
-    code.startsWith('MA') ||
+    (code.startsWith('MA') || normCode.startsWith('MA')) ||
     code.startsWith('MATH') ||
     name.includes('mathematics') ||
     name.includes('calculus') ||
@@ -248,7 +249,7 @@ export function resolveSubjectDomain(subject: {
 
   // 2. Engineering Chemistry
   if (
-    code.startsWith('CY') ||
+    (code.startsWith('CY') || normCode.startsWith('CY')) ||
     code.startsWith('CHEM') ||
     name.includes('chemistry') ||
     name.includes('polymer') ||
@@ -261,7 +262,7 @@ export function resolveSubjectDomain(subject: {
 
   // 3. Physics
   if (
-    code.startsWith('PH') ||
+    (code.startsWith('PH') || normCode.startsWith('PH')) ||
     code.startsWith('PHY') ||
     name.includes('physics') ||
     name.includes('optics') ||
@@ -273,7 +274,7 @@ export function resolveSubjectDomain(subject: {
 
   // 4. Civil
   if (
-    code.startsWith('CE') ||
+    (code.startsWith('CE') || normCode.startsWith('CE')) ||
     code.startsWith('CIVIL') ||
     deptCode === 'CIVIL' ||
     deptCode === 'CE' ||

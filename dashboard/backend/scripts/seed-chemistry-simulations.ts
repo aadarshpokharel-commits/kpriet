@@ -1,3 +1,7 @@
+import dns from 'node:dns';
+dns.setServers(['8.8.8.8', '1.1.1.1']);
+import dotenv from 'dotenv';
+dotenv.config();
 import mongoose from 'mongoose';
 import { Subject, Content, User, Department, Semester } from '../src/models/index.js';
 import { ContentType, ContentStatus } from '../src/types/academic.types.js';

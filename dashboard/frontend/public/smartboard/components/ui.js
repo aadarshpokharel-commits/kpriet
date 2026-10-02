@@ -45,6 +45,7 @@ const UI = (() => {
     if (s.includes('structure') || s.includes('algorithm') || s.includes('dsa') || s.includes('computer') || s.includes('it')) return 'DSA';
     if (s.includes('mechanic') || s.includes('civil') || s.includes('truss') || s.includes('structural')) return 'CIVIL';
     if (s.includes('physics') || s.includes('optics') || s.includes('wave') || s.includes('quantum')) return 'PHYSICS';
+    if (s.includes('chemistry') || s.includes('cy10') || s.includes('chemical') || s.includes('polymer') || s.includes('reaction')) return 'CHEMISTRY';
     return 'GENERAL';
   }
 
@@ -215,6 +216,55 @@ const UI = (() => {
       ];
     }
 
+    
+    // 5. Engineering Chemistry (U25CY103 / U21CY101)
+    if (sName.includes('chemistry') || sName.includes('cy10') || domain === 'CHEMISTRY') {
+      return [
+        {
+          id: 1,
+          name: 'Molecular Structure, Bonding and Reactivity',
+          desc: 'Schrödinger wave equation, de Broglie matter waves, Newman projections, Chirality, and pH buffer systems',
+          topics: ['Schrödinger equation and molecular orbitals', 'de Broglie matter waves & wave-particle duality', 'Conformational analysis & Newman projections', 'Chirality, optical activity & enantiomers', 'Acids, bases & Henderson-Hasselbalch buffer systems'],
+          icon: '⚛️'
+        },
+        {
+          id: 2,
+          name: 'Organic Reactions and Synthesis of Drug Molecules',
+          desc: 'Nucleophilic substitutions, E1/E2 eliminations, Electrophilic aromatic substitution, and Diazotization azo coupling',
+          topics: ['Nucleophilic substitution (SN1 vs SN2 kinetics)', 'Elimination reactions (E1 and E2 stereochemistry)', 'Electrophilic aromatic substitution (SEAr nitration/halogenation)', 'Diazotization & azo dye synthesis coupling flow'],
+          icon: '🧪'
+        },
+        {
+          id: 3,
+          name: 'Polymers and Coordination Chemistry',
+          desc: 'Chain/step polymerization, molecular weights (Mn/Mw/PDI), glass transition Tg/Tm, injection molding, and CFT',
+          topics: ['Chain-growth & step-growth polymerization kinetics', 'Polymer molecular weights & polydispersity index', 'Glass transition (Tg) & crystalline melting (Tm)', 'Injection, extrusion & compression molding processes', 'Crystal field theory (CFT), d-orbital splitting & colour'],
+          icon: '🔬'
+        },
+        {
+          id: 4,
+          name: 'Thermodynamics, Electrochemistry and Kinetics',
+          desc: 'Gibbs spontaneity (ΔG = ΔH - TΔS), Galvanic cells, Nernst EMF, water phase equilibria, and reaction kinetics',
+          topics: ['Gibbs free energy & thermodynamic spontaneity', 'Galvanic cells, half-reactions & Nernst equation EMF', 'Water phase diagram & binary eutectic alloy equilibria', 'Chemical reaction order, rate laws & half-life', 'Michaelis-Menten enzyme catalytic kinetics'],
+          icon: '⚡'
+        },
+        {
+          id: 5,
+          name: 'Surface Chemistry, Spectroscopy and Chromatography',
+          desc: 'Langmuir/Freundlich isotherms, Surfactants & CMC, Beer-Lambert UV-Vis, IR/NMR, and HPLC/GC separation',
+          topics: ['Langmuir & Freundlich monolayer/multilayer adsorption', 'Surfactants, micelle aggregation & critical micelle conc (CMC)', 'Beer-Lambert law & UV-Visible spectrophotometry', 'Infrared (IR) & Nuclear Magnetic Resonance (NMR) spectra', 'TLC, HPLC & Gas Chromatography column separations'],
+          icon: '📊'
+        },
+        {
+          id: 6,
+          name: 'Engineering Chemistry Laboratory (Practical)',
+          desc: 'Virtual Titrations, Sudan I dye synthesis, Ostwald viscometry, Ester hydrolysis kinetics, and EMF potentiometry',
+          topics: ['Determination of pKa of weak acids by potentiometric pH titration', 'Preparation of 1-phenylazo-2-naphthol (Sudan I dye)', 'Qualitative functional group tests (carboxylic acids, aldehydes, amines)', 'Viscosity-average molecular weight of polymers via Ostwald viscometer', 'Reaction kinetics of acid-catalyzed ester hydrolysis', 'Cell EMF measurement using calomel & glass electrodes', 'Partition coefficient of iodine between immiscible liquids', 'Spectrophotometric verification of Beer-Lambert law using KMnO4'],
+          icon: '🧫'
+        }
+      ];
+    }
+
     // Default Fallback: Subject-Centric Modular Units
     return [
       { id: 1, name: `Unit 1: Fundamentals of ${subjectName}`, desc: `Core foundational concepts, definitions and principles of ${subjectName}`, topics: ['Introduction & Overview', 'Basic Concepts & Terminology', 'Governing Laws & Principles', 'Standard Formulations'], icon: '📖' },
@@ -252,6 +302,15 @@ const UI = (() => {
         { id: 'ppt_dsa_3', title: 'Lecture 03: Graph Algorithms, BFS, DFS & Dijkstra.pptx', slidesCount: 22, unit: 'Unit 3', date: 'Semester 3' },
         { id: 'ppt_dsa_4', title: 'Lecture 04: Sorting Races, Heap Sort & Hash Tables.pptx', slidesCount: 17, unit: 'Unit 4', date: 'Semester 3' },
         { id: 'ppt_dsa_5', title: 'Lecture 05: Dynamic Programming & Greedy Strategies.pptx', slidesCount: 19, unit: 'Unit 5', date: 'Semester 3' }
+      ];
+    } else if (sName.includes('chemistry') || sName.includes('cy10') || sName.includes('chemical')) {
+      return [
+        { id: 'ppt_chem_1', title: 'Lecture 01: Molecular Orbitals, de Broglie Waves & Stereochemistry.pptx', slidesCount: 16, unit: 'Unit 1', date: 'Semester 1' },
+        { id: 'ppt_chem_2', title: 'Lecture 02: Reaction Mechanisms: SN1, SN2, E1/E2 & Diazotization.pptx', slidesCount: 18, unit: 'Unit 2', date: 'Semester 1' },
+        { id: 'ppt_chem_3', title: 'Lecture 03: Polymers, Molding Operations & Crystal Field Theory.pptx', slidesCount: 17, unit: 'Unit 3', date: 'Semester 1' },
+        { id: 'ppt_chem_4', title: 'Lecture 04: Thermodynamics, Nernst EMF & Chemical Kinetics.pptx', slidesCount: 19, unit: 'Unit 4', date: 'Semester 1' },
+        { id: 'ppt_chem_5', title: 'Lecture 05: Surface Adsorption, UV-Vis, IR/NMR & Chromatography.pptx', slidesCount: 22, unit: 'Unit 5', date: 'Semester 1' },
+        { id: 'ppt_chem_6', title: 'Laboratory: Experimental Chemistry Practical Procedures & Data Analysis.pptx', slidesCount: 24, unit: 'Unit 6', date: 'Semester 1' }
       ];
     } else if (sName.includes('mechanic') || sName.includes('civil')) {
       return [
@@ -291,6 +350,7 @@ const UI = (() => {
     if (domain === 'DSA') subIcon = '💻';
     else if (domain === 'CIVIL') subIcon = '⚖️';
     else if (domain === 'PHYSICS') subIcon = '⚡';
+    else if (domain === 'CHEMISTRY') subIcon = '⚗️';
 
     if (iconEl) iconEl.textContent = subIcon;
     if (nameEl) nameEl.textContent = subName;
