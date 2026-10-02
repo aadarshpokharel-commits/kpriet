@@ -1077,6 +1077,7 @@ export function SubjectWorkspacePage() {
                 preset: simKey,
                 title: title,
                 role: 'student',
+                token: (typeof window !== 'undefined' ? localStorage.getItem('eduverse_token') : null) || '',
                 ...(simulationContext?.simulationId ? { simulationId: simulationContext.simulationId } : {}),
                 ...(simulationContext?.topic ? { topic: simulationContext.topic } : {}),
                 ...(simulationContext?.category ? { category: simulationContext.category } : {}),

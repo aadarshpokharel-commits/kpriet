@@ -19,6 +19,8 @@ export function withSimulationPreset(url: string, sim: SmartBoardSimulationLaunc
   const target = new URL(url, window.location.origin);
   target.searchParams.set('preset', sim.simKey);
   target.searchParams.set('title', sim.title);
+  const token = typeof window !== 'undefined' ? localStorage.getItem('eduverse_token') || '' : '';
+  if (token && !target.searchParams.get('token')) target.searchParams.set('token', token);
   const ctx = sim.simulationContext || {};
   if (ctx.category) target.searchParams.set('category', String(ctx.category));
   if (ctx.topic) target.searchParams.set('topic', String(ctx.topic));

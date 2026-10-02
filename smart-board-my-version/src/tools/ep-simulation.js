@@ -426,6 +426,11 @@
     lastReadouts = {};
     if (spec.live) ensureLoop();
     requestAnimationFrame(fitCanvas);
+    if (embedded || params.get('autoplay') === '1' || params.get('autoplay') === 'true') {
+      setTimeout(() => {
+        try { if (!playing) play(); } catch (_) {}
+      }, 150);
+    }
   }
 
   // ─── Context for the Smart Board and the AI ───

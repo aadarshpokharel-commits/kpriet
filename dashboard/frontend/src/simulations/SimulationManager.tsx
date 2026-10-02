@@ -154,6 +154,7 @@ export const SimulationManager: React.FC<SimulationManagerProps> = ({
       semesterId: String((subject.semester as any)?._id || ''),
       semesterNumber: String((subject.semester as any)?.semesterNumber || 1),
       role: isTeacher ? 'teacher' : 'student',
+      token: (typeof window !== 'undefined' ? localStorage.getItem('eduverse_token') : null) || '',
       ...extra,
     }).toString();
 

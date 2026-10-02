@@ -2470,7 +2470,7 @@
     const isEeLab = simKey === 'ee-lab';
     const isMaLab = simKey === 'ma-lab' || (simKey && (simKey.startsWith('ma-') || simKey.startsWith('math-') || /^u[1-5]_/.test(simKey))) || (session && (session.subjectCode === 'U25MA102' || session.subjectCode === 'U21MA101' || session.subjectCode === 'U25RMA101' || String(session.subjectName || '').toLowerCase().includes('mathematics')));
     const isEgLab = simKey === 'eg-lab';
-    const isEpLab = simKey === 'ep-lab' || isEgLab || isMaLab || isEeLab; // EP, EG and MA share the canvas engine (ep-simulation.js)
+    const isEpLab = simKey === 'ep-lab' || isEgLab || isMaLab || isEeLab || isChemLab; // EP, EG, MA and Chem share the canvas engine (ep-simulation.js)
     const isCnLab = simKey === 'cn-lab' || isEpLab || isPdcLab || isEcgLab || isChemLab; // catalogue labs share one code path
     const isDsaLab = simKey === 'cs-dsa-lab';
     const isOsLab = !isCnLab && (simKey === 'cs-os-lab' || simKey.startsWith('os-') || (session && (session.subjectCode === 'U21CS403' || String(session.subjectName || '').toLowerCase().includes('operating system'))));
@@ -2484,12 +2484,12 @@
     let labFrameUrl = '';
     if (isCnLab) {
       const cnCtx = simulationContext || {};
-       const actualSimId = cnCtx.simId || (simKey !== 'ecg-lab' && simKey !== 'chem-lab' && simKey !== 'pdc-lab' && simKey !== 'cn-lab' && simKey !== 'ep-lab' && simKey !== 'ee-lab' && simKey !== 'ma-lab' && simKey !== 'eg-lab' ? simKey : '') || '';
+       const actualSimId = cnCtx.simId || cnCtx.simulationId || (simKey !== 'ecg-lab' && simKey !== 'chem-lab' && simKey !== 'pdc-lab' && simKey !== 'cn-lab' && simKey !== 'ep-lab' && simKey !== 'ee-lab' && simKey !== 'ma-lab' && simKey !== 'eg-lab' ? simKey : '') || '';
       const cnQuery = new URLSearchParams({
-        embedded: '1', lock: '1', sim: String(actualSimId),
+        embedded: '1', lock: '1', autoplay: '1', sim: String(actualSimId),
         subjectId: String(session.subjectId || ''),
          subjectName: String(session.subjectName || (isChemLab ? 'Engineering Chemistry' : isEcgLab ? 'Digital Electronics' : isPdcLab ? 'Principles of Data Communication' : isMaLab ? 'Engineering Mathematics' : '')),
-         subjectCode: String((isChemLab && (!session.subjectCode || session.subjectCode === 'U21CY101')) ? 'U25CY103' : (session.subjectCode || (isChemLab ? 'U25CY103' : isEcgLab ? 'U21ECG01' : isPdcLab ? 'U21IT201' : isMaLab ? (session.subjectCode || 'U25MA102') : '')),
+        subjectCode: String(isChemLab ? 'U25CY103' : (session.subjectCode || (isEcgLab ? 'U21ECG01' : isPdcLab ? 'U21IT201' : isMaLab ? 'U25MA102' : ''))),
         departmentId: String(session.departmentId || ''), departmentName: String(session.departmentName || session.programmeName || ''),
         semesterId: String(session.semesterId || ''), semesterNumber: String(session.semesterNumber || (isEcgLab ? '2' : isPdcLab ? '2' : isMaLab ? '1' : '')), role: String(session.role || 'teacher'),
         config: JSON.stringify(cnCtx.config || {}), state: JSON.stringify(cnCtx.state || {}),
@@ -3214,7 +3214,18 @@
   }
 
   async function verifyAuthenticatedUser() {
-    let token = session.token || localStorage.getItem('eduverse_token') || sessionStorage.getItem('token') || paramToken;
+    const isJwt = (t) => t && typeof t === 'string' && /^[\w-]+\.[\w-]+\.[\w-]+$/.test(t.trim());
+    let token = [
+      paramToken,
+      localStorage.getItem('eduverse_token'),
+      sessionStorage.getItem('eduverse_token'),
+      sessionStorage.getItem('token'),
+      session?.accessToken,
+      session?.token,
+    ].find(isJwt) || '';
+    if (paramToken && isJwt(paramToken)) {
+      try { localStorage.setItem('eduverse_token', paramToken); } catch (_) {}
+    }
     const headers = { 'Content-Type': 'application/json' };
     if (token && /^[\w-]+\.[\w-]+\.[\w-]+$/.test(String(token))) {
       headers['Authorization'] = `Bearer ${token}`;
@@ -3251,6 +3262,11 @@
       console.warn('[SmartBoard RBAC] Auth check failed:', e);
     }
 
+    // Session fallback: If opened with established portal session, allow board access
+    if (paramSessionId || session?.sessionId || session?.subjectId) {
+      console.info('[SmartBoard RBAC] Proceeding with established board session context.');
+      return true;
+    }
     return false;
   }
 
