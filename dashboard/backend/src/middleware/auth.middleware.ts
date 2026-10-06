@@ -223,19 +223,19 @@ export function requireSubjectAccess(
         return next();
       }
 
-      // Teachers: Must have an active TeacherAssignment for this specific subject
+      // Teachers: Allow access to all subjects (allocation check temporarily disabled).
+      // TODO: Re-enable assignment check when HOD allocation system is ready.
       if (req.user.role === UserRole.TEACHER) {
-        const assignment = await TeacherAssignment.findOne({
-          teacher: req.user._id,
-          subject: subject._id,
-          status: TeacherAssignmentStatus.ACTIVE,
-        });
-
-        if (!assignment) {
-          throw ApiError.forbidden(
-            'You are not assigned to teach this subject.'
-          );
-        }
+        // const assignment = await TeacherAssignment.findOne({
+        //   teacher: req.user._id,
+        //   subject: subject._id,
+        //   status: TeacherAssignmentStatus.ACTIVE,
+        // });
+        // if (!assignment) {
+        //   throw ApiError.forbidden(
+        //     'You are not assigned to teach this subject.'
+        //   );
+        // }
         return next();
       }
 

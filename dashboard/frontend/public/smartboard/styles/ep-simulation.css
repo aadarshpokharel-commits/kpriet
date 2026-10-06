@@ -1,9 +1,19 @@
-:root {
+:root, [data-theme="light"] {
   color-scheme: light;
   --ink: #17271f; --muted: #5d6f66; --line: #dce5dd; --bg: #f4f7f3; --card: #ffffff;
   --green: #197449; --green-dark: #105d39; --green-soft: #e6f4ea; --amber: #b45309; --amber-soft: #fef3c7;
   --red: #b91c1c; --red-soft: #fee2e2; --blue: #1d4ed8; --blue-soft: #dbeafe; --hi: #facc15;
+  --header-bg: #ffffff; --header-border: #dce5dd;
   font-family: "Plus Jakarta Sans", Inter, "Segoe UI", system-ui, sans-serif;
+}
+
+/* ── Dark Mode ── */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #e2ebe4; --muted: #94a89b; --line: #1e2f24; --bg: #0d1510; --card: #111c14;
+  --green: #34d399; --green-dark: #10b981; --green-soft: rgba(16,185,129,0.15); --amber: #fbbf24; --amber-soft: rgba(251,191,36,0.12);
+  --red: #f87171; --red-soft: rgba(248,113,113,0.12); --blue: #60a5fa; --blue-soft: rgba(96,165,250,0.12); --hi: #fde047;
+  --header-bg: #0a1209; --header-border: #1a2e1e;
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
@@ -280,3 +290,179 @@ body.ep-board .ep-chip { padding: 4px 9px; }
 .ep-ch-history { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 3px; font-size: 12.5px; }
 .ep-ch-history li { padding: 4px 8px; border-radius: 8px; background: #f8fafc; } .ep-ch-history li.ok { background: #f0fdf4; } .ep-ch-history li.no { background: #fef2f2; }
 body.ep-board .ep-learn .ep-seg { min-height: 46px; font-size: 14.5px; }
+
+/* ══════════════════════════════════════════════════════════════════
+   DARK MODE OVERRIDES — applied via data-theme="dark" on <html>
+══════════════════════════════════════════════════════════════════ */
+[data-theme="dark"] body { background: var(--bg); color: var(--ink); }
+[data-theme="dark"] .ep-btn { background: #111c14; border-color: var(--line); color: var(--ink); }
+[data-theme="dark"] .ep-btn:hover:not(:disabled) { background: #1a2e1e; border-color: var(--green-dark); }
+[data-theme="dark"] .ep-btn-primary { background: var(--green-dark); border-color: var(--green-dark); color: #fff; }
+[data-theme="dark"] .ep-btn-primary:hover:not(:disabled) { background: var(--green); }
+[data-theme="dark"] .ep-btn-outline { background: var(--green-soft); border-color: rgba(52,211,153,0.3); color: var(--green); }
+[data-theme="dark"] .ep-btn-toggle.active { background: var(--green-soft); border-color: rgba(52,211,153,0.3); color: var(--green); }
+[data-theme="dark"] .ep-mode select { background: #111c14; border-color: var(--line); color: var(--ink); }
+[data-theme="dark"] .ep-sim-card { background: var(--card); border-color: var(--line); }
+[data-theme="dark"] .ep-card { background: var(--card); border-color: var(--line); }
+[data-theme="dark"] .ep-card-head { border-color: var(--line); }
+[data-theme="dark"] .ep-params, [data-theme="dark"] .ep-field { color: var(--ink); }
+[data-theme="dark"] input, [data-theme="dark"] select, [data-theme="dark"] textarea { background: #0d1510; border-color: var(--line); color: var(--ink); }
+[data-theme="dark"] .ep-stage { background: #0a100c; border-color: var(--line); }
+[data-theme="dark"] .ep-controls { background: #111c14; border-color: var(--line); }
+[data-theme="dark"] .ep-seg { background: #0d1510; border-color: var(--line); color: var(--muted); }
+[data-theme="dark"] .ep-seg.active { background: var(--card); color: var(--green-dark); }
+[data-theme="dark"] .ep-steps li { border-color: var(--line); color: var(--ink); }
+[data-theme="dark"] .ep-step-no { background: #1a2e1e; border-color: var(--line); color: var(--green); }
+[data-theme="dark"] .ep-formula { border-color: var(--line); }
+[data-theme="dark"] .ep-formula h4 { color: var(--green); }
+[data-theme="dark"] .ep-result dd b { color: var(--green); }
+[data-theme="dark"] .ep-library { background: var(--bg); }
+[data-theme="dark"] .ep-ch-target { background: rgba(251,191,36,0.08); border-color: rgba(251,191,36,0.3); }
+[data-theme="dark"] .ep-ch-target span { color: var(--amber); }
+[data-theme="dark"] .ep-ch-target b { color: var(--amber); }
+[data-theme="dark"] .ep-ch-res { background: #1a2429; }
+[data-theme="dark"] .ep-ch-res.ok { background: rgba(52,211,153,0.08); border-color: rgba(52,211,153,0.3); }
+[data-theme="dark"] .ep-ch-res.no { background: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.3); }
+[data-theme="dark"] .ep-ch-res code { color: var(--ink); }
+[data-theme="dark"] .ep-ch-history li { background: #111c14; }
+[data-theme="dark"] .ep-ch-history li.ok { background: rgba(52,211,153,0.08); }
+[data-theme="dark"] .ep-ch-history li.no { background: rgba(248,113,113,0.08); }
+[data-theme="dark"] .ep-learn { background: #0d1510; }
+[data-theme="dark"] .ep-learn .ep-seg.active { background: var(--green-dark); color: #fff; }
+[data-theme="dark"] .ep-banner { background: #111c14; border-color: var(--line); color: var(--ink); }
+[data-theme="dark"] .ep-progress { background: #1a2e1e; }
+[data-theme="dark"] #ep-progress-fill { background: var(--green-dark); }
+
+/* ── Theme Toggle Buttons ── */
+.ep-theme-toggle { display: flex; gap: 3px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 3px; background: var(--bg); }
+.ep-theme-btn { min-height: 34px; padding: 0 10px; border: none; border-radius: 7px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 4px; }
+.ep-theme-btn.active { background: var(--card); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+[data-theme="dark"] .ep-theme-toggle { background: #0d1510; border-color: var(--line); }
+[data-theme="dark"] .ep-theme-btn.active { background: #1a2e1e; color: var(--ink); }
+
+/* ══════════════════════════════════════════════════════════════════
+   TEACHING ANNOTATION OVERLAY
+   — A transparent canvas + floating toolbar that lets teachers
+     draw, write, and highlight over any simulation.
+══════════════════════════════════════════════════════════════════ */
+
+/* The annotation canvas — sits on top of the simulation stage */
+#teach-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 50;
+  touch-action: none;
+  display: none;
+  border-radius: inherit;
+}
+#teach-canvas.active { display: block; cursor: crosshair; }
+#teach-canvas.cursor-text { cursor: text; }
+#teach-canvas.cursor-pointer { cursor: default; }
+#teach-canvas.cursor-eraser { cursor: cell; }
+
+/* Wrapper for the stage must be positioned for the canvas to overlay */
+.ep-canvas-wrap { position: relative; }
+
+/* ── Teach Mode Toggle Button (in header) ── */
+.ep-teach-toggle {
+  display: inline-flex; align-items: center; gap: 5px;
+  min-height: 40px; padding: 0 13px; border: 1.5px solid var(--amber);
+  border-radius: 10px; background: var(--amber-soft); color: var(--amber);
+  font-size: 13px; font-weight: 750; cursor: pointer; transition: all .15s;
+  white-space: nowrap;
+}
+.ep-teach-toggle.active {
+  background: var(--amber); color: #fff; border-color: var(--amber);
+  box-shadow: 0 0 0 3px rgba(180,83,9,0.25);
+}
+[data-theme="dark"] .ep-teach-toggle { background: var(--amber-soft); color: var(--amber); border-color: rgba(251,191,36,0.5); }
+[data-theme="dark"] .ep-teach-toggle.active { background: rgba(251,191,36,0.25); color: var(--amber); box-shadow: 0 0 0 3px rgba(251,191,36,0.2); }
+
+/* ── Floating Teaching Toolbar ── */
+#teach-toolbar {
+  position: fixed;
+  top: 50%;
+  right: 18px;
+  transform: translateY(-50%);
+  z-index: 200;
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 6px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  align-items: center;
+}
+#teach-toolbar.visible { display: flex; }
+
+/* Separator line */
+.teach-sep { width: 28px; height: 1px; background: var(--line); margin: 4px 0; }
+
+/* Individual tool buttons */
+.teach-tool-btn {
+  width: 42px; height: 42px; border: 1.5px solid transparent;
+  border-radius: 10px; background: transparent; color: var(--muted);
+  font-size: 18px; cursor: pointer; display: grid; place-items: center;
+  transition: all .15s; flex: none;
+  position: relative;
+}
+.teach-tool-btn:hover { background: var(--green-soft); color: var(--green-dark); border-color: transparent; }
+.teach-tool-btn.active { background: var(--green-soft); color: var(--green-dark); border-color: var(--green); }
+[data-theme="dark"] .teach-tool-btn:hover { background: var(--green-soft); color: var(--green); }
+[data-theme="dark"] .teach-tool-btn.active { background: var(--green-soft); color: var(--green); border-color: var(--green-dark); }
+
+/* Color swatches row */
+.teach-colors {
+  display: flex; flex-direction: column; gap: 3px; align-items: center;
+}
+.teach-color-swatch {
+  width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent;
+  cursor: pointer; transition: transform .12s, border-color .12s; flex: none;
+}
+.teach-color-swatch:hover { transform: scale(1.2); }
+.teach-color-swatch.active { border-color: var(--ink); transform: scale(1.15); }
+
+/* Stroke size selector */
+.teach-sizes {
+  display: flex; flex-direction: column; gap: 3px; align-items: center;
+}
+.teach-size-btn {
+  width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid var(--line);
+  background: var(--bg); cursor: pointer; display: grid; place-items: center;
+  transition: all .12s; flex: none;
+}
+.teach-size-btn:hover, .teach-size-btn.active { background: var(--green-soft); border-color: var(--green); }
+.teach-size-dot { background: var(--ink); border-radius: 50%; display: block; }
+
+/* Clear annotation button */
+#teach-clear {
+  width: 42px; height: 42px; border: 1.5px solid rgba(180,83,9,0.4);
+  border-radius: 10px; background: var(--amber-soft); color: var(--amber);
+  font-size: 16px; cursor: pointer; display: grid; place-items: center;
+  transition: all .15s; flex: none;
+}
+#teach-clear:hover { background: var(--amber); color: #fff; }
+[data-theme="dark"] #teach-clear { background: var(--amber-soft); color: var(--amber); }
+[data-theme="dark"] #teach-clear:hover { background: rgba(251,191,36,0.3); }
+
+/* Tooltip labels on hover */
+.teach-tool-btn[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  right: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #111;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 300;
+}

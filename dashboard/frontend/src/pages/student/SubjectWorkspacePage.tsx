@@ -223,6 +223,14 @@ export function SubjectWorkspacePage() {
           >
             <span>🔒</span> Secure Files Vault
           </button>
+          {(subject.subjectCode?.toUpperCase().includes('CY') || subject.subjectName?.toLowerCase().includes('chem')) && (
+            <Link
+              to="/chemistry"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 px-4 py-2 text-xs font-semibold text-white shadow-md hover:from-amber-500 hover:to-orange-500 transition-all"
+            >
+              <span>⚗️</span> Chemistry Hub & 3D Lab
+            </Link>
+          )}
           <a
             href={`/smartboard/index.html?subjectId=${subject._id}&subjectName=${encodeURIComponent(subject.subjectName)}&subjectCode=${subject.subjectCode || ''}&departmentId=${(subject.department as any)?._id || ''}&departmentName=${encodeURIComponent((subject.department as any)?.name || '')}&semesterId=${(subject.semester as any)?._id || ''}&semesterNumber=${(subject.semester as any)?.semesterNumber || 1}&role=student`}
             target="_blank"

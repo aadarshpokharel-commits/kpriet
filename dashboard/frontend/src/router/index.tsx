@@ -14,6 +14,7 @@ import { SubjectWorkspacePage } from '@/pages/student/SubjectWorkspacePage';
 import { TeacherDashboardPage } from '@/pages/dashboards/TeacherDashboardPage';
 import { QuizManagementPage } from '@/pages/quiz/QuizManagementPage';
 import { StudentQuizPage } from '@/pages/quiz/StudentQuizPage';
+import { ChemistryHubPage } from '@/pages/chemistry/ChemistryHubPage';
 import { AdminRoute } from './guards/AdminRoute';
 import { HODRoute } from './guards/HODRoute';
 import { StudentRoute } from './guards/StudentRoute';
@@ -55,6 +56,11 @@ export const router = createBrowserRouter(
     {
       path: paths.root,
       element: <HomePage />,
+      errorElement: <RouteErrorPage />,
+    },
+    {
+      path: paths.chemistry,
+      element: <ChemistryHubPage />,
       errorElement: <RouteErrorPage />,
     },
     {

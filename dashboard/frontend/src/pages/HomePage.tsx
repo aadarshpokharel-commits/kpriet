@@ -410,9 +410,13 @@ export function HomePage() {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-7 text-[13.5px] font-medium text-slate-600">
+          <nav className="hidden lg:flex items-center gap-6 text-[13.5px] font-medium text-slate-600">
             <a href="#home" className="hover:text-[#247D4C] transition-colors">Home</a>
             <a href="#features" className="hover:text-[#247D4C] transition-colors">Features</a>
+            <Link to="/chemistry" className="flex items-center gap-1.5 text-amber-700 font-bold hover:text-amber-800 transition-colors bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200/80 shadow-2xs">
+              <span>⚗️</span>
+              <span>Chemistry Hub</span>
+            </Link>
             <a href="#programmes" className="hover:text-[#247D4C] transition-colors">Programmes ({PROGRAMMES.length})</a>
             <a href="#students" className="hover:text-[#247D4C] transition-colors">Students</a>
             <a href="#teachers" className="hover:text-[#247D4C] transition-colors">Teachers</a>
@@ -497,6 +501,12 @@ export function HomePage() {
                 >
                   <span>🔑</span> Login
                 </Link>
+                <Link
+                  to="/chemistry"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3.5 text-sm font-bold text-amber-900 hover:bg-amber-100 transition-colors shadow-2xs"
+                >
+                  <span>⚗️</span> Chemistry Hub
+                </Link>
                 <a
                   href="#features"
                   className="text-sm font-bold text-[#247D4C] hover:text-[#1B5E39] hover:underline px-3 py-2"
@@ -563,6 +573,16 @@ export function HomePage() {
                 <span>F = m·a • v = u + at</span>
                 <span>⚛</span>
               </div>
+
+              {/* Floating Chemistry Badge Bottom-Right */}
+              <Link
+                to="/chemistry"
+                className="absolute -bottom-4 right-4 z-20 bg-white/95 backdrop-blur-sm border border-amber-300 shadow-md rounded-2xl px-3.5 py-1.5 text-xs font-mono font-bold text-amber-700 hover:text-amber-900 hover:border-amber-400 hover:scale-105 transition-all flex items-center gap-1.5"
+                title="Explore Engineering Chemistry Hub"
+              >
+                <span>ΔG = ΔH - TΔS</span>
+                <span>⚗️</span>
+              </Link>
 
               {/* Main Card Container */}
               <div className="relative rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-[0_12px_40px_rgba(0,0,0,0.06)] space-y-4">

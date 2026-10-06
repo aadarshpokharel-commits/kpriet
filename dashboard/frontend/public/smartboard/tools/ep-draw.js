@@ -17,6 +17,37 @@
     hi: '#facc15',
   };
 
+  // Polyfill / guarantee roundRect and ellipse on any canvas 2D rendering context
+  if (typeof CanvasRenderingContext2D !== 'undefined') {
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, radii) {
+        let r = 0;
+        if (Array.isArray(radii)) r = radii[0] || 0;
+        else if (typeof radii === 'number') r = radii;
+        r = Math.min(Math.max(0, r), Math.abs(w) / 2, Math.abs(h) / 2);
+        if (!r) { this.rect(x, y, w, h); return this; }
+        this.moveTo(x + r, y);
+        this.arcTo(x + w, y, x + w, y + h, r);
+        this.arcTo(x + w, y + h, x, y + h, r);
+        this.arcTo(x, y + h, x, y, r);
+        this.arcTo(x, y, x + w, y, r);
+        this.closePath();
+        return this;
+      };
+    }
+    if (!CanvasRenderingContext2D.prototype.ellipse) {
+      CanvasRenderingContext2D.prototype.ellipse = function (x, y, rx, ry, rotation, startAngle, endAngle, anticlockwise) {
+        this.save();
+        this.translate(x, y);
+        this.rotate(rotation || 0);
+        this.scale(Math.max(0.001, rx), Math.max(0.001, ry));
+        this.arc(0, 0, 1, startAngle || 0, endAngle != null ? endAngle : Math.PI * 2, Boolean(anticlockwise));
+        this.restore();
+        return this;
+      };
+    }
+  }
+
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const lerp = (a, b, t) => a + (b - a) * t;
   const ease = (t) => { t = clamp(t, 0, 1); return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; };
@@ -95,6 +126,21 @@
   function circle(g, x, y, r, o = {}) {
     g.save(); if (o.alpha != null) g.globalAlpha = o.alpha;
     g.beginPath(); g.arc(x, y, Math.max(0.1, r), 0, Math.PI * 2);
+    if (o.fill) { g.fillStyle = o.fill; g.fill(); }
+    if (o.stroke) { g.strokeStyle = o.stroke; g.lineWidth = o.width || 2; if (o.dash) g.setLineDash(o.dash); g.stroke(); }
+    g.restore();
+  }
+  function ellipse(g, cx, cy, rx, ry, o = {}) {
+    g.save(); if (o.alpha != null) g.globalAlpha = o.alpha;
+    g.beginPath();
+    if (g.ellipse) {
+      g.ellipse(cx, cy, Math.max(0.1, rx), Math.max(0.1, ry), o.rotate || 0, o.start || 0, o.end != null ? o.end : Math.PI * 2, Boolean(o.anticlockwise));
+    } else {
+      g.translate(cx, cy);
+      if (o.rotate) g.rotate(o.rotate);
+      g.scale(Math.max(0.001, rx), Math.max(0.001, ry));
+      g.arc(0, 0, 1, o.start || 0, o.end != null ? o.end : Math.PI * 2, Boolean(o.anticlockwise));
+    }
     if (o.fill) { g.fillStyle = o.fill; g.fill(); }
     if (o.stroke) { g.strokeStyle = o.stroke; g.lineWidth = o.width || 2; if (o.dash) g.setLineDash(o.dash); g.stroke(); }
     g.restore();
@@ -242,5 +288,6 @@
       .forEach(({ a, q }) => atom(g, q.x, q.y, (a.r || 1) * baseR * q.k, a.color || C.blue, { alpha: a.alpha, label: a.label }));
   }
 
-  window.EPDraw = { W, H, C, FONT, clamp, lerp, ease, rad, deg, fmt, sup, clear, text, textWidth, line, poly, arrow, rect, circle, atom, shade, tag, focus, wave, photon, heat, wavelengthColor, chart, level, projector, axes3, cube3, cell3, atoms3 };
+  const roundRect = (g, x, y, w, h, r, o = {}) => rect(g, x, y, w, h, Object.assign({ r }, o));
+  window.EPDraw = { W, H, C, FONT, clamp, lerp, ease, rad, deg, fmt, sup, clear, text, textWidth, line, poly, arrow, rect, roundRect, circle, ellipse, atom, shade, tag, focus, wave, photon, heat, wavelengthColor, chart, level, projector, axes3, cube3, cell3, atoms3 };
 })();

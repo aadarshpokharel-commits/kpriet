@@ -15,6 +15,7 @@ export const paths = {
   hodDashboard: '/hod/dashboard',
   adminDashboard: '/admin/dashboard',
   systemStatus: '/system-status',
+  chemistry: '/chemistry',
 } as const;
 
 /**

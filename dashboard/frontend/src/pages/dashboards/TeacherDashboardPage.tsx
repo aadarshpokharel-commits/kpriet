@@ -11,6 +11,7 @@ import { SmartBoardLaunchModal } from '@/components/smartboard/SmartBoardLaunchM
 import { SmartBoardRemoteDock } from '@/components/smartboard/SmartBoardRemoteDock';
 import { launchSmartBoardSimulation } from '@/components/smartboard/launchSmartBoardSimulation';
 import { SimulationManager } from '@/simulations';
+import { CHEMISTRY_BOARD_SIMULATIONS } from '@/simulations/chemistry';
 import { SecureFileManagerModal } from '@/components/file/SecureFileManagerModal';
 import type {
   ITeacherDashboardOverview,
@@ -43,6 +44,7 @@ type TeacherWorkspaceTab =
   | 'results'
   | 'studentProgress'
   | 'simulations'
+  | 'chemistry'
   | 'aiKnowledge'
   | 'secureFiles';
 
@@ -650,6 +652,7 @@ export function TeacherDashboardPage() {
     { id: 'studentProgress', label: 'Student Progress', icon: '👥', badge: studentsProgress.length },
     { id: 'results', label: 'Results', icon: '🏆' },
     { id: 'simulations', label: 'Simulations', icon: '🔬', badge: workspace?.tabs.simulations.length },
+    { id: 'chemistry', label: 'Chemistry', icon: '⚗️', badge: CHEMISTRY_BOARD_SIMULATIONS.length },
     { id: 'aiKnowledge', label: 'AI Knowledge', icon: '🤖', badge: aiStats ? `${aiStats.knowledgeChunks} Chunks` : undefined },
     { id: 'secureFiles', label: 'Secure Files', icon: '🔒' },
   ];
@@ -699,7 +702,7 @@ export function TeacherDashboardPage() {
       </div>
 
       {/* ─── FACULTY ASSIGNMENTS CHECK & EMPTY STATE ─── */}
-      {assignedData.subjects.length === 0 ? (
+      {(assignedData.subjects.length === 0 && activeTab !== 'chemistry') ? (
         <div className="rounded-3xl border border-indigo-500/20 bg-gradient-to-b from-indigo-500/10 via-panel to-panel p-8 md:p-12 text-center shadow-lg space-y-6">
           <div className="mx-auto h-20 w-20 rounded-3xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-4xl shadow-inner">
             🎓
@@ -3326,6 +3329,81 @@ export function TeacherDashboardPage() {
                 }}
               />
             )}
+
+            {/* ─── CHEMISTRY TAB ─── */}
+            {activeTab === 'chemistry' && (() => {
+              // Group by unit
+              const units = Array.from(new Set(CHEMISTRY_BOARD_SIMULATIONS.map((s) => s.unit as number))).sort((a, b) => a - b);
+              return (
+                <div className="space-y-6">
+                  {/* Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-line pb-4">
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="rounded-md bg-amber-500/10 px-2.5 py-0.5 text-xs font-bold text-amber-600 dark:text-amber-400 border border-amber-500/20">Engineering Chemistry</span>
+                        <span className="rounded-md bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">U25CY103 / U21CY101</span>
+                        <span className="rounded-full bg-surface px-2.5 py-0.5 text-xs font-mono text-muted border border-line">{CHEMISTRY_BOARD_SIMULATIONS.length} simulations</span>
+                      </div>
+                      <h2 className="mt-2 text-xl font-bold text-ink">Chemistry Simulations</h2>
+                      <p className="text-sm text-muted mt-0.5">All units available — launch any simulation on the Smart Board directly.</p>
+                    </div>
+                    <a
+                      href="/smartboard/chem-simulation.html"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 px-4 py-2 text-sm font-bold text-white shadow-md hover:from-amber-500 hover:to-orange-500 transition-all"
+                    >
+                      <span>⚗️</span> Open Chem Smart Board
+                    </a>
+                  </div>
+
+                  {/* Unit Groups */}
+                  {units.map((unitNum) => {
+                    const unitSims = CHEMISTRY_BOARD_SIMULATIONS.filter((s) => s.unit === unitNum);
+                    const unitTitle = unitSims[0]?.unitTitle || `Unit ${unitNum}`;
+                    return (
+                      <div key={unitNum} className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <span className="rounded-lg bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 text-xs font-bold text-amber-600 dark:text-amber-400">Unit {unitNum}</span>
+                          <h3 className="text-sm font-bold text-ink">{unitTitle}</h3>
+                          <span className="text-xs text-muted ml-auto">{unitSims.length} simulations</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
+                          {unitSims.map((sim) => (
+                            <div
+                              key={sim.id}
+                              className="flex flex-col justify-between rounded-xl border border-line bg-surface/40 p-4 hover:border-amber-500/40 hover:bg-amber-500/5 transition-all space-y-3"
+                            >
+                              <div className="space-y-1.5">
+                                <div className="flex items-start gap-2">
+                                  <span className="text-xl shrink-0">{sim.icon}</span>
+                                  <p className="text-xs font-bold text-ink leading-snug">{sim.title}</p>
+                                </div>
+                                <p className="text-[11px] text-muted leading-relaxed line-clamp-2">{sim.shortDescription}</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  const session = await launchSmartBoardSimulation({
+                                    subjectId: 'chemistry',
+                                    simKey: sim.id,
+                                    title: sim.title,
+                                  });
+                                  if (session) setActiveBoardSession(session);
+                                }}
+                                className="w-full rounded-lg bg-amber-600 hover:bg-amber-500 text-white py-1.5 text-xs font-semibold transition-all cursor-pointer text-center"
+                              >
+                                🚀 Launch Smart Board
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
 
 
             {/* AI KNOWLEDGE TAB (MODULE 07 / REQ 17-21) */}

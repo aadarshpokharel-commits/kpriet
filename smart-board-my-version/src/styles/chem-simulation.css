@@ -1,0 +1,666 @@
+/*
+ * Engineering Chemistry Interactive Laboratory — Classroom Smartboard Design System
+ * KPRIET B.Tech R2025 CBCS (U25CY103)
+ * Optimized for 75"/86" 4K Smartboards, Stylus Input, and Distance Viewing.
+ */
+
+:root {
+  --chem-bg-dark: #070d18;
+  --chem-bg-gradient: radial-gradient(circle at 18% 12%, #0e2038 0%, #070d18 70%);
+  --chem-surface: #0f1c2e;
+  --chem-surface-card: #132238;
+  --chem-surface-hover: #182c48;
+  --chem-line: rgba(148, 163, 184, 0.16);
+  --chem-line-active: rgba(16, 185, 129, 0.45);
+  
+  --chem-emerald: #10b981;
+  --chem-emerald-dark: #059669;
+  --chem-emerald-glow: rgba(16, 185, 129, 0.25);
+  --chem-cyan: #06b6d4;
+  --chem-cyan-glow: rgba(6, 182, 212, 0.25);
+  --chem-amber: #f59e0b;
+  --chem-purple: #8b5cf6;
+  
+  --chem-text-main: #f8fafc;
+  --chem-text-muted: #94a3b8;
+  --chem-text-faint: #64748b;
+  
+  --chem-touch-btn: 48px;
+  --chem-radius-card: 16px;
+  --chem-radius-btn: 12px;
+}
+
+/* Base Body & App Canvas */
+body {
+  margin: 0;
+  background: var(--chem-bg-dark);
+  background-image: var(--chem-bg-gradient);
+  color: var(--chem-text-main);
+  font-family: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.ep-app {
+  max-width: 2800px;
+  margin: 0 auto;
+  padding: clamp(8px, 1.2vw, 20px);
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+/* ─── Header Styling ─── */
+.ep-header {
+  background: rgba(15, 28, 46, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--chem-line);
+  border-radius: var(--chem-radius-card);
+  padding: 10px 18px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ep-brand {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #10b981 0%, #0284c7 100%);
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 19px;
+  letter-spacing: -0.04em;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 16px var(--chem-emerald-glow);
+  flex-shrink: 0;
+}
+
+.ep-heading {
+  flex: 1;
+  min-width: 0;
+}
+
+.ep-crumbs {
+  color: var(--chem-emerald);
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.ep-heading h1 {
+  margin: 0;
+  font-size: clamp(18px, 1.6vw, 26px);
+  font-weight: 850;
+  color: var(--chem-text-main);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: -0.02em;
+}
+
+.ep-heading p {
+  margin: 3px 0 0;
+  color: var(--chem-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.ep-concept {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* ─── Header Buttons ─── */
+.ep-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ep-btn {
+  min-height: var(--chem-touch-btn);
+  padding: 0 16px;
+  border-radius: var(--chem-radius-btn);
+  border: 1px solid var(--chem-line);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--chem-text-main);
+  font-size: 13.5px;
+  font-weight: 750;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  touch-action: manipulation;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.ep-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.ep-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.ep-btn-primary {
+  background: linear-gradient(135deg, var(--chem-emerald) 0%, var(--chem-emerald-dark) 100%);
+  border-color: var(--chem-emerald);
+  color: #ffffff;
+  box-shadow: 0 4px 14px var(--chem-emerald-glow);
+}
+
+.ep-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #15d194 0%, #047857 100%);
+  border-color: #34d399;
+  box-shadow: 0 6px 20px var(--chem-emerald-glow);
+  color: #ffffff;
+}
+
+.ep-btn-outline {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #34d399;
+}
+
+.ep-btn-outline:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.22);
+  border-color: #10b981;
+  color: #6ee7b7;
+}
+
+.ep-btn-toggle {
+  color: var(--chem-text-muted);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ep-btn-toggle.active {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: rgba(16, 185, 129, 0.45);
+  color: #34d399;
+}
+
+.ep-icon-btn {
+  width: var(--chem-touch-btn);
+  padding: 0;
+  font-size: 18px;
+}
+
+/* ─── Chemistry Library Toolbar (Filter & Search) ─── */
+.chem-lib-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: rgba(15, 28, 46, 0.55);
+  border: 1px solid var(--chem-line);
+  border-radius: var(--chem-radius-card);
+  margin-bottom: 16px;
+}
+
+.chem-unit-filters {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.chem-filter-pill {
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--chem-line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--chem-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.chem-filter-pill:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--chem-text-main);
+}
+
+.chem-filter-pill.active {
+  background: var(--chem-emerald);
+  border-color: var(--chem-emerald);
+  color: #ffffff;
+  box-shadow: 0 2px 10px var(--chem-emerald-glow);
+}
+
+.chem-search-wrap {
+  position: relative;
+  min-width: 260px;
+  flex: 0 1 320px;
+}
+
+.chem-search-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 14px 0 38px;
+  background: rgba(10, 18, 30, 0.8);
+  border: 1px solid var(--chem-line);
+  border-radius: 10px;
+  color: var(--chem-text-main);
+  font-size: 13.5px;
+  font-family: inherit;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.chem-search-input:focus {
+  border-color: var(--chem-emerald);
+  box-shadow: 0 0 0 3px var(--chem-emerald-glow);
+}
+
+.chem-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 15px;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* ─── Simulation Units & Uniform Grid ─── */
+.ep-library {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 40px;
+}
+
+.ep-unit {
+  margin-bottom: 28px;
+}
+
+.ep-unit h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 14px;
+  font-size: clamp(16px, 1.4vw, 20px);
+  font-weight: 800;
+  color: var(--chem-text-main);
+}
+
+.ep-unit h2 span {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--chem-emerald) 0%, var(--chem-cyan) 100%);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.ep-unit h2 small {
+  color: var(--chem-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+/* ─── Uniform Classroom Card Grid ─── */
+.ep-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 18px;
+}
+
+@media (min-width: 2100px) {
+  .ep-grid {
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 22px;
+  }
+}
+
+.ep-sim-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--chem-surface-card);
+  border: 1.5px solid var(--chem-line);
+  border-radius: var(--chem-radius-card);
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s, box-shadow 0.22s;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.ep-sim-card:hover {
+  transform: translateY(-3px);
+  background: var(--chem-surface-hover);
+  border-color: var(--chem-line-active);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 0 24px rgba(16, 185, 129, 0.12);
+}
+
+/* Card Header: Topic pill and icon */
+.chem-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ep-sim-topic {
+  display: inline-block;
+  color: #34d399;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  background: rgba(16, 185, 129, 0.12);
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.ep-sim-icon {
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.ep-sim-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.ep-sim-body h4 {
+  margin: 0 0 8px;
+  font-size: 16.5px;
+  font-weight: 800;
+  line-height: 1.35;
+  color: var(--chem-text-main);
+  letter-spacing: -0.01em;
+}
+
+.ep-sim-body p {
+  flex: 1;
+  margin: 0 0 16px;
+  color: var(--chem-text-muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Card Action Buttons (Min 46px Height for Classroom Touch) */
+.ep-sim-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.ep-sim-actions .ep-btn {
+  min-height: 46px;
+  font-size: 13.5px;
+  font-weight: 800;
+  border-radius: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ─── Simulation Player Area ─── */
+.ep-player {
+  background: transparent;
+  flex: 1;
+  min-height: 0;
+}
+
+.ep-layout {
+  display: grid;
+  grid-template-columns: clamp(280px, 22vw, 360px) minmax(0, 1fr) clamp(280px, 22vw, 360px);
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+}
+
+.ep-layout.no-right {
+  grid-template-columns: clamp(280px, 22vw, 360px) minmax(0, 1fr);
+}
+
+.ep-card {
+  background: var(--chem-surface);
+  border: 1px solid var(--chem-line);
+  border-radius: var(--chem-radius-card);
+  color: var(--chem-text-main);
+  padding: 14px 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.ep-card-head {
+  border-bottom: 1px solid var(--chem-line);
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.ep-card-head h2 {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--chem-text-main);
+  margin: 2px 0 0;
+}
+
+.ep-kicker {
+  color: var(--chem-emerald);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+}
+
+/* Stage Canvas Wrap */
+.ep-stage {
+  background: #060a12;
+  border: 1.5px solid var(--chem-line);
+}
+
+.ep-canvas-wrap {
+  background: #02060e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 14px rgba(0, 0, 0, 0.8);
+}
+
+#ep-canvas {
+  display: block;
+  touch-action: none;
+}
+
+/* Parameters Form Controls (Touch-Friendly 44px+) */
+.ep-params .ep-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+  color: var(--chem-text-main);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.ep-params select,
+.ep-params input[type="text"],
+.ep-params input[type="number"] {
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--chem-line);
+  background: rgba(10, 18, 30, 0.9);
+  color: var(--chem-text-main);
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  box-sizing: border-box;
+}
+
+.ep-params select:focus,
+.ep-params input:focus {
+  border-color: var(--chem-emerald);
+  outline: none;
+}
+
+.ep-range input[type="range"] {
+  height: 38px;
+  accent-color: var(--chem-emerald);
+}
+
+/* Formulas & Explanation Panel */
+.ep-formula {
+  background: rgba(10, 18, 30, 0.6);
+  border: 1px solid var(--chem-line);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.ep-formula h4 {
+  margin: 0 0 6px;
+  color: var(--chem-cyan);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.ep-formula dt {
+  color: var(--chem-text-muted);
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ep-formula dd {
+  margin: 0 0 8px;
+  font-size: 13.5px;
+  color: var(--chem-text-main);
+}
+
+.ep-formula .ep-math {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  color: #38bdf8;
+  font-weight: 700;
+}
+
+.ep-formula .ep-result b {
+  color: #4ade80;
+  font-size: 16px;
+}
+
+/* Controls Footer */
+.ep-controls {
+  background: rgba(15, 28, 46, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--chem-line);
+  border-radius: var(--chem-radius-card);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ep-big {
+  min-height: var(--chem-touch-btn);
+  padding: 0 20px;
+  font-size: 14.5px;
+}
+
+.ep-speed {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 8px;
+  border-radius: 10px;
+}
+
+.ep-seg {
+  min-height: 38px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--chem-text-muted);
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.ep-seg.active {
+  background: var(--chem-emerald);
+  color: #ffffff;
+}
+
+/* ─── Readouts Telemetry Bar ─── */
+.ep-chip {
+  background: rgba(10, 18, 30, 0.85) !important;
+  border: 1px solid rgba(148, 163, 184, 0.22) !important;
+  border-radius: 10px !important;
+  padding: 6px 14px !important;
+  color: #e2e8f0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+.ep-chip span {
+  color: #94a3b8 !important;
+  font-size: 11px !important;
+}
+
+.ep-chip b {
+  color: #38bdf8 !important;
+  font-size: 15px !important;
+}
+
+.ep-chip.tone-good b { color: #4ade80 !important; }
+.ep-chip.tone-warn b { color: #fbbf24 !important; }
+.ep-chip.tone-bad b { color: #f87171 !important; }
+
+/* ─── Responsive Adjustments for Mobile & Tablets ─── */
+@media (max-width: 900px) {
+  .ep-sim-actions {
+    grid-template-columns: 1fr;
+  }
+  .ep-grid {
+    grid-template-columns: 1fr;
+  }
+  .ep-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

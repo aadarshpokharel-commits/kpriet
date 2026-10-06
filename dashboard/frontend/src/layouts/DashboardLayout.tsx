@@ -27,6 +27,7 @@ const STUDENT_NAV: NavEntry[] = [
   { label: 'Notices', tab: 'notices', icon: '📢' },
   { label: 'AI / Doubt', tab: 'aiDoubt', icon: '🤖' },
   { label: 'Simulations', tab: 'simulations', icon: '🔬' },
+  { label: 'Chemistry', tab: 'chemistry', icon: '⚗️' },
   { label: 'My Progress', tab: 'progress', icon: '📈' },
   { label: 'Attendance', tab: 'attendance', icon: '📅' },
   { label: 'Results', tab: 'results', icon: '🏆' },
@@ -47,6 +48,7 @@ const TEACHER_NAV: NavEntry[] = [
   { label: 'Results', tab: 'results', icon: '🏆' },
   { label: 'Student Progress', tab: 'studentProgress', icon: '👥' },
   { label: 'Simulations', tab: 'simulations', icon: '🔬' },
+  { label: 'Chemistry', tab: 'chemistry', icon: '⚗️' },
   { label: 'AI Query', tab: 'aiKnowledge', icon: '💡' },
   { label: 'Smart Board', to: '/smartboard/index.html', icon: '✨', isExternal: true },
 ];

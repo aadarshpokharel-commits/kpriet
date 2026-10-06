@@ -417,16 +417,19 @@
     -webkit-text-size-adjust: 100%;
     color-scheme: var(--color-scheme, light);
     transition: background-color 0.2s ease, color 0.2s ease;
+    /* Inter — clear, legible, classroom-optimised sans-serif */
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
   }
   
   body {
     background-color: var(--background);
     color: var(--foreground);
-    font-family: var(--font-sans);
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
+    letter-spacing: -0.01em;
   }
 
   /* Universal Input & Form Element Default Styling */
@@ -498,78 +501,226 @@
 
 /* ══════════════════════════════════════════════════════════════
    SMART BOARD & RESPONSIVE MULTI-DISPLAY DESIGN ENGINE
-   Supports: Mobile, Tablet, Desktop, Smart Boards (55"-135"+), 105" Ultra-Wide
+   Supports: Mobile, Tablet, Desktop, Smart Boards (55"-135"+), 4K (3840×2160)
    Rule 1: Space-efficiency — never simply enlarge desktop UI to huge displays.
-   Rule 2: Comfortable touch targets (>=38px) with compact padding.
-   Rule 3: Content-driven height, responsive card grids, zero horizontal overflow.
+   Rule 2: Comfortable touch targets (>=48px touch minimum, 56-72px for primary).
+   Rule 3: Classroom distance readability (legible from 3-8 meters).
+   Rule 4: Dedicated Classroom/Presentation Mode toggle.
    ══════════════════════════════════════════════════════════════ */
 
-/* 1. Fluid container that allows wide Smart Boards to breathe without rigid 1280px restrictions */
+:root {
+  /* Smartboard Fluid Typography Scale (Smoothly scales from Mobile -> Desktop -> 4K) */
+  --sb-title-major: clamp(1.75rem, 2.5vw, 3.5rem);      /* 28px -> 56px */
+  --sb-title-section: clamp(1.35rem, 1.8vw, 2.5rem);   /* 22px -> 40px */
+  --sb-title-card: clamp(1.1rem, 1.35vw, 1.85rem);     /* 18px -> 30px */
+  --sb-text-body: clamp(0.95rem, 1.1vw, 1.45rem);       /* 15px -> 23px */
+  --sb-text-secondary: clamp(0.85rem, 0.95vw, 1.25rem); /* 14px -> 20px */
+  --sb-text-label: clamp(0.8rem, 0.85vw, 1.15rem);      /* 13px -> 18px */
+}
+
+/* 1. Fluid container that allows wide Smart Boards to breathe up to 3600px without rigid 1280px caps */
 .sb-container {
   width: 100%;
-  max-width: min(98vw, 2560px);
+  max-width: min(98vw, 3600px);
   margin-left: auto;
   margin-right: auto;
-  padding-left: clamp(0.75rem, 1.4vw, 2rem);
-  padding-right: clamp(0.75rem, 1.4vw, 2rem);
+  padding-left: clamp(0.75rem, 1.4vw, 2.5rem);
+  padding-right: clamp(0.75rem, 1.4vw, 2.5rem);
 }
 
-/* 2. Responsive Auto-Fitting Card Grids (Fits more cards per row on larger displays) */
-.sb-grid-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
-  gap: clamp(0.625rem, 0.9vw, 1rem);
+/* 2. Smartboard Typography Utility Classes */
+.sb-title-major {
+  font-size: var(--sb-title-major);
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.025em;
 }
 
-/* Dense card grid for subject lists, notes, quizzes, and simulations */
-.sb-grid-dense {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
-  gap: clamp(0.5rem, 0.75vw, 0.875rem);
+.sb-title-section {
+  font-size: var(--sb-title-section);
+  line-height: 1.2;
+  font-weight: 750;
+  letter-spacing: -0.02em;
 }
 
-/* 3. Horizontal Stats Summary Strip (single sleek row on wide boards) */
-.sb-grid-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
-  gap: clamp(0.5rem, 0.8vw, 0.875rem);
+.sb-title-card {
+  font-size: var(--sb-title-card);
+  line-height: 1.25;
+  font-weight: 700;
 }
 
-/* 4. Compact Touch-Friendly Buttons */
-.sb-touch-btn {
-  min-height: 38px;
-  min-width: 38px;
+.sb-text-body {
+  font-size: var(--sb-text-body);
+  line-height: 1.5;
+}
+
+.sb-text-secondary {
+  font-size: var(--sb-text-secondary);
+  line-height: 1.45;
+}
+
+.sb-text-label {
+  font-size: var(--sb-text-label);
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+/* 3. Ergonomic Classroom Touch Targets (Compliant with 48px - 72px standards) */
+.sb-touch-target {
+  min-height: 48px;
+  min-width: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   touch-action: manipulation;
+  user-select: none;
 }
 
-/* 5. Safe Area Margins for Smart Board bezels */
+.sb-touch-primary {
+  min-height: 56px;
+  min-width: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.sb-touch-large {
+  min-height: 64px;
+  min-width: 64px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+/* 4. Responsive Auto-Fitting Card Grids (Fits more cards per row on larger displays) */
+.sb-grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: clamp(0.75rem, 1vw, 1.25rem);
+}
+
+.sb-grid-dense {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: clamp(0.625rem, 0.85vw, 1rem);
+}
+
+/* 5. Horizontal Stats Summary Strip (single sleek row on wide boards) */
+.sb-grid-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: clamp(0.625rem, 0.9vw, 1rem);
+}
+
+/* 6. Safe Area Margins for Smart Board bezels */
 .sb-safe-area {
-  padding-left: env(safe-area-inset-left, clamp(0.5rem, 1vw, 1.25rem));
-  padding-right: env(safe-area-inset-right, clamp(0.5rem, 1vw, 1.25rem));
-  padding-bottom: env(safe-area-inset-bottom, clamp(0.5rem, 1vw, 1.25rem));
+  padding-left: env(safe-area-inset-left, clamp(0.5rem, 1vw, 1.5rem));
+  padding-right: env(safe-area-inset-right, clamp(0.5rem, 1vw, 1.5rem));
+  padding-bottom: env(safe-area-inset-bottom, clamp(0.5rem, 1vw, 1.5rem));
 }
 
-/* 6. Viewport-bounded Dialogs & Modals */
+/* 7. Viewport-bounded Dialogs & Modals */
 .sb-dialog-content {
-  max-height: min(88vh, 850px);
+  max-height: min(92vh, 1200px);
   overflow-y: auto;
   overscroll-behavior: contain;
 }
 
-/* 7. 105" Ultra-Wide Classroom Display Optimization (21:9 / 32:9 Aspect Ratios >= 2:1) */
+/* 8. Classroom Touch Range Slider (Generous 28px-32px thumb for finger scrubbing) */
+input[type="range"].sb-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 12px;
+  border-radius: 9999px;
+  background: var(--border-card);
+  outline: none;
+  margin: 12px 0;
+  cursor: pointer;
+}
+
+input[type="range"].sb-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 3px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  cursor: grab;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+input[type="range"].sb-slider:active::-webkit-slider-thumb {
+  cursor: grabbing;
+  transform: scale(1.18);
+  background: var(--primary-hover);
+}
+
+input[type="range"].sb-slider::-moz-range-thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 3px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  cursor: grab;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   9. CLASSROOM / PRESENTATION MODE ENGINE
+   ══════════════════════════════════════════════════════════════ */
+.classroom-mode {
+  --sb-title-major: clamp(2.25rem, 3.5vw, 4.5rem);
+  --sb-title-section: clamp(1.75rem, 2.5vw, 3.25rem);
+  --sb-title-card: clamp(1.35rem, 1.8vw, 2.25rem);
+  --sb-text-body: clamp(1.15rem, 1.35vw, 1.75rem);
+  --sb-text-secondary: clamp(1rem, 1.15vw, 1.45rem);
+}
+
+.classroom-mode .classroom-hide {
+  display: none !important;
+}
+
+.classroom-mode .classroom-stage {
+  min-height: clamp(520px, 70vh, 1200px) !important;
+  flex: 1 1 auto !important;
+}
+
+.classroom-floating-bar {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+/* 10. 105" Ultra-Wide Classroom Display Optimization (21:9 / 32:9 Aspect Ratios >= 2:1) */
 @media (min-width: 2000px) and (min-aspect-ratio: 2/1) {
   .sb-container {
-    max-width: min(96vw, 3200px);
+    max-width: min(96vw, 3600px);
   }
   .sb-grid-cards {
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-    gap: 1.125rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: 1.25rem;
   }
   .sb-grid-stats {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
 }
 

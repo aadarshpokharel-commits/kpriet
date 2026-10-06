@@ -76,6 +76,10 @@
   // ─── Library ───
   function renderLibrary() {
     const lib = $('ep-library');
+    if (LAB.renderLibrary && typeof LAB.renderLibrary === 'function') {
+      LAB.renderLibrary(lib, CAT, openSim, launchBoard, embedded, esc);
+      return;
+    }
     lib.innerHTML = CAT.units.map((u) => {
       const sims = CAT.simulations.filter((s) => s.unit === u.unit);
       const topics = Array.from(new Set(sims.map((s) => s.topic)));
@@ -91,11 +95,16 @@
     pause(); sim = null; spec = null;
     $('ep-library').classList.remove('hidden'); $('ep-player').classList.add('hidden');
     document.querySelectorAll('.ep-player-only').forEach((el) => el.classList.add('hidden'));
+    $('ep-library-btn').classList.add('hidden');
     $('ep-title').textContent = LAB.libraryTitle;
     $('ep-subtitle').textContent = `${ctx.subjectCode} · ${CAT.simulations.length} interactive simulations in ${CAT.units.length} units`;
     $('ep-crumbs').textContent = `Semester ${ROMAN[Number(ctx.semesterNumber)] || ctx.semesterNumber} › ${ctx.subjectName} › Simulations`;
     $('ep-concept').classList.add('hidden');
     document.title = `${LAB.docTitle} · Eduverse`;
+    if (window.SimulationShell && typeof window.SimulationShell.relayout === 'function') {
+      window.SimulationShell.relayout();
+    }
+    window.dispatchEvent(new Event('resize'));
   }
 
   // ─── Parameters ───
@@ -426,6 +435,17 @@
     lastReadouts = {};
     if (spec.live) ensureLoop();
     requestAnimationFrame(fitCanvas);
+    if (window.SimulationShell && typeof window.SimulationShell.relayout === 'function') {
+      window.SimulationShell.relayout();
+      if (typeof window.SimulationShell.activate === 'function') {
+        window.SimulationShell.activate('Inputs');
+      }
+    }
+    setTimeout(() => {
+      fitCanvas();
+      window.dispatchEvent(new Event('resize'));
+    }, 40);
+    setTimeout(fitCanvas, 160);
     if (embedded || params.get('autoplay') === '1' || params.get('autoplay') === 'true') {
       setTimeout(() => {
         try { if (!playing) play(); } catch (_) {}

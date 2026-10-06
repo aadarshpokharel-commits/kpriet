@@ -3,10 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f4f7f3">
-  <title>Engineering Chemistry Simulations · Eduverse</title>
+  <meta name="theme-color" content="#070d18">
+  <title>Engineering Chemistry Interactive Laboratory · Eduverse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles/ep-simulation.css">
   <link rel="stylesheet" href="styles/sim-shell.css">
+  <link rel="stylesheet" href="styles/chem-simulation.css">
 </head>
 <body>
   <main class="ep-app" id="ep-app">
@@ -21,7 +25,7 @@
         <label class="ep-mode ep-player-only hidden" id="ep-mode-wrap">Mode <select id="ep-mode" aria-label="Visualization mode"></select></label>
         <button type="button" class="ep-btn ep-btn-toggle ep-player-only hidden active" id="ep-toggle-formula">ƒ Formulas</button>
         <button type="button" class="ep-btn ep-btn-toggle ep-player-only hidden active" id="ep-toggle-explain">💬 Explanation</button>
-        <button type="button" class="ep-btn ep-btn-outline hidden" id="ep-library-btn">☰ All simulations</button>
+        <button type="button" class="ep-btn ep-btn-outline hidden" id="ep-library-btn"><span>☰</span> <span>All simulations</span></button>
         <button type="button" class="ep-btn ep-btn-outline hidden" id="ep-publish">📌 Publish for students</button>
         <button type="button" class="ep-btn ep-btn-primary hidden" id="ep-launch-board">🖥 Launch Smart Board</button>
         <button type="button" class="ep-btn ep-btn-outline ep-player-only hidden" id="ep-export">⬇ Export</button>
@@ -61,6 +65,120 @@
       source: 'chem-simulation',
       libraryTitle: 'Engineering Chemistry Interactive Laboratory',
       docTitle: 'Engineering Chemistry Simulations',
+      renderLibrary: function (lib, CAT, openSim, launchBoard, embedded, esc) {
+        const totalSims = (CAT.simulations || []).length;
+        const toolbar = document.createElement('div');
+        toolbar.className = 'chem-lib-toolbar';
+        toolbar.innerHTML = `
+          <div class="chem-unit-filters" role="group" aria-label="Unit filter">
+            <button type="button" class="chem-filter-pill active" data-unit="all">All (${totalSims})</button>
+            ${(CAT.units || []).map(u => {
+              const count = CAT.simulations.filter(s => s.unit === u.unit).length;
+              const label = u.unit === 6 ? `Unit 6 Lab (${count})` : `Unit ${u.unit} (${count})`;
+              return `<button type="button" class="chem-filter-pill" data-unit="${u.unit}">${esc(label)}</button>`;
+            }).join('')}
+          </div>
+          <div class="chem-search-wrap">
+            <span class="chem-search-icon" aria-hidden="true">🔍</span>
+            <input type="search" id="chem-search-input" class="chem-search-input" placeholder="Search 30 chemistry simulations…" aria-label="Search chemistry simulations">
+          </div>
+        `;
+
+        const content = document.createElement('div');
+        content.className = 'chem-units-content';
+        content.innerHTML = (CAT.units || []).map(u => {
+          const sims = CAT.simulations.filter(s => s.unit === u.unit);
+          return `
+            <section class="ep-unit" data-unit-sec="${u.unit}">
+              <h2>
+                <span>Unit ${u.unit}</span>
+                ${esc(u.title)}
+                <small class="unit-count-badge">${sims.length} simulations</small>
+              </h2>
+              <div class="ep-grid">
+                ${sims.map(s => `
+                  <article class="ep-sim-card" data-sim-id="${s.id}" data-sim-unit="${s.unit}" data-keywords="${esc((s.title + ' ' + s.topic + ' ' + s.description).toLowerCase())}">
+                    <div class="chem-card-top">
+                      <span class="ep-sim-topic">${esc(s.topic)}</span>
+                      <div class="ep-sim-icon" aria-hidden="true">${s.icon}</div>
+                    </div>
+                    <div class="ep-sim-body">
+                      <h4>${esc(s.title)}</h4>
+                      <p>${esc(s.description)}</p>
+                      <div class="ep-sim-actions">
+                        <button type="button" class="ep-btn ep-btn-outline" data-open="${s.id}">👁 Preview</button>
+                        ${embedded ? '' : `<button type="button" class="ep-btn ep-btn-primary" data-board="${s.id}">🖥 Launch Smart Board</button>`}
+                      </div>
+                    </div>
+                  </article>
+                `).join('')}
+              </div>
+            </section>
+          `;
+        }).join('');
+
+        lib.innerHTML = '';
+        lib.appendChild(toolbar);
+        lib.appendChild(content);
+
+        lib.querySelectorAll('[data-open]').forEach(b => {
+          b.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openSim(b.dataset.open, true);
+          });
+        });
+
+        lib.querySelectorAll('[data-board]').forEach(b => {
+          b.addEventListener('click', (e) => {
+            e.stopPropagation();
+            launchBoard(b.dataset.board);
+          });
+        });
+
+        let activeUnit = 'all';
+        let searchQuery = '';
+
+        function applyFilter() {
+          const q = searchQuery.toLowerCase().trim();
+          const unitSecs = content.querySelectorAll('[data-unit-sec]');
+
+          unitSecs.forEach(sec => {
+            const secUnit = sec.getAttribute('data-unit-sec');
+            const unitMatches = activeUnit === 'all' || activeUnit === secUnit;
+            const cards = sec.querySelectorAll('.ep-sim-card');
+            let visibleInSec = 0;
+
+            cards.forEach(card => {
+              const kw = card.getAttribute('data-keywords') || '';
+              const searchMatches = !q || kw.includes(q);
+              const visible = unitMatches && searchMatches;
+              card.style.display = visible ? '' : 'none';
+              if (visible) visibleInSec++;
+            });
+
+            sec.style.display = visibleInSec > 0 ? '' : 'none';
+            const badge = sec.querySelector('.unit-count-badge');
+            if (badge) badge.textContent = `${visibleInSec} of ${cards.length} simulations`;
+          });
+        }
+
+        toolbar.querySelectorAll('.chem-filter-pill').forEach(pill => {
+          pill.addEventListener('click', () => {
+            toolbar.querySelectorAll('.chem-filter-pill').forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            activeUnit = pill.dataset.unit;
+            applyFilter();
+          });
+        });
+
+        const searchInput = toolbar.querySelector('#chem-search-input');
+        if (searchInput) {
+          searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            applyFilter();
+          });
+        }
+      }
     };
   </script>
   <script src="tools/ep-simulation.js"></script>
